@@ -2,7 +2,6 @@ package com.app.repository;
 
 import com.app.exception.GenreNotFoundException;
 import com.app.filter.GenreFilter;
-import com.app.model.Author;
 import com.app.model.Genre;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;

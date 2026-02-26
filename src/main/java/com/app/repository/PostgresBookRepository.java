@@ -2,7 +2,6 @@ package com.app.repository;
 
 import com.app.exception.BookNotFoundException;
 import com.app.filter.BookFilter;
-import com.app.model.Author;
 import com.app.model.Book;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
