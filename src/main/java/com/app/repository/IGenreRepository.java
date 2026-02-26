@@ -7,9 +7,9 @@ import com.app.filter.GenreFilter;
 import com.app.model.Genre;
 
 public interface IGenreRepository {
-    public List<Genre> getAll();
-    public List<Genre> getAll(GenreFilter filter);
-    public Genre getByID(Long id) throws GenreNotFoundException;
-    public Genre save(Genre genre);
-    public void deleteByID(Long id);
+    List<Genre> getAll();
+    List<Genre> getAll(GenreFilter filter);
+    Genre getByID(Long id) throws GenreNotFoundException;
+    Genre save(Genre genre);
+    void deleteByID(Long id);
 }

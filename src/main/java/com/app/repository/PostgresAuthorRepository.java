@@ -32,7 +32,7 @@ public class PostgresAuthorRepository implements IAuthorRepository {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Author> cq = cb.createQuery(Author.class);
         List<Predicate> predicates = new ArrayList<>();
-        Root<Author> author = cq.from(Author.class);
+        Root<Author> authors = cq.from(Author.class);
 
 //        if (filter != null){
 //
@@ -40,7 +40,7 @@ public class PostgresAuthorRepository implements IAuthorRepository {
 
         cq.where(predicates.toArray(new Predicate[0]));
         cq.distinct(true);
-        cq.orderBy(cb.asc(author.get("id")));
+        cq.orderBy(cb.asc(authors.get("id")));
 
         TypedQuery<Author> query = em.createQuery(cq);
 
