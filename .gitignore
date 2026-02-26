@@ -1,0 +1,14 @@
+.idea/
+*.iml
+.vscode/
+.devcontainer/
+
+*.env
+*.env*
+
+target/
+logs/
+*.log
+
+.DS_Store
+Thumbs.db
