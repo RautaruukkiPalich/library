@@ -8,7 +8,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 @Schema(description = "dto")
 public class ControllerBookDTO {
@@ -19,34 +21,37 @@ public class ControllerBookDTO {
         @Schema(description = "book title", example = "matrix", requiredMode = Schema.RequiredMode.REQUIRED, minLength = 2, maxLength = 255)
         @JsonProperty("title")
         @NotBlank(message = "title is required")
+        @Size(min = 2, max = 255, message = "title must be between 2 and 255 characters")
         public String title;
 
         @Schema(description = "book author_id", example = "2", requiredMode = Schema.RequiredMode.REQUIRED, minimum = "1")
         @JsonProperty("author_id")
-        @NotBlank(message = "author_id is required")
-        public Long author_id;
+        @NotNull(message = "author_id is required")
+        @Min(value = 1, message = "author_id must be greater than 0")
+        public Long authorId;
 
         @Schema(description = "book genre", example = "23", requiredMode = Schema.RequiredMode.REQUIRED, minimum = "1")
         @JsonProperty("genre_id")
-        @NotBlank(message = "genre_id is required")
-        public Long genre_id;
+        @NotNull(message = "genre_id is required")
+        @Min(value = 1, message = "genre_id must be greater than 0")
+        public Long genreId;
 
         @Schema(description = "book publication year", example = "1984", requiredMode = Schema.RequiredMode.REQUIRED, minimum = "1900", maximum = "2040")
         @JsonProperty("pub_year")
-        @NotBlank(message = "public year is required")
-        @Min(value = 1900, message = "year must be greater then 1900")
-        @Max(value = 2040, message = "year must be lower then 2040")
+        @Min(value = 1900, message = "year must be greater than 1900")
+        @Max(value = 2040, message = "year must be lower than 2040")
         public int pubYear;
 
         @Schema(description = "international standard book number", example = "978-5-17-123456-7", requiredMode = Schema.RequiredMode.REQUIRED, pattern = "\\d{3}-\\d-\\d{3}-\\d{5}-\\d")
         @JsonProperty("isbn")
         @Pattern(regexp = "\\d{3}-\\d-\\d{3}-\\d{5}-\\d", message = "Invalid ISBN format")
+        @NotBlank(message = "isbn is required")
         public String isbn;
 
         @Schema(description = "book page count", example = "123", requiredMode = Schema.RequiredMode.REQUIRED, minimum = "1", maximum = "20000")
         @JsonProperty("page_count")
-        @Min(value = 1, message = "page count must be greater then 1")
-        @Max(value = 20000, message = "Page count must be lower then 20000")
+        @Min(value = 1, message = "page count must be greater than 1")
+        @Max(value = 20000, message = "Page count must be lower than 20000")
         public int pageCount;
 
         @Schema(description = "book availability status", example = "true", defaultValue = "true")
@@ -63,16 +68,18 @@ public class ControllerBookDTO {
 
         @Schema(description = "book author_id", example = "2", minimum = "1")
         @JsonProperty("author_id")
-        public Long author_id;
+        @Min(value = 1, message = "author_id must be greater than 0")
+        public Long authorId;
 
         @Schema(description = "book genre_id", example = "4", minimum = "1")
         @JsonProperty("genre_id")
-        public Long genre_id;
+        @Min(value = 1, message = "author_id must be greater than 0")
+        public Long genreId;
 
         @Schema(description = "book publication year", example = "1984", minimum = "1900", maximum = "2040")
         @JsonProperty("pub_year")
-        @Min(value = 1900, message = "year must be greater then 1900")
-        @Max(value = 2040, message = "year must be lower then 2040")
+        @Min(value = 1900, message = "year must be greater than 1900")
+        @Max(value = 2040, message = "year must be lower than 2040")
         public Integer pubYear;
 
         @Schema(description = "international standard book number", example = "978-5-17-123456-7", pattern = "\\d{3}-\\d-\\d{3}-\\d{5}-\\d")
@@ -82,11 +89,11 @@ public class ControllerBookDTO {
 
         @Schema(description = "book page count", example = "123", minimum = "1", maximum = "20000")
         @JsonProperty("page_count")
-        @Min(value = 1, message = "page count must be greater then 1")
-        @Max(value = 20000, message = "Page count must be lower then 20000")
+        @Min(value = 1, message = "page count must be greater than 1")
+        @Max(value = 20000, message = "Page count must be lower than 20000")
         public Integer pageCount;
 
-        @Schema(description = "book availability status", example = "true", defaultValue = "true")
+        @Schema(description = "book availability status", example = "true")
         @JsonProperty("is_available")
         public Boolean isAvailable;
     }

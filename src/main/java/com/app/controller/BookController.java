@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -50,7 +51,9 @@ public class BookController {
 
     @GetMapping("/search")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerBookDTO.ListResponse.class)))
-    public ResponseEntity<ControllerBookDTO.ListResponse> search(@ModelAttribute BookQueryParamsDTO.TitleGenre params){
+    public ResponseEntity<ControllerBookDTO.ListResponse> search(
+        @ModelAttribute BookQueryParamsDTO.TitleGenre params
+    ){
         BookFilter filter = BookFilterMapper.toFilter(params);
         List<Book> books = this.bookService.GetAll(filter);
         List<ControllerBookDTO.Response> response = BookMapper.toResponse(books);
@@ -68,7 +71,9 @@ public class BookController {
 
     @GetMapping("/year/{year}")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerBookDTO.ListResponse.class)))
-    public ResponseEntity<ControllerBookDTO.ListResponse> year(@PathVariable Integer year){
+    public ResponseEntity<ControllerBookDTO.ListResponse> year(
+        @PathVariable Integer year
+    ){
         BookFilter filter = BookFilterMapper.year(year);
         List<Book> books = this.bookService.GetAll(filter);
         List<ControllerBookDTO.Response> response = BookMapper.toResponse(books);
@@ -77,7 +82,9 @@ public class BookController {
 
     @GetMapping("/year-range")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerBookDTO.ListResponse.class)))
-    public ResponseEntity<ControllerBookDTO.ListResponse> yearRange(@ModelAttribute BookQueryParamsDTO.PubYears params){
+    public ResponseEntity<ControllerBookDTO.ListResponse> yearRange(
+        @ModelAttribute BookQueryParamsDTO.PubYears params
+    ){
         BookFilter filter = BookFilterMapper.betweenYears(params.getFrom(), params.getTo());
         List<Book> books = this.bookService.GetAll(filter);
         List<ControllerBookDTO.Response> response = BookMapper.toResponse(books);
@@ -95,7 +102,9 @@ public class BookController {
     @Operation(summary = "create new book")
     @ApiResponse(responseCode = "201", description = "success")
     @ApiResponse(responseCode = "400", description = "validation error")
-    public ResponseEntity<Void> add(@RequestBody ControllerBookDTO.Create body) {
+    public ResponseEntity<Void> add(
+        @Valid @RequestBody ControllerBookDTO.Create body
+    ) {
         this.bookService.Add(BookMapper.toDTO(body));
         return ResponseEntity.created(null).build();
     }
@@ -116,7 +125,7 @@ public class BookController {
     @ApiResponse(responseCode = "404", description = "not found")
     public ResponseEntity<Void> putByID(
             @PathVariable Long id,
-            @RequestBody ControllerBookDTO.Create body) {
+            @Valid @RequestBody ControllerBookDTO.Create body) {
         this.bookService.PutByID(id, BookMapper.toDTO(body));
         return ResponseEntity.ok().build();
     }
@@ -127,7 +136,7 @@ public class BookController {
     @ApiResponse(responseCode = "404", description = "not found")
     public ResponseEntity<Void> patchByID(
             @PathVariable Long id,
-            @RequestBody ControllerBookDTO.Patch body) {
+            @Valid @RequestBody ControllerBookDTO.Patch body) {
         this.bookService.PatchByID(id, BookMapper.toDTO(body));
         return ResponseEntity.ok().build();
     }

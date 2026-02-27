@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,7 +54,7 @@ public class AuthorController {
     @Operation(summary = "create new author")
     @ApiResponse(responseCode = "201", description = "success")
     @ApiResponse(responseCode = "400", description = "validation error")
-    public ResponseEntity<Void> add(@RequestBody ControllerAuthorDTO.Create body) {
+    public ResponseEntity<Void> add(@Valid @RequestBody ControllerAuthorDTO.Create body) {
         this.authorService.add(AuthorMapper.toDTO(body));
         return ResponseEntity.created(null).build();
     }

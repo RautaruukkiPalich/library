@@ -3,6 +3,7 @@ package com.app.dto.controller;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
@@ -14,16 +15,19 @@ public class ControllerAuthorDTO {
         @Schema(description = "author firstname", example = "Alexander", requiredMode = Schema.RequiredMode.REQUIRED, minLength = 2, maxLength = 255)
         @JsonProperty("firstname")
         @NotBlank(message = "firstname is required")
+        @Size(min = 2, max = 255, message = "firstname must be between 2 and 255 characters")
         private String firstname;
 
         @Schema(description = "author lastname", example = "Pushkin", requiredMode = Schema.RequiredMode.REQUIRED, minLength = 2, maxLength = 255)
         @JsonProperty("lastname")
         @NotBlank(message = "lastname is required")
+        @Size(min = 2, max = 255, message = "lastname must be between 2 and 255 characters")
         private String lastname;
 
         @Schema(description = "author surname", example = "Sergeevich", requiredMode = Schema.RequiredMode.REQUIRED, minLength = 2, maxLength = 255)
         @JsonProperty("surname")
         @NotBlank(message = "surname is required")
+        @Size(min = 2, max = 255, message = "surname must be between 2 and 255 characters")
         private String surname;
 
 
