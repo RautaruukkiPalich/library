@@ -3,12 +3,17 @@ package com.app.dto;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponse {
     private LocalDateTime timestamp;
     private int status;
     private String error;
     private String message;
     private String path;
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private HashMap<String, String> validationErrors;
     
     public ErrorResponse(int status, String error, String message, String path) {
