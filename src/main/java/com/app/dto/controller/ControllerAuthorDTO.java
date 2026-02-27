@@ -75,7 +75,7 @@ public class ControllerAuthorDTO {
     @Schema(name = "authors list response")
     public static class ListResponse {
 
-        @Schema(description = "List of authors", accessMode = Schema.AccessMode.READ_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "authors", accessMode = Schema.AccessMode.READ_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
         @JsonProperty("authors")
         private List<ControllerAuthorDTO.Response> authors;
 

@@ -46,7 +46,7 @@ public class ControllerGenreDTO {
     @Schema(name = "genre list response")
     public static class ListResponse {
 
-        @Schema(description = "List of genres", accessMode = Schema.AccessMode.READ_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "genres", accessMode = Schema.AccessMode.READ_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
         @JsonProperty("genres")
         private List<Response> genres;
 

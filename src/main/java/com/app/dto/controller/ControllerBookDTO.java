@@ -110,9 +110,9 @@ public class ControllerBookDTO {
     @Schema(name = "book list response")
     public static class ListResponse {
 
-        @Schema(name = "book list response", description = "List of books", accessMode = Schema.AccessMode.READ_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(name = "books", description = "List of books", accessMode = Schema.AccessMode.READ_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
         @JsonProperty("books")
-        public List<ControllerBookDTO.Response> books;
+        private List<ControllerBookDTO.Response> books;
 
         public ListResponse(List<ControllerBookDTO.Response> books) {
             this.books = books;
