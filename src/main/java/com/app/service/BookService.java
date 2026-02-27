@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Primary
 @Service
-@Transactional
 public class BookService implements IBookService {
 
     private final IBookRepository bookRepo;
@@ -57,25 +56,12 @@ public class BookService implements IBookService {
     }
 
     @Override
+    @Transactional
     public void Add(BookDTO dto) {
-        if (dto.isAvailable == null || dto.pubYear == null  || dto.pageCount == null){
-            HashMap<String, String> validationErrors = new HashMap<>();
+        this.validate(dto);
 
-            if (dto.pubYear == null ){
-                validationErrors.put("pubYear", "field must be NOT NULL");
-            }
-            if (dto.isAvailable == null){
-                validationErrors.put("isAvailable", "field must be NOT NULL");
-            }
-            if (dto.pageCount == null){
-                validationErrors.put("pageCount", "field must be NOT NULL");
-            }
-
-            throw new BookValidationException(validationErrors);
-        }
-
-        Author author = this.authorRepo.getByID(dto.author_id);
-        Genre genre = this.genreRepo.getByID(dto.genre_id);
+        Author author = this.authorRepo.getByID(dto.authorId);
+        Genre genre = this.genreRepo.getByID(dto.genreId);
 
         Book book = new Book();
 
@@ -85,39 +71,28 @@ public class BookService implements IBookService {
         book.setPubYear(dto.pubYear);
         book.setIsbn(dto.isbn);
         book.setAvailable(dto.isAvailable);
-        book.setPageCount(dto.pageCount); 
+        book.setPageCount(dto.pageCount);
 
+        this.validate(book);
         this.bookRepo.save(book);
     }
 
     @Override
+    @Transactional
     public void Delete(Long id) {
         this.bookRepo.deleteByID(id);
     }
 
     @Override
+    @Transactional
     public void PutByID(Long id, BookDTO dto) {
-        if (dto.isAvailable == null || dto.pubYear == null  || dto.pageCount == null){
-            HashMap<String, String> validationErrors = new HashMap<>();
+        this.validate(dto);
 
-            if (dto.pubYear == null ){
-                validationErrors.put("pubYear", "field must be NOT NULL");
-            }
-            if (dto.isAvailable == null){
-                validationErrors.put("isAvailable", "field must be NOT NULL");
-            }
-            if (dto.pageCount == null){
-                validationErrors.put("pageCount", "field must be NOT NULL");
-            }
-
-            throw new BookValidationException(validationErrors);
-        }
-
-        Author author = this.authorRepo.getByID(dto.author_id);
-        Genre genre = this.genreRepo.getByID(dto.genre_id);
+        Author author = this.authorRepo.getByID(dto.authorId);
+        Genre genre = this.genreRepo.getByID(dto.genreId);
         Book book = this.GetByID(dto.id);
 
-        book.setTitle( dto.title);
+        book.setTitle(dto.title);
         book.setAuthor(author); 
         book.setGenre(genre);
         book.setPubYear(dto.pubYear); 
@@ -125,20 +100,22 @@ public class BookService implements IBookService {
         book.setAvailable(dto.isAvailable);
         book.setPageCount(dto.pageCount); 
 
+        this.validate(book);
         this.bookRepo.save(book);
     }
 
     @Override
+    @Transactional
     public void PatchByID(Long id, BookDTO dto) {
         Book book = this.GetByID(id);
         if (dto.title != null) {
             book.setTitle(dto.title);
         }
-        if (dto.author_id != null) {
-            book.setAuthor(this.authorRepo.getByID(dto.author_id));
+        if (dto.authorId != null) {
+            book.setAuthor(this.authorRepo.getByID(dto.authorId));
         }
-        if (dto.genre_id != null) {
-            book.setGenre(this.genreRepo.getByID(dto.genre_id));
+        if (dto.genreId != null) {
+            book.setGenre(this.genreRepo.getByID(dto.genreId));
         }
         if (dto.pubYear != null) {
             book.setPubYear(dto.pubYear);
@@ -154,6 +131,47 @@ public class BookService implements IBookService {
         }
 
         this.bookRepo.save(book);
+    }
 
+    private void validate(BookDTO dto) throws BookValidationException{
+        if (dto.isAvailable == null || dto.pubYear == null  || dto.pageCount == null){
+            HashMap<String, String> validationErrors = new HashMap<>();
+
+            if (dto.pubYear == null ){
+                validationErrors.put("pub_year", "field must be NOT NULL");
+            }
+            if (dto.isAvailable == null){
+                validationErrors.put("is_available", "field must be NOT NULL");
+            }
+            if (dto.pageCount == null){
+                validationErrors.put("page_count", "field must be NOT NULL");
+            }
+
+            throw new BookValidationException(validationErrors);
+        }
+    }
+
+    private void validate(Book book) throws BookValidationException{
+        HashMap<String, String> validationErrors = new HashMap<>();
+
+        if (book.getTitle() == null || book.getTitle().isBlank()){
+            validationErrors.put("title", "should not be empty");
+        }
+
+        if (book.getAuthor() == null){
+            validationErrors.put("author", "should not be empty");
+        }
+
+        if (book.getGenre() == null){
+            validationErrors.put("genre", "should not be empty");
+        }
+
+        if (book.getIsbn() == null || book.getIsbn().isBlank()){
+            validationErrors.put("isbn", "should not be empty");
+        }
+
+        if (!validationErrors.isEmpty()){
+            throw new BookValidationException(validationErrors);
+        }
     }
 }
