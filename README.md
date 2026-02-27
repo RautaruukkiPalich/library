@@ -2,7 +2,7 @@
 
 #### Docker
 ```bash
-docker-compose up -d 
+docker-compose up -d --build
 ```
 #### Local
 ###### 1. Set up PostgreSQL database
