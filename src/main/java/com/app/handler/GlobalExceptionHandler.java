@@ -78,7 +78,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 if (annotation != null) {
                     field = annotation.value();
                 }
-            } catch (NoSuchFieldException e) {
+            } catch (NoSuchFieldException ignored) {
 
             }
         
