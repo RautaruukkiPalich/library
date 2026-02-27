@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponse {
@@ -14,6 +15,7 @@ public class ErrorResponse {
     private String path;
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonProperty("validation_errors")
     private HashMap<String, String> validationErrors;
     
     public ErrorResponse(int status, String error, String message, String path) {
