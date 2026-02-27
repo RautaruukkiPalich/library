@@ -42,7 +42,7 @@ public class ControllerBookDTO {
         @Max(value = 2040, message = "year must be lower than 2040")
         public int pubYear;
 
-        @Schema(description = "international standard book number", example = "978-5-17-123456-7", requiredMode = Schema.RequiredMode.REQUIRED, pattern = "\\d{3}-\\d-\\d{3}-\\d{5}-\\d")
+        @Schema(description = "international standard book number", example = "978-5-127-12345-7", requiredMode = Schema.RequiredMode.REQUIRED, pattern = "\\d{3}-\\d-\\d{3}-\\d{5}-\\d")
         @JsonProperty("isbn")
         @Pattern(regexp = "\\d{3}-\\d-\\d{3}-\\d{5}-\\d", message = "Invalid ISBN format")
         @NotBlank(message = "isbn is required")
