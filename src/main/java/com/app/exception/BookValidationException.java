@@ -1,15 +1,14 @@
 package com.app.exception;
 
-public class BookValidationException extends RuntimeException {
-    private final String field;
-    private final String message;
-    
+import java.util.HashMap;
+
+public class BookValidationException extends ValidationException {
+
     public BookValidationException(String field, String message) {
-        super(String.format("Validation error on field '%s': %s", field, message));
-        this.field = field;
-        this.message = message;
+        super("validation error", field, message);
     }
-    
-    public String getField() { return field; }
-    public String getErrorMessage() { return message; }
+
+    public BookValidationException(HashMap<String, String> errorsMap) {
+        super("validation error", errorsMap);
+    }
 }

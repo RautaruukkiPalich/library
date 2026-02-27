@@ -1,5 +1,6 @@
 package com.app.handler;
 
+import com.app.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.app.dto.ErrorResponse;
@@ -7,9 +8,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-import com.app.exception.BookNotFoundException;
-import com.app.exception.BookValidationException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -21,32 +19,32 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 path.contains("/swagger-ui");
     }
 
-    @ExceptionHandler(BookNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleBookNotFound(
-            BookNotFoundException ex,
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(
+            NotFoundException ex,
             WebRequest request) {
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
-                "Not Found",
+                "not found",
                 ex.getMessage(),
                 request.getDescription(false).replace("uri=", ""));
 
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(BookValidationException.class)
-    public ResponseEntity<ErrorResponse> handleBookValidation(
-            BookValidationException ex,
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(
+            ValidationException ex,
             WebRequest request) {
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
-                "Validation Error",
-                "Invalid request parameters",
+                "validation error",
+                "invalid request parameters",
                 request.getDescription(false).replace("uri=", ""));
 
-        errorResponse.addValidationError(ex.getField(), ex.getErrorMessage());
+        errorResponse.setValidationErrors(ex.getErrorsMap());
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -62,11 +60,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Internal Server Error",
-                "An unexpected error occurred",
+                "internal server error",
+                "an unexpected error occurred",
                 request.getDescription(false).replace("uri=", ""));
 
-        logger.error("Unexpected error", ex);
+        logger.error("unexpected error", ex);
 
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }

@@ -1,10 +1,10 @@
 package com.app.exception;
 
-public class BookNotFoundException extends RuntimeException{
+public class BookNotFoundException extends NotFoundException{
     private final Long id;
 
     public BookNotFoundException(Long id) {
-        super("Book not found with id: " + id);
+        super("book not found with id: " + id);
         this.id = id;
     }
 
