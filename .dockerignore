@@ -1,0 +1,74 @@
+# Git
+.git
+.gitignore
+README.md
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+.springBeans
+
+# Build
+target/
+**/target/
+
+# Logs
+logs/
+*.log
+
+# Docker
+Dockerfile*
+docker-compose*.yaml
+docker-compose*.yml
+.dockerignore
+
+# Devcontainer
+.devcontainer/
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Temp files
+*.tmp
+*.temp
+heapdump*.hprof
+*.hprof
+
+# Properties
+application-*.properties
+!application.properties
+!application.yml
+.env
+*.env
+
+# Secrets
+*.pem
+*.p12
+*.key
+*.crt
+*.keystore
+*.jks
+secrets/
+credentials/
+
+# Backup
+*.bak
+*.orig
+
+# Test
+test-output/
+**/surefire-reports/
+**/failsafe-reports/
+**/coverage-reports/
+
+# Makefile
+Makefile
