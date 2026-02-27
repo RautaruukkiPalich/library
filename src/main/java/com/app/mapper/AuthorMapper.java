@@ -1,7 +1,7 @@
 package com.app.mapper;
 
 import com.app.dto.AuthorDTO;
-import com.app.dto.ControllerAuthorDTO;
+import com.app.dto.controller.ControllerAuthorDTO;
 import com.app.model.Author;
 import org.springframework.stereotype.Component;
 

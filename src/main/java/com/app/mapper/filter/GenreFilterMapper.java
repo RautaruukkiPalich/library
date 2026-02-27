@@ -1,6 +1,6 @@
-package com.app.mapper;
+package com.app.mapper.filter;
 
-import com.app.dto.GenreQueryParamsDTO;
+import com.app.dto.queryparams.GenreQueryParamsDTO;
 import com.app.filter.GenreFilter;
 
 public class GenreFilterMapper {

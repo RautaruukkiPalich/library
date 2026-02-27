@@ -1,9 +1,11 @@
-package com.app.repository;
+package com.app.repository.postgres;
 
 import com.app.exception.BookNotFoundException;
 import com.app.filter.BookFilter;
 import com.app.model.Book;
+import com.app.repository.IBookRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
 import org.springframework.stereotype.Repository;
@@ -81,7 +83,7 @@ public class PostgresBookRepository implements IBookRepository {
     }
 
     @Override
-    public Book getByID(Long id) throws BookNotFoundException {
+    public Book getByID(Long id) throws BookNotFoundException{
         String jpql = """
             SELECT b FROM Book b
             JOIN FETCH b.author
@@ -91,9 +93,9 @@ public class PostgresBookRepository implements IBookRepository {
 
         try {
             return em.createQuery(jpql, Book.class)
-                .setParameter("id", id)
-                .getSingleResult();
-        } catch (Exception e) {
+                    .setParameter("id", id)
+                    .getSingleResult();
+        } catch (NoResultException e) {
             throw new BookNotFoundException(id);
         }
     }

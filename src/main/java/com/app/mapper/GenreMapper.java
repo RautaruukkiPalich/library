@@ -1,7 +1,7 @@
 package com.app.mapper;
 
 
-import com.app.dto.ControllerGenreDTO;
+import com.app.dto.controller.ControllerGenreDTO;
 import com.app.dto.GenreDTO;
 import com.app.model.Genre;
 import org.springframework.stereotype.Component;

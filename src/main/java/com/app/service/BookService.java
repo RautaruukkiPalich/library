@@ -1,7 +1,9 @@
 package com.app.service;
 
+import java.util.HashMap;
 import java.util.List;
 
+import com.app.exception.BookNotFoundException;
 import com.app.repository.IBookRepository;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -50,20 +52,26 @@ public class BookService implements IBookService {
 
     @Override
     @Transactional(readOnly = true)
-    public Book GetByID(Long id) {
+    public Book GetByID(Long id) throws BookNotFoundException {
         return this.bookRepo.getByID(id);
     }
 
     @Override
     public void Add(BookDTO dto) {
-        if (dto.pubYear == null ){
-            throw new BookValidationException("pubYear", "field must be NOT NULL");
-        }
-        if (dto.isAvailable == null){
-            throw new BookValidationException("isAvailable", "field must be NOT NULL");
-        }
-        if (dto.pageCount == null){
-            throw new BookValidationException("pageCount", "field must be NOT NULL");
+        if (dto.isAvailable == null || dto.pubYear == null  || dto.pageCount == null){
+            HashMap<String, String> validationErrors = new HashMap<>();
+
+            if (dto.pubYear == null ){
+                validationErrors.put("pubYear", "field must be NOT NULL");
+            }
+            if (dto.isAvailable == null){
+                validationErrors.put("isAvailable", "field must be NOT NULL");
+            }
+            if (dto.pageCount == null){
+                validationErrors.put("pageCount", "field must be NOT NULL");
+            }
+
+            throw new BookValidationException(validationErrors);
         }
 
         Author author = this.authorRepo.getByID(dto.author_id);
@@ -71,11 +79,11 @@ public class BookService implements IBookService {
 
         Book book = new Book();
 
-        book.setTitle( dto.title);
+        book.setTitle(dto.title);
         book.setAuthor(author); 
         book.setGenre(genre);
-        book.setPubYear(dto.pubYear); 
-        book.setIsbn( dto.isbn);
+        book.setPubYear(dto.pubYear);
+        book.setIsbn(dto.isbn);
         book.setAvailable(dto.isAvailable);
         book.setPageCount(dto.pageCount); 
 
@@ -89,14 +97,20 @@ public class BookService implements IBookService {
 
     @Override
     public void PutByID(Long id, BookDTO dto) {
-        if (dto.pubYear == null ){
-            throw new BookValidationException("pubYear", "field must be NOT NULL");
-        }
-        if (dto.isAvailable == null){
-            throw new BookValidationException("isAvailable", "field must be NOT NULL");
-        }
-        if (dto.pageCount == null){
-            throw new BookValidationException("pageCount", "field must be NOT NULL");
+        if (dto.isAvailable == null || dto.pubYear == null  || dto.pageCount == null){
+            HashMap<String, String> validationErrors = new HashMap<>();
+
+            if (dto.pubYear == null ){
+                validationErrors.put("pubYear", "field must be NOT NULL");
+            }
+            if (dto.isAvailable == null){
+                validationErrors.put("isAvailable", "field must be NOT NULL");
+            }
+            if (dto.pageCount == null){
+                validationErrors.put("pageCount", "field must be NOT NULL");
+            }
+
+            throw new BookValidationException(validationErrors);
         }
 
         Author author = this.authorRepo.getByID(dto.author_id);

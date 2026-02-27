@@ -2,7 +2,7 @@ package com.app.controller;
 
 import java.util.List;
 
-import com.app.dto.BookQueryParamsDTO;
+import com.app.dto.queryparams.BookQueryParamsDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.app.filter.BookFilter;
-import com.app.dto.ControllerBookDTO;
-import com.app.mapper.BookFilterMapper;
+import com.app.dto.controller.ControllerBookDTO;
+import com.app.mapper.filter.BookFilterMapper;
 import com.app.mapper.BookMapper;
 import com.app.model.Book;
 import com.app.service.IBookService;

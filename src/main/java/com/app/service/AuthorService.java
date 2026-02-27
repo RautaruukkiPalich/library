@@ -44,7 +44,7 @@ public class AuthorService implements IAuthorService{
     }
 
     @Override
-    public Author getByID(Long id) {
+    public Author getByID(Long id){
         return this.authorRepo.getByID(id);
     }
 

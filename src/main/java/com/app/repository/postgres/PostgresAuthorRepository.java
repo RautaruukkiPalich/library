@@ -1,8 +1,9 @@
-package com.app.repository;
+package com.app.repository.postgres;
 
 import com.app.exception.AuthorNotFoundException;
 import com.app.filter.AuthorFilter;
 import com.app.model.Author;
+import com.app.repository.IAuthorRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -49,8 +50,15 @@ public class PostgresAuthorRepository implements IAuthorRepository {
 
     @Override
     public Author getByID(Long id) throws AuthorNotFoundException {
-        return em.find(Author.class, id);
+        Author author = em.find(Author.class, id);
+
+        if (author == null) {
+            throw new AuthorNotFoundException(id);
+        }
+
+        return author;
     }
+
 
     @Override
     public Author save(Author author) {

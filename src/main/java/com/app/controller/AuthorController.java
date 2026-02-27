@@ -1,10 +1,9 @@
 package com.app.controller;
 
-import com.app.dto.AuthorQueryParamsDTO;
-import com.app.dto.ControllerAuthorDTO;
-import com.app.dto.ControllerBookDTO;
+import com.app.dto.queryparams.AuthorQueryParamsDTO;
+import com.app.dto.controller.ControllerAuthorDTO;
 import com.app.filter.AuthorFilter;
-import com.app.mapper.AuthorFilterMapper;
+import com.app.mapper.filter.AuthorFilterMapper;
 import com.app.mapper.AuthorMapper;
 import com.app.model.Author;
 import com.app.service.IAuthorService;

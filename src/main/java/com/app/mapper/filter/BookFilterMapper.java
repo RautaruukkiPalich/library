@@ -1,6 +1,6 @@
-package com.app.mapper;
+package com.app.mapper.filter;
 
-import com.app.dto.BookQueryParamsDTO;
+import com.app.dto.queryparams.BookQueryParamsDTO;
 import com.app.filter.BookFilter;
 
 public class BookFilterMapper {

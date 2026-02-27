@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 import com.app.dto.BookDTO;
-import com.app.dto.ControllerBookDTO;
+import com.app.dto.controller.ControllerBookDTO;
 import com.app.model.Book;
 
 @Component

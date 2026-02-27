@@ -1,10 +1,10 @@
 package com.app.controller;
 
-import com.app.dto.ControllerBookDTO;
-import com.app.dto.ControllerGenreDTO;
-import com.app.dto.GenreQueryParamsDTO;
+import com.app.dto.controller.ControllerBookDTO;
+import com.app.dto.controller.ControllerGenreDTO;
+import com.app.dto.queryparams.GenreQueryParamsDTO;
 import com.app.filter.GenreFilter;
-import com.app.mapper.GenreFilterMapper;
+import com.app.mapper.filter.GenreFilterMapper;
 import com.app.mapper.GenreMapper;
 import com.app.model.Genre;
 import com.app.service.IGenreService;

@@ -1,8 +1,9 @@
-package com.app.repository;
+package com.app.repository.postgres;
 
 import com.app.exception.GenreNotFoundException;
 import com.app.filter.GenreFilter;
 import com.app.model.Genre;
+import com.app.repository.IGenreRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class PostgresGenreRepository implements IGenreRepository{
+public class PostgresGenreRepository implements IGenreRepository {
 
     @PersistenceContext
     private EntityManager em;
@@ -49,7 +50,13 @@ public class PostgresGenreRepository implements IGenreRepository{
 
     @Override
     public Genre getByID(Long id) throws GenreNotFoundException {
-        return em.find(Genre.class, id);
+        Genre genre = em.find(Genre.class, id);
+
+        if (genre == null) {
+            throw new GenreNotFoundException(id);
+        }
+
+        return genre;
     }
 
     @Override
