@@ -20,8 +20,8 @@ public class BookMapper {
         
         resp.id = book.getId();
         resp.title = book.getTitle();
-        resp.author_id = book.getAuthor().getId();
-        resp.genre_id = book.getGenre().getId();
+        resp.authorId = book.getAuthor().getId();
+        resp.genreId = book.getGenre().getId();
         resp.pubYear = book.getPubYear();
         resp.isbn = book.getIsbn();
         resp.isAvailable = book.isAvailable();
@@ -37,8 +37,8 @@ public class BookMapper {
 
         BookDTO book = new BookDTO();
         book.title = dto.title;
-        book.author_id = dto.author_id;
-        book.genre_id = dto.genre_id;
+        book.authorId = dto.authorId;
+        book.genreId = dto.genreId;
         book.pubYear = dto.pubYear;
         book.isbn = dto.isbn;
         book.isAvailable = dto.isAvailable;
@@ -54,8 +54,8 @@ public class BookMapper {
 
         BookDTO book = new BookDTO();
         book.title = dto.title;
-        book.author_id = dto.author_id;
-        book.genre_id = dto.genre_id;
+        book.authorId = dto.authorId;
+        book.genreId = dto.genreId;
         book.pubYear = dto.pubYear;
         book.isbn = dto.isbn;
         book.isAvailable = dto.isAvailable;
