@@ -1,23 +1,26 @@
 package com.app.handler;
 
-import com.app.exception.*;
+import com.app.dto.ErrorResponse;
+import com.app.exception.NotFoundException;
+import com.app.exception.ValidationException;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.lang.reflect.Field;
-import java.util.HashMap;
-
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import com.app.dto.ErrorResponse;
-
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -65,36 +68,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             @NonNull HttpHeaders headers,
             HttpStatusCode status,
             WebRequest request) {
-        
-        HashMap<String, String> validationErrors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(error -> {
-            String field = error.getField();
-            
-            // Пытаемся найти @JsonProperty аннотацию
-            try {
-                Field declaredField = ex.getParameter().getParameterType()
-                    .getDeclaredField(field);
-                JsonProperty annotation = declaredField.getAnnotation(JsonProperty.class);
-                if (annotation != null) {
-                    field = annotation.value();
-                }
-            } catch (NoSuchFieldException ignored) {
 
-            }
-        
-            validationErrors.put(field, error.getDefaultMessage());
-        }
-        );
-        
+        Map<String, String> errors = ex.getBindingResult().
+                getFieldErrors().
+                stream().
+                collect(Collectors.toMap(
+                        field -> getJsonPropertyName(field, ex),
+                        field -> Objects.toString(field.getDefaultMessage(), "argument not valid"),
+                        (v1, v2) -> v1 + "; " + v2));
+
         ErrorResponse errorResponse = new ErrorResponse(
                 status.value(),
                 "validation error",
-                "invalid request parameters",
-                request.getDescription(false).replace("uri=", "")
+                "invalid argument parameter",
+                request.getDescription(false).replace("uri=", ""),
+                errors
         );
 
-        errorResponse.setValidationErrors(validationErrors);
-        
         return handleExceptionInternal(ex, errorResponse, headers, status, request);
     }
 
@@ -116,5 +106,29 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         logger.error("unexpected error", ex);
 
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private String getJsonPropertyName(FieldError error, MethodArgumentNotValidException ex) {
+        String errField = error.getField();
+
+        return Optional.ofNullable(ex.getBindingResult().getTarget())
+                .map(Object::getClass)
+                .map(cls -> findField(cls, errField))
+                .map(field -> field.getAnnotation(JsonProperty.class))
+                .map(JsonProperty::value)
+                .filter(value -> !value.isEmpty())
+                .orElse(errField);
+    }
+
+    private Field findField(Class<?> cls, String fieldName){
+        if (cls == null || cls == Object.class) {
+            return null;
+        }
+
+        try {
+            return cls.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException e) {
+            return findField(cls.getSuperclass(), fieldName);
+        }
     }
 }
