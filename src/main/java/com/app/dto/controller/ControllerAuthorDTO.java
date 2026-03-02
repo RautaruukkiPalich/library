@@ -35,6 +35,8 @@ public class ControllerAuthorDTO {
         @NotBlank(message = "surname is required")
         @Size(min = 2, max = 255, message = "surname must be between 2 and 255 characters")
         private String surname;
+
+        public Create(){}
     }
 
     @Setter
@@ -46,6 +48,9 @@ public class ControllerAuthorDTO {
         @Schema(description = "unique author identifier", example = "101", accessMode = Schema.AccessMode.READ_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
         @JsonProperty("id")
         private Long id;
+
+        public Response(){}
+
     }
 
     @Schema(name = "authors list response")
