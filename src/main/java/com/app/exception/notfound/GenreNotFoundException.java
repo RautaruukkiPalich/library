@@ -1,5 +1,8 @@
-package com.app.exception;
+package com.app.exception.notfound;
 
+import lombok.Getter;
+
+@Getter
 public class GenreNotFoundException extends NotFoundException {
     private final Long id;
 
@@ -8,7 +11,4 @@ public class GenreNotFoundException extends NotFoundException {
         this.id = id;
     }
 
-    public Long getId() {
-        return id;
-    }
 }

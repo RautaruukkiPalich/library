@@ -1,6 +1,6 @@
-package com.app.exception;
+package com.app.exception.validation;
 
-import java.util.HashMap;
+import java.util.Map;
 
 public class BookValidationException extends ValidationException {
 
@@ -8,7 +8,7 @@ public class BookValidationException extends ValidationException {
         super("validation error", field, message);
     }
 
-    public BookValidationException(HashMap<String, String> errorsMap) {
+    public BookValidationException(Map<String, String> errorsMap) {
         super("validation error", errorsMap);
     }
 }
