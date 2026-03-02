@@ -1,5 +1,6 @@
 package com.app.controller;
 
+import java.net.URI;
 import java.util.List;
 
 import com.app.dto.queryparams.BookQueryParamsDTO;
@@ -44,7 +45,7 @@ public class BookController {
     @Operation(summary = "get all books")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerBookDTO.ListResponse.class)))
     public ResponseEntity<ControllerBookDTO.ListResponse> getAll() {
-        List<Book> books = this.bookService.GetAll();
+        List<Book> books = this.bookService.getAll();
         List<ControllerBookDTO.Response> response = BookMapper.toResponse(books);
         return ResponseEntity.ok().body(new ControllerBookDTO.ListResponse(response));
     }
@@ -52,19 +53,19 @@ public class BookController {
     @GetMapping("/search")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerBookDTO.ListResponse.class)))
     public ResponseEntity<ControllerBookDTO.ListResponse> search(
-        @ModelAttribute BookQueryParamsDTO.TitleGenre params
-    ){
+            @ModelAttribute BookQueryParamsDTO.TitleGenre params
+    ) {
         BookFilter filter = BookFilterMapper.toFilter(params);
-        List<Book> books = this.bookService.GetAll(filter);
+        List<Book> books = this.bookService.getAll(filter);
         List<ControllerBookDTO.Response> response = BookMapper.toResponse(books);
         return ResponseEntity.ok().body(new ControllerBookDTO.ListResponse(response));
     }
 
     @GetMapping("/available")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerBookDTO.ListResponse.class)))
-    public ResponseEntity<ControllerBookDTO.ListResponse> available(){
+    public ResponseEntity<ControllerBookDTO.ListResponse> available() {
         BookFilter filter = BookFilterMapper.available();
-        List<Book> books = this.bookService.GetAll(filter);
+        List<Book> books = this.bookService.getAll(filter);
         List<ControllerBookDTO.Response> response = BookMapper.toResponse(books);
         return ResponseEntity.ok().body(new ControllerBookDTO.ListResponse(response));
     }
@@ -72,10 +73,10 @@ public class BookController {
     @GetMapping("/year/{year}")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerBookDTO.ListResponse.class)))
     public ResponseEntity<ControllerBookDTO.ListResponse> year(
-        @PathVariable Integer year
-    ){
+            @PathVariable Integer year
+    ) {
         BookFilter filter = BookFilterMapper.year(year);
-        List<Book> books = this.bookService.GetAll(filter);
+        List<Book> books = this.bookService.getAll(filter);
         List<ControllerBookDTO.Response> response = BookMapper.toResponse(books);
         return ResponseEntity.ok().body(new ControllerBookDTO.ListResponse(response));
     }
@@ -83,10 +84,10 @@ public class BookController {
     @GetMapping("/year-range")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerBookDTO.ListResponse.class)))
     public ResponseEntity<ControllerBookDTO.ListResponse> yearRange(
-        @ModelAttribute BookQueryParamsDTO.PubYears params
-    ){
+            @ModelAttribute BookQueryParamsDTO.PubYears params
+    ) {
         BookFilter filter = BookFilterMapper.betweenYears(params.getFrom(), params.getTo());
-        List<Book> books = this.bookService.GetAll(filter);
+        List<Book> books = this.bookService.getAll(filter);
         List<ControllerBookDTO.Response> response = BookMapper.toResponse(books);
         return ResponseEntity.ok().body(new ControllerBookDTO.ListResponse(response));
     }
@@ -97,16 +98,16 @@ public class BookController {
     //     List<Book> books = this.bookService.GetAll();
     //     return ResponseEntity.ok().body(new ControllerBookDTO.Stats(books));
     // }
-    
+
     @PostMapping("/")
     @Operation(summary = "create new book")
     @ApiResponse(responseCode = "201", description = "success")
     @ApiResponse(responseCode = "400", description = "validation error")
     public ResponseEntity<Void> add(
-        @Valid @RequestBody ControllerBookDTO.Create body
+            @Valid @RequestBody ControllerBookDTO.Create body
     ) {
-        this.bookService.Add(BookMapper.toDTO(body));
-        return ResponseEntity.created(null).build();
+        Long id = this.bookService.add(BookMapper.toDTO(body));
+        return ResponseEntity.created(URI.create("/api/books/" + id)).build();
     }
 
     @GetMapping("/{id}")
@@ -114,7 +115,7 @@ public class BookController {
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerBookDTO.Response.class)))
     @ApiResponse(responseCode = "404", description = "not found")
     public ResponseEntity<ControllerBookDTO.Response> getByID(@PathVariable Long id) {
-        Book book = this.bookService.GetByID(id);
+        Book book = this.bookService.getByID(id);
         return ResponseEntity.ok().body(BookMapper.toResponse(book));
     }
 
@@ -126,7 +127,7 @@ public class BookController {
     public ResponseEntity<Void> putByID(
             @PathVariable Long id,
             @Valid @RequestBody ControllerBookDTO.Create body) {
-        this.bookService.PutByID(id, BookMapper.toDTO(body));
+        this.bookService.putByID(id, BookMapper.toDTO(body));
         return ResponseEntity.ok().build();
     }
 
@@ -137,7 +138,7 @@ public class BookController {
     public ResponseEntity<Void> patchByID(
             @PathVariable Long id,
             @Valid @RequestBody ControllerBookDTO.Patch body) {
-        this.bookService.PatchByID(id, BookMapper.toDTO(body));
+        this.bookService.patchByID(id, BookMapper.toDTO(body));
         return ResponseEntity.ok().build();
     }
 
@@ -145,7 +146,7 @@ public class BookController {
     @Operation(summary = "delete book by id")
     @ApiResponse(responseCode = "204", description = "success")
     public ResponseEntity<Void> deleteByID(@PathVariable Long id) {
-        this.bookService.Delete(id);
+        this.bookService.delete(id);
         return ResponseEntity.noContent().build();
     }
 

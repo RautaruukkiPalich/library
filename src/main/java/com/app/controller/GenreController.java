@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -27,7 +28,7 @@ public class GenreController {
 
     public GenreController(
             IGenreService genreService
-    ){
+    ) {
         this.genreService = genreService;
     }
 
@@ -42,7 +43,7 @@ public class GenreController {
 
     @GetMapping("/search")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerBookDTO.ListResponse.class)))
-    public ResponseEntity<ControllerGenreDTO.ListResponse> search(@ModelAttribute GenreQueryParamsDTO params){
+    public ResponseEntity<ControllerGenreDTO.ListResponse> search(@ModelAttribute GenreQueryParamsDTO params) {
         GenreFilter filter = GenreFilterMapper.toFilter(params);
         List<Genre> genres = this.genreService.getAll(filter);
         List<ControllerGenreDTO.Response> response = GenreMapper.toResponse(genres);
@@ -54,8 +55,8 @@ public class GenreController {
     @ApiResponse(responseCode = "201", description = "success")
     @ApiResponse(responseCode = "400", description = "validation error")
     public ResponseEntity<Void> add(@Valid @RequestBody ControllerGenreDTO.Create body) {
-        this.genreService.add(GenreMapper.toDTO(body));
-        return ResponseEntity.created(null).build();
+        Long id = this.genreService.add(GenreMapper.toDTO(body));
+        return ResponseEntity.created(URI.create("/api/genre/" + id)).build();
     }
 
     @GetMapping("/{id}")

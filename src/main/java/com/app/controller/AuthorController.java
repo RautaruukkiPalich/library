@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -26,7 +27,7 @@ public class AuthorController {
 
     public AuthorController(
             IAuthorService authorService
-    ){
+    ) {
         this.authorService = authorService;
     }
 
@@ -43,7 +44,7 @@ public class AuthorController {
     @GetMapping("/search")
     @ApiResponse(responseCode = "200", description = "success",
             content = @Content(schema = @Schema(implementation = ControllerAuthorDTO.ListResponse.class)))
-    public ResponseEntity<ControllerAuthorDTO.ListResponse> search(@ModelAttribute AuthorQueryParamsDTO params){
+    public ResponseEntity<ControllerAuthorDTO.ListResponse> search(@ModelAttribute AuthorQueryParamsDTO params) {
         AuthorFilter filter = AuthorFilterMapper.toFilter(params);
         List<Author> authors = this.authorService.getAll(filter);
         List<ControllerAuthorDTO.Response> response = AuthorMapper.toResponse(authors);
@@ -55,8 +56,8 @@ public class AuthorController {
     @ApiResponse(responseCode = "201", description = "success")
     @ApiResponse(responseCode = "400", description = "validation error")
     public ResponseEntity<Void> add(@Valid @RequestBody ControllerAuthorDTO.Create body) {
-        this.authorService.add(AuthorMapper.toDTO(body));
-        return ResponseEntity.created(null).build();
+        Long id = this.authorService.add(AuthorMapper.toDTO(body));
+        return ResponseEntity.created(URI.create("/api/author/" + id)).build();
     }
 
     @GetMapping("/{id}")
