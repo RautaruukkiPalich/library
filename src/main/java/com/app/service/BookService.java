@@ -1,15 +1,14 @@
 package com.app.service;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
-import com.app.exception.BookNotFoundException;
 import com.app.repository.IBookRepository;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import com.app.dto.BookDTO;
-import com.app.exception.BookValidationException;
+import com.app.exception.validation.BookValidationException;
 import com.app.filter.BookFilter;
 import com.app.model.Author;
 import com.app.model.Book;
@@ -27,10 +26,10 @@ public class BookService implements IBookService {
     private final IGenreRepository genreRepo;
 
     public BookService(
-        IBookRepository bookRepo,
-        IAuthorRepository authorRepo,
-        IGenreRepository genreRepo
-    ){
+            IBookRepository bookRepo,
+            IAuthorRepository authorRepo,
+            IGenreRepository genreRepo
+    ) {
         this.bookRepo = bookRepo;
         this.authorRepo = authorRepo;
         this.genreRepo = genreRepo;
@@ -38,140 +37,115 @@ public class BookService implements IBookService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Book> GetAll() {
+    public List<Book> getAll() {
         return this.bookRepo.getAll();
     }
 
-    
+
     @Override
     @Transactional(readOnly = true)
-    public List<Book> GetAll(BookFilter filter) {
+    public List<Book> getAll(BookFilter filter) {
+        Objects.requireNonNull(filter, "filter must not be null");
         return this.bookRepo.getAll(filter);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Book GetByID(Long id) throws BookNotFoundException {
+    public Book getByID(Long id) {
+        Objects.requireNonNull(id, "id must not be null");
         return this.bookRepo.getByID(id);
     }
 
     @Override
     @Transactional
-    public void Add(BookDTO dto) {
-        this.validate(dto);
+    public Long add(BookDTO dto) {
+        Objects.requireNonNull(dto, "dto must not be null");
 
-        Author author = this.authorRepo.getByID(dto.authorId);
-        Genre genre = this.genreRepo.getByID(dto.genreId);
+        this.preflightValidateDTO(dto);
 
-        Book book = new Book();
+        Author author = this.authorRepo.getByID(dto.authorId());
+        Genre genre = this.genreRepo.getByID(dto.genreId());
 
-        book.setTitle(dto.title);
-        book.setAuthor(author); 
+        Book book = new Book(dto, author, genre);
+        book.validate();
+
+        Book savedBook = this.bookRepo.save(book);
+        savedBook.validateStrict();
+
+        return savedBook.getId();
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        Objects.requireNonNull(id, "id must not be null");
+
+        Book book = this.bookRepo.getByID(id);
+        this.bookRepo.delete(book);
+    }
+
+    @Override
+    @Transactional
+    public void putByID(Long id, BookDTO dto) {
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(dto, "dto must not be null");
+
+        this.preflightValidateDTO(dto);
+
+        Author author = this.authorRepo.getByID(dto.authorId());
+        Genre genre = this.genreRepo.getByID(dto.genreId());
+        Book book = this.getByID(dto.id());
+
+        book.setTitle(dto.title());
+        book.setAuthor(author);
         book.setGenre(genre);
-        book.setPubYear(dto.pubYear);
-        book.setIsbn(dto.isbn);
-        book.setAvailable(dto.isAvailable);
-        book.setPageCount(dto.pageCount);
+        book.setPubYear(dto.pubYear());
+        book.setIsbn(dto.isbn());
+        book.setAvailable(dto.isAvailable());
+        book.setPageCount(dto.pageCount());
 
-        this.validate(book);
+        book.validateStrict();
         this.bookRepo.save(book);
     }
 
     @Override
     @Transactional
-    public void Delete(Long id) {
-        this.bookRepo.deleteByID(id);
-    }
+    public void patchByID(Long id, BookDTO dto) {
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(dto, "dto must not be null");
 
-    @Override
-    @Transactional
-    public void PutByID(Long id, BookDTO dto) {
-        this.validate(dto);
-
-        Author author = this.authorRepo.getByID(dto.authorId);
-        Genre genre = this.genreRepo.getByID(dto.genreId);
-        Book book = this.GetByID(dto.id);
-
-        book.setTitle(dto.title);
-        book.setAuthor(author); 
-        book.setGenre(genre);
-        book.setPubYear(dto.pubYear); 
-        book.setIsbn( dto.isbn);
-        book.setAvailable(dto.isAvailable);
-        book.setPageCount(dto.pageCount); 
-
-        this.validate(book);
-        this.bookRepo.save(book);
-    }
-
-    @Override
-    @Transactional
-    public void PatchByID(Long id, BookDTO dto) {
-        Book book = this.GetByID(id);
-        if (dto.title != null) {
-            book.setTitle(dto.title);
+        Book book = this.getByID(id);
+        if (dto.title() != null) {
+            book.setTitle(dto.title());
         }
-        if (dto.authorId != null) {
-            book.setAuthor(this.authorRepo.getByID(dto.authorId));
+        if (dto.authorId() != null) {
+            book.setAuthor(this.authorRepo.getByID(dto.authorId()));
         }
-        if (dto.genreId != null) {
-            book.setGenre(this.genreRepo.getByID(dto.genreId));
+        if (dto.genreId() != null) {
+            book.setGenre(this.genreRepo.getByID(dto.genreId()));
         }
-        if (dto.pubYear != null) {
-            book.setPubYear(dto.pubYear);
+        if (dto.pubYear() != null) {
+            book.setPubYear(dto.pubYear());
         }
-        if (dto.isbn != null) {
-            book.setIsbn(dto.isbn);
+        if (dto.isbn() != null) {
+            book.setIsbn(dto.isbn());
         }
-        if (dto.isAvailable != null) {
-            book.setAvailable(dto.isAvailable);
+        if (dto.isAvailable() != null) {
+            book.setAvailable(dto.isAvailable());
         }
-        if (dto.pageCount != null) {
-            book.setPageCount(dto.pageCount);
+        if (dto.pageCount() != null) {
+            book.setPageCount(dto.pageCount());
         }
 
         this.bookRepo.save(book);
     }
 
-    private void validate(BookDTO dto) throws BookValidationException{
-        if (dto.isAvailable == null || dto.pubYear == null  || dto.pageCount == null){
-            HashMap<String, String> validationErrors = new HashMap<>();
-
-            if (dto.pubYear == null ){
-                validationErrors.put("pub_year", "field must be NOT NULL");
-            }
-            if (dto.isAvailable == null){
-                validationErrors.put("is_available", "field must be NOT NULL");
-            }
-            if (dto.pageCount == null){
-                validationErrors.put("page_count", "field must be NOT NULL");
-            }
-
-            throw new BookValidationException(validationErrors);
+    private void preflightValidateDTO(BookDTO dto) throws BookValidationException {
+        if (dto.authorId() == null) {
+            throw new BookValidationException("authorId", "is required");
         }
-    }
-
-    private void validate(Book book) throws BookValidationException{
-        HashMap<String, String> validationErrors = new HashMap<>();
-
-        if (book.getTitle() == null || book.getTitle().isBlank()){
-            validationErrors.put("title", "should not be empty");
-        }
-
-        if (book.getAuthor() == null){
-            validationErrors.put("author", "should not be empty");
-        }
-
-        if (book.getGenre() == null){
-            validationErrors.put("genre", "should not be empty");
-        }
-
-        if (book.getIsbn() == null || book.getIsbn().isBlank()){
-            validationErrors.put("isbn", "should not be empty");
-        }
-
-        if (!validationErrors.isEmpty()){
-            throw new BookValidationException(validationErrors);
+        if (dto.genreId() == null) {
+            throw new BookValidationException("genreId", "is required");
         }
     }
 }

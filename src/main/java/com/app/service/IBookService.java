@@ -8,14 +8,14 @@ import java.util.List;
 
 import com.app.dto.BookDTO;
 import com.app.filter.BookFilter;
-import com.app.exception.BookNotFoundException;
+import com.app.exception.notfound.BookNotFoundException;
 
 public interface IBookService {
-    public List<Book> GetAll();
-    public List<Book> GetAll(BookFilter filter);
-    public Book GetByID(Long id) throws BookNotFoundException;
-    public void PutByID(Long id, BookDTO book) throws BookNotFoundException;
-    public void PatchByID(Long id, BookDTO book) throws BookNotFoundException;
-    public void Add(BookDTO book) throws ValidationException;;
-    public void Delete(Long id) throws BookNotFoundException;
+    List<Book> getAll();
+    List<Book> getAll(BookFilter filter);
+    Book getByID(Long id) throws BookNotFoundException;
+    void putByID(Long id, BookDTO book) throws BookNotFoundException;
+    void patchByID(Long id, BookDTO book) throws BookNotFoundException;
+    Long add(BookDTO book) throws ValidationException;;
+    void delete(Long id) throws BookNotFoundException;
 }

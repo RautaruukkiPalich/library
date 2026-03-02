@@ -9,7 +9,7 @@ import java.util.List;
 public interface IAuthorService {
     List<Author> getAll();
     List<Author> getAll(AuthorFilter filter);
-    void add(AuthorDTO dto);
+    Long add(AuthorDTO dto);
     Author getByID(Long id);
     void delete(Long id);
 }

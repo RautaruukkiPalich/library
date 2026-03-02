@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Primary
 @Service
@@ -27,23 +28,36 @@ public class GenreService implements IGenreService{
 
     @Override
     public List<Genre> getAll(GenreFilter filter) {
+        Objects.requireNonNull(filter, "filter must not be null");
+
         return this.genreRepo.getAll(filter);
     }
 
     @Override
-    public void add(GenreDTO dto) {
-        Genre genre = new Genre();
-        genre.setName(dto.name);
-        this.genreRepo.save(genre);
+    public Long add(GenreDTO dto) {
+        Objects.requireNonNull(dto, "dto must not be null");
+
+        Genre genre = new Genre(dto);
+        genre.validate();
+
+        Genre savedGenre = this.genreRepo.save(genre);
+        savedGenre.validateStrict();
+
+        return savedGenre.getId();
     }
 
     @Override
     public Genre getByID(Long id) {
+        Objects.requireNonNull(id, "id must not be null");
+
         return this.genreRepo.getByID(id);
     }
 
     @Override
     public void delete(Long id) {
-        this.genreRepo.deleteByID(id);
+        Objects.requireNonNull(id, "id must not be null");
+
+        Genre genre = this.getByID(id);
+        this.genreRepo.delete(genre);
     }
 }

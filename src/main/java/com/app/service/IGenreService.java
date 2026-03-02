@@ -9,7 +9,7 @@ import java.util.List;
 public interface IGenreService {
     List<Genre> getAll();
     List<Genre> getAll(GenreFilter filter);
-    void add(GenreDTO dto);
+    Long add(GenreDTO dto);
     Genre getByID(Long id);
     void delete(Long id);
 }
