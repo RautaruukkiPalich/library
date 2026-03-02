@@ -2,6 +2,7 @@ package com.app.service;
 
 import com.app.dto.GenreDTO;
 import com.app.filter.GenreFilter;
+import com.app.mapper.GenreMapper;
 import com.app.model.Genre;
 import com.app.repository.IGenreRepository;
 import jakarta.transaction.Transactional;
@@ -14,23 +15,23 @@ import java.util.Objects;
 @Primary
 @Service
 @Transactional
-public class GenreService implements IGenreService{
+public class GenreService implements IGenreService {
     private final IGenreRepository genreRepo;
 
-    public GenreService(IGenreRepository genreRepo){
+    public GenreService(IGenreRepository genreRepo) {
         this.genreRepo = genreRepo;
     }
 
     @Override
-    public List<Genre> getAll() {
-        return this.genreRepo.getAll();
+    public List<GenreDTO> getAll() {
+        return GenreMapper.toListDTO(this.genreRepo.getAll());
     }
 
     @Override
-    public List<Genre> getAll(GenreFilter filter) {
+    public List<GenreDTO> getAll(GenreFilter filter) {
         Objects.requireNonNull(filter, "filter must not be null");
 
-        return this.genreRepo.getAll(filter);
+        return GenreMapper.toListDTO(this.genreRepo.getAll(filter));
     }
 
     @Override
@@ -47,17 +48,20 @@ public class GenreService implements IGenreService{
     }
 
     @Override
-    public Genre getByID(Long id) {
+    public GenreDTO getByID(Long id) {
         Objects.requireNonNull(id, "id must not be null");
 
-        return this.genreRepo.getByID(id);
+        return GenreMapper.toDTO(this.getByIDInternal(id));
     }
 
     @Override
     public void delete(Long id) {
-        Objects.requireNonNull(id, "id must not be null");
-
-        Genre genre = this.getByID(id);
+        Genre genre = this.getByIDInternal(id);
         this.genreRepo.delete(genre);
+    }
+
+    private Genre getByIDInternal(Long id) {
+        Objects.requireNonNull(id, "id must not be null");
+        return this.genreRepo.getByID(id);
     }
 }

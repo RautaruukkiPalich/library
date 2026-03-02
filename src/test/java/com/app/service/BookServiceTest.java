@@ -7,11 +7,12 @@ import com.app.exception.notfound.GenreNotFoundException;
 import com.app.exception.validation.BookValidationException;
 import com.app.exception.validation.ValidationException;
 import com.app.filter.BookFilter;
+import com.app.mapper.BookMapper;
 import com.app.model.Author;
 import com.app.model.Book;
 import com.app.model.Genre;
-import com.app.repository.IBookRepository;
 import com.app.repository.IAuthorRepository;
+import com.app.repository.IBookRepository;
 import com.app.repository.IGenreRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -50,6 +52,8 @@ class BookServiceTest {
     private Genre genre;
     private BookDTO bookDTO;
     private BookDTO invalidBookDTO;
+    private BookDTO invalidBookDTO_invalidAuthorId;
+    private BookDTO invalidBookDTO_invalidGenreId;
     private BookDTO patchDTO;
     private BookFilter bookFilter;
 
@@ -103,6 +107,26 @@ class BookServiceTest {
                 .isAvailable(true)
                 .build();
 
+        invalidBookDTO_invalidAuthorId = BookDTO.builder()
+                .title("dsadsad")
+                .authorId(999L)
+                .genreId(1L)
+                .pubYear(1999)
+                .isbn("invalid-isbn")
+                .pageCount(150)
+                .isAvailable(true)
+                .build();
+
+        invalidBookDTO_invalidGenreId = BookDTO.builder()
+                .title("dasdsad")
+                .authorId(1L)
+                .genreId(999L)
+                .pubYear(1999)
+                .isbn("invalid-isbn")
+                .pageCount(150)
+                .isAvailable(true)
+                .build();
+
         patchDTO = BookDTO.builder()
                 .title("Updated Title")
                 .build();
@@ -116,12 +140,12 @@ class BookServiceTest {
         List<Book> expectedBooks = Arrays.asList(book1, book2);
         when(bookRepository.getAll()).thenReturn(expectedBooks);
 
-        List<Book> result = bookService.getAll();
+        List<BookDTO> result = bookService.getAll();
 
         assertThat(result)
                 .isNotNull()
                 .hasSize(2)
-                .containsExactly(book1, book2);
+                .containsExactly(BookMapper.toDTO(book1), BookMapper.toDTO(book2));
 
         verify(bookRepository, times(1)).getAll();
         verifyNoMoreInteractions(bookRepository);
@@ -132,12 +156,12 @@ class BookServiceTest {
         List<Book> expectedBooks = Collections.singletonList(book1);
         when(bookRepository.getAll(bookFilter)).thenReturn(expectedBooks);
 
-        List<Book> result = bookService.getAll(bookFilter);
+        List<BookDTO> result = bookService.getAll(bookFilter);
 
         assertThat(result)
                 .isNotNull()
                 .hasSize(1)
-                .containsExactly(book1);
+                .containsExactly(BookMapper.toDTO(book1));
 
         verify(bookRepository, times(1)).getAll(bookFilter);
         verifyNoMoreInteractions(bookRepository);
@@ -154,13 +178,13 @@ class BookServiceTest {
     void getByID_shouldReturnBook() {
         when(bookRepository.getByID(1L)).thenReturn(book1);
 
-        Book result = bookService.getByID(1L);
+        BookDTO result = bookService.getByID(1L);
 
         assertThat(result)
                 .isNotNull()
                 .satisfies(book -> {
-                    assertThat(book.getId()).isEqualTo(book1.getId());
-                    assertThat(book.getTitle()).isEqualTo(book1.getTitle());
+                    assertThat(book.id()).isEqualTo(book1.getId());
+                    assertThat(book.title()).isEqualTo(book1.getTitle());
                 });
 
         verify(bookRepository, times(1)).getByID(1L);
@@ -271,7 +295,7 @@ class BookServiceTest {
     void add_whenAuthorNotFound_shouldThrowAuthorNotFoundException() {
         when(authorRepository.getByID(999L)).thenThrow(new AuthorNotFoundException(999L));
 
-        assertThatThrownBy(() -> bookService.add(bookDTO))
+        assertThatThrownBy(() -> bookService.add(invalidBookDTO_invalidAuthorId))
                 .isInstanceOf(AuthorNotFoundException.class)
                 .hasMessageContaining("author not found with id: 999");
 
@@ -285,7 +309,7 @@ class BookServiceTest {
         when(authorRepository.getByID(1L)).thenReturn(author);
         when(genreRepository.getByID(999L)).thenThrow(new GenreNotFoundException(999L));
 
-        assertThatThrownBy(() -> bookService.add(bookDTO))
+        assertThatThrownBy(() -> bookService.add(invalidBookDTO_invalidGenreId))
                 .isInstanceOf(GenreNotFoundException.class)
                 .hasMessageContaining("genre not found with id: 999");
 

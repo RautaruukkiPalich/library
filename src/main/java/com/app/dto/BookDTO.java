@@ -2,6 +2,8 @@ package com.app.dto;
 
 import lombok.Builder;
 
+import java.time.OffsetDateTime;
+
 @Builder
 public record BookDTO(
         Long id,
@@ -11,7 +13,9 @@ public record BookDTO(
         Integer pubYear,
         String isbn,
         Boolean isAvailable,
-        Integer pageCount
+        Integer pageCount,
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt
 ) {
 }
 

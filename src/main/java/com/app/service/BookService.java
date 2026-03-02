@@ -1,21 +1,21 @@
 package com.app.service;
 
-import java.util.List;
-import java.util.Objects;
-
-import com.app.repository.IBookRepository;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Service;
-
 import com.app.dto.BookDTO;
 import com.app.exception.validation.BookValidationException;
 import com.app.filter.BookFilter;
+import com.app.mapper.BookMapper;
 import com.app.model.Author;
 import com.app.model.Book;
 import com.app.model.Genre;
 import com.app.repository.IAuthorRepository;
+import com.app.repository.IBookRepository;
 import com.app.repository.IGenreRepository;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Objects;
 
 @Primary
 @Service
@@ -37,23 +37,22 @@ public class BookService implements IBookService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Book> getAll() {
-        return this.bookRepo.getAll();
+    public List<BookDTO> getAll() {
+        return BookMapper.toListDTO(this.bookRepo.getAll());
     }
 
 
     @Override
     @Transactional(readOnly = true)
-    public List<Book> getAll(BookFilter filter) {
+    public List<BookDTO> getAll(BookFilter filter) {
         Objects.requireNonNull(filter, "filter must not be null");
-        return this.bookRepo.getAll(filter);
+        return BookMapper.toListDTO(this.bookRepo.getAll(filter));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Book getByID(Long id) {
-        Objects.requireNonNull(id, "id must not be null");
-        return this.bookRepo.getByID(id);
+    public BookDTO getByID(Long id) {
+        return BookMapper.toDTO(this.getBookByIDInternal(id));
     }
 
     @Override
@@ -87,14 +86,13 @@ public class BookService implements IBookService {
     @Override
     @Transactional
     public void putByID(Long id, BookDTO dto) {
-        Objects.requireNonNull(id, "id must not be null");
         Objects.requireNonNull(dto, "dto must not be null");
 
         this.preflightValidateDTO(dto);
 
-        Author author = this.authorRepo.getByID(dto.authorId());
-        Genre genre = this.genreRepo.getByID(dto.genreId());
-        Book book = this.getByID(dto.id());
+        Author author = this.getAuthorByIDInternal(dto.authorId());
+        Genre genre = this.getGenreByIDInternal(dto.genreId());
+        Book book = this.getBookByIDInternal(id);
 
         book.setTitle(dto.title());
         book.setAuthor(author);
@@ -114,15 +112,15 @@ public class BookService implements IBookService {
         Objects.requireNonNull(id, "id must not be null");
         Objects.requireNonNull(dto, "dto must not be null");
 
-        Book book = this.getByID(id);
+        Book book = this.getBookByIDInternal(id);
         if (dto.title() != null) {
             book.setTitle(dto.title());
         }
         if (dto.authorId() != null) {
-            book.setAuthor(this.authorRepo.getByID(dto.authorId()));
+            book.setAuthor(this.getAuthorByIDInternal(dto.authorId()));
         }
         if (dto.genreId() != null) {
-            book.setGenre(this.genreRepo.getByID(dto.genreId()));
+            book.setGenre(this.getGenreByIDInternal(dto.genreId()));
         }
         if (dto.pubYear() != null) {
             book.setPubYear(dto.pubYear());
@@ -148,5 +146,20 @@ public class BookService implements IBookService {
         if (dto.genreId() == null) {
             throw new BookValidationException("genreId", "is required");
         }
+    }
+
+    private Book getBookByIDInternal(Long id) {
+        Objects.requireNonNull(id, "id must not be null");
+        return this.bookRepo.getByID(id);
+    }
+
+    private Genre getGenreByIDInternal(Long id) {
+        Objects.requireNonNull(id, "id must not be null");
+        return this.genreRepo.getByID(id);
+    }
+
+    private Author getAuthorByIDInternal(Long id) {
+        Objects.requireNonNull(id, "id must not be null");
+        return this.authorRepo.getByID(id);
     }
 }

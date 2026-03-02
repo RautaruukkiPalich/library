@@ -3,6 +3,7 @@ package com.app.service;
 import com.app.dto.AuthorDTO;
 import com.app.exception.validation.AuthorValidationException;
 import com.app.filter.AuthorFilter;
+import com.app.mapper.AuthorMapper;
 import com.app.model.Author;
 import com.app.repository.IAuthorRepository;
 import jakarta.transaction.Transactional;
@@ -26,15 +27,15 @@ public class AuthorService implements IAuthorService {
     }
 
     @Override
-    public List<Author> getAll() {
-        return this.authorRepo.getAll();
+    public List<AuthorDTO> getAll() {
+        return AuthorMapper.toListDTO(this.authorRepo.getAll());
     }
 
     @Override
-    public List<Author> getAll(AuthorFilter filter) {
+    public List<AuthorDTO> getAll(AuthorFilter filter) {
         Objects.requireNonNull(filter, "filter must not be null");
 
-        return this.authorRepo.getAll(filter);
+        return AuthorMapper.toListDTO(this.authorRepo.getAll(filter));
     }
 
     @Override
@@ -50,11 +51,11 @@ public class AuthorService implements IAuthorService {
     }
 
     @Override
-    public Author getByID(Long id) {
+    public AuthorDTO getByID(Long id) {
         Objects.requireNonNull(id, "id must not be null");
 
         this.validateId(id);
-        return this.authorRepo.getByID(id);
+        return AuthorMapper.toDTO(this.authorRepo.getByID(id));
     }
 
     @Override

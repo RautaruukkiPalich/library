@@ -4,6 +4,7 @@ import com.app.dto.GenreDTO;
 import com.app.exception.notfound.GenreNotFoundException;
 import com.app.exception.validation.GenreValidationException;
 import com.app.exception.validation.ValidationException;
+import com.app.mapper.GenreMapper;
 import com.app.model.Genre;
 import com.app.repository.IGenreRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +18,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -58,12 +60,15 @@ class GenreServiceTest {
         List<Genre> expectedGenres = Arrays.asList(genre1, genre2);
         when(genreRepository.getAll()).thenReturn(expectedGenres);
 
-        List<Genre> result = genreService.getAll();
+        List<GenreDTO> result = genreService.getAll();
 
         assertThat(result)
                 .isNotNull()
                 .hasSize(2)
-                .containsExactly(genre1, genre2);
+                .containsExactly(
+                        GenreMapper.toDTO(genre1),
+                        GenreMapper.toDTO(genre2)
+                );
 
         verify(genreRepository, times(1)).getAll();
         verifyNoMoreInteractions(genreRepository);
@@ -73,13 +78,13 @@ class GenreServiceTest {
     void getByID_shouldReturnGenre() {
         when(genreRepository.getByID(1L)).thenReturn(genre1);
 
-        Genre result = genreService.getByID(1L);
+        GenreDTO result = genreService.getByID(1L);
 
         assertThat(result)
                 .isNotNull()
                 .satisfies(genre -> {
-                    assertThat(genre.getId()).isEqualTo(1L);
-                    assertThat(genre.getName()).isEqualTo("Science Fiction");
+                    assertThat(genre.id()).isEqualTo(1L);
+                    assertThat(genre.name()).isEqualTo("Science Fiction");
                 });
 
         verify(genreRepository, times(1)).getByID(1L);

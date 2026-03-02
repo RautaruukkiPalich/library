@@ -1,25 +1,20 @@
 package com.app.model;
 
-import java.util.List;
-import java.util.Objects;
-
 import com.app.dto.GenreDTO;
 import com.app.exception.validation.GenreValidationException;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import com.app.model.mixin.DateMixin;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
+import java.util.Objects;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "genres")
-public class Genre {
+public class Genre extends DateMixin {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;

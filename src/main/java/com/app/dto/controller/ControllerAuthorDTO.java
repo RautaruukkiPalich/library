@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Schema(description = "ControllerAuthorDTO")
@@ -36,20 +37,30 @@ public class ControllerAuthorDTO {
         @Size(min = 2, max = 255, message = "surname must be between 2 and 255 characters")
         private String surname;
 
-        public Create(){}
+        public Create() {
+        }
     }
 
     @Setter
     @Getter
     @SuperBuilder
-    @Schema(name = "response author", description = "response for author (includes all fields + id)")
+    @Schema(name = "response author", description = "response for author (includes all fields + id + datemixin)")
     public static class Response extends Create {
 
         @Schema(description = "unique author identifier", example = "101", accessMode = Schema.AccessMode.READ_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
         @JsonProperty("id")
         private Long id;
 
-        public Response(){}
+        @Schema(description = "author created_at", accessMode = Schema.AccessMode.READ_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
+        @JsonProperty("created_at")
+        private OffsetDateTime createdAt;
+
+        @Schema(description = "author updated_at", accessMode = Schema.AccessMode.READ_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
+        @JsonProperty("updated_at")
+        private OffsetDateTime updatedAt;
+
+        public Response() {
+        }
 
     }
 

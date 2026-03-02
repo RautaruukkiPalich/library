@@ -1,20 +1,14 @@
 package com.app.dto.controller;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
-import lombok.Builder;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+
+import java.time.OffsetDateTime;
+import java.util.List;
 
 @Schema(description = "ControllerBookDTO")
 public class ControllerBookDTO {
@@ -65,7 +59,8 @@ public class ControllerBookDTO {
         @JsonProperty("is_available")
         private boolean isAvailable;
 
-        public Create(){}
+        public Create() {
+        }
     }
 
     @Getter
@@ -109,7 +104,8 @@ public class ControllerBookDTO {
         @JsonProperty("is_available")
         private Boolean isAvailable;
 
-        public Patch(){}
+        public Patch() {
+        }
     }
 
     @Getter
@@ -121,6 +117,23 @@ public class ControllerBookDTO {
         @Schema(description = "unique book identifier", example = "101", accessMode = Schema.AccessMode.READ_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
         @JsonProperty("id")
         private Long id;
+
+        @Schema(description = "book created_at", accessMode = Schema.AccessMode.READ_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
+        @JsonProperty("created_at")
+        private OffsetDateTime createdAt;
+
+        @Schema(description = "book updated_at", accessMode = Schema.AccessMode.READ_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
+        @JsonProperty("updated_at")
+        private OffsetDateTime updatedAt;
+
+        @Override
+        @JsonProperty("is_available") //HINT: jackson bug
+        public boolean isAvailable() {
+            return super.isAvailable();
+        }
+
+        public Response() {
+        }
     }
 
     @Getter
@@ -133,7 +146,8 @@ public class ControllerBookDTO {
         @JsonProperty("books")
         private List<ControllerBookDTO.Response> books;
 
-        public ListResponse(){}
+        public ListResponse() {
+        }
 
         public ListResponse(List<ControllerBookDTO.Response> books) {
             this.books = books;

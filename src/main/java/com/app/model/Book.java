@@ -2,14 +2,8 @@ package com.app.model;
 
 import com.app.dto.BookDTO;
 import com.app.exception.validation.BookValidationException;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import com.app.model.mixin.DateMixin;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,7 +14,7 @@ import java.util.regex.Pattern;
 @Setter
 @Entity
 @Table(name = "books")
-public class Book {
+public class Book extends DateMixin {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;

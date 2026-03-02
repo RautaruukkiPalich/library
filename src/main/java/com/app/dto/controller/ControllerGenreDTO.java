@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Schema(description = "ControllerGenreDTO")
@@ -24,7 +25,8 @@ public class ControllerGenreDTO {
         @Size(min = 2, max = 255, message = "name must be between 2 and 255 characters")
         private String name;
 
-        public Create(){}
+        public Create() {
+        }
     }
 
     @Setter
@@ -36,6 +38,17 @@ public class ControllerGenreDTO {
         @Schema(description = "unique genre identifier", example = "101", accessMode = Schema.AccessMode.READ_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
         @JsonProperty("id")
         private Long id;
+
+        @Schema(description = "genre created_at", accessMode = Schema.AccessMode.READ_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
+        @JsonProperty("created_at")
+        private OffsetDateTime createdAt;
+
+        @Schema(description = "genre updated_at", accessMode = Schema.AccessMode.READ_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
+        @JsonProperty("updated_at")
+        private OffsetDateTime updatedAt;
+
+        public Response() {
+        }
 
     }
 

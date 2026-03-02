@@ -1,34 +1,23 @@
 package com.app.controller;
 
-import java.net.URI;
-import java.util.List;
-
+import com.app.dto.BookDTO;
+import com.app.dto.controller.ControllerBookDTO;
 import com.app.dto.queryparams.BookQueryParamsDTO;
+import com.app.filter.BookFilter;
+import com.app.mapper.BookMapper;
+import com.app.mapper.filter.BookFilterMapper;
+import com.app.service.IBookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
-import com.app.filter.BookFilter;
-import com.app.dto.controller.ControllerBookDTO;
-import com.app.mapper.filter.BookFilterMapper;
-import com.app.mapper.BookMapper;
-import com.app.model.Book;
-import com.app.service.IBookService;
+import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/books")
@@ -45,7 +34,7 @@ public class BookController {
     @Operation(summary = "get all books")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerBookDTO.ListResponse.class)))
     public ResponseEntity<ControllerBookDTO.ListResponse> getAll() {
-        List<Book> books = this.bookService.getAll();
+        List<BookDTO> books = this.bookService.getAll();
         List<ControllerBookDTO.Response> response = BookMapper.toResponse(books);
         return ResponseEntity.ok().body(new ControllerBookDTO.ListResponse(response));
     }
@@ -56,7 +45,7 @@ public class BookController {
             @ModelAttribute BookQueryParamsDTO.TitleGenre params
     ) {
         BookFilter filter = BookFilterMapper.toFilter(params);
-        List<Book> books = this.bookService.getAll(filter);
+        List<BookDTO> books = this.bookService.getAll(filter);
         List<ControllerBookDTO.Response> response = BookMapper.toResponse(books);
         return ResponseEntity.ok().body(new ControllerBookDTO.ListResponse(response));
     }
@@ -65,7 +54,7 @@ public class BookController {
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerBookDTO.ListResponse.class)))
     public ResponseEntity<ControllerBookDTO.ListResponse> available() {
         BookFilter filter = BookFilterMapper.available();
-        List<Book> books = this.bookService.getAll(filter);
+        List<BookDTO> books = this.bookService.getAll(filter);
         List<ControllerBookDTO.Response> response = BookMapper.toResponse(books);
         return ResponseEntity.ok().body(new ControllerBookDTO.ListResponse(response));
     }
@@ -76,7 +65,7 @@ public class BookController {
             @PathVariable Integer year
     ) {
         BookFilter filter = BookFilterMapper.year(year);
-        List<Book> books = this.bookService.getAll(filter);
+        List<BookDTO> books = this.bookService.getAll(filter);
         List<ControllerBookDTO.Response> response = BookMapper.toResponse(books);
         return ResponseEntity.ok().body(new ControllerBookDTO.ListResponse(response));
     }
@@ -87,7 +76,7 @@ public class BookController {
             @ModelAttribute BookQueryParamsDTO.PubYears params
     ) {
         BookFilter filter = BookFilterMapper.betweenYears(params.getFrom(), params.getTo());
-        List<Book> books = this.bookService.getAll(filter);
+        List<BookDTO> books = this.bookService.getAll(filter);
         List<ControllerBookDTO.Response> response = BookMapper.toResponse(books);
         return ResponseEntity.ok().body(new ControllerBookDTO.ListResponse(response));
     }
@@ -115,7 +104,7 @@ public class BookController {
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerBookDTO.Response.class)))
     @ApiResponse(responseCode = "404", description = "not found")
     public ResponseEntity<ControllerBookDTO.Response> getByID(@PathVariable Long id) {
-        Book book = this.bookService.getByID(id);
+        BookDTO book = this.bookService.getByID(id);
         return ResponseEntity.ok().body(BookMapper.toResponse(book));
     }
 

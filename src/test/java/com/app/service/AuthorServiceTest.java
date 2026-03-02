@@ -4,6 +4,7 @@ import com.app.dto.AuthorDTO;
 import com.app.exception.notfound.AuthorNotFoundException;
 import com.app.exception.validation.AuthorValidationException;
 import com.app.exception.validation.ValidationException;
+import com.app.mapper.AuthorMapper;
 import com.app.model.Author;
 import com.app.repository.IAuthorRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,11 +15,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.*;
-
 import java.util.Arrays;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -67,12 +68,12 @@ class AuthorServiceTest {
         List<Author> expectedAuthors = Arrays.asList(author1, author2);
         when(authorRepository.getAll()).thenReturn(expectedAuthors);
 
-        List<Author> res = authorService.getAll();
+        List<AuthorDTO> res = authorService.getAll();
 
         assertThat(res)
                 .isNotNull()
                 .hasSize(2)
-                .containsExactly(author1, author2);
+                .containsExactly(AuthorMapper.toDTO(author1), AuthorMapper.toDTO(author2));
 
         verify(authorRepository, times(1)).getAll();
         verifyNoMoreInteractions(authorRepository);
@@ -83,15 +84,15 @@ class AuthorServiceTest {
         Author expectedAuthor = author1;
         when(authorRepository.getByID(1L)).thenReturn(expectedAuthor);
 
-        Author res = authorService.getByID(1L);
+        AuthorDTO res = authorService.getByID(1L);
 
         assertThat(res)
                 .isNotNull()
                 .satisfies(author -> {
-                    assertThat(author.getId()).isEqualTo(author1.getId());
-                    assertThat(author.getFirstname()).isEqualTo(author1.getFirstname());
-                    assertThat(author.getLastname()).isEqualTo(author1.getLastname());
-                    assertThat(author.getSurname()).isEqualTo(author1.getSurname());
+                    assertThat(author.id()).isEqualTo(author1.getId());
+                    assertThat(author.firstname()).isEqualTo(author1.getFirstname());
+                    assertThat(author.lastname()).isEqualTo(author1.getLastname());
+                    assertThat(author.surname()).isEqualTo(author1.getSurname());
                 });
 
         verify(authorRepository, times(1)).getByID(1L);

@@ -1,12 +1,12 @@
 package com.app.controller;
 
+import com.app.dto.GenreDTO;
 import com.app.dto.controller.ControllerBookDTO;
 import com.app.dto.controller.ControllerGenreDTO;
 import com.app.dto.queryparams.GenreQueryParamsDTO;
 import com.app.filter.GenreFilter;
-import com.app.mapper.filter.GenreFilterMapper;
 import com.app.mapper.GenreMapper;
-import com.app.model.Genre;
+import com.app.mapper.filter.GenreFilterMapper;
 import com.app.service.IGenreService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,7 +36,7 @@ public class GenreController {
     @Operation(summary = "get all genres")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerGenreDTO.ListResponse.class)))
     public ResponseEntity<ControllerGenreDTO.ListResponse> getAll() {
-        List<Genre> genres = this.genreService.getAll();
+        List<GenreDTO> genres = this.genreService.getAll();
         List<ControllerGenreDTO.Response> response = GenreMapper.toResponse(genres);
         return ResponseEntity.ok().body(new ControllerGenreDTO.ListResponse(response));
     }
@@ -45,7 +45,7 @@ public class GenreController {
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerBookDTO.ListResponse.class)))
     public ResponseEntity<ControllerGenreDTO.ListResponse> search(@ModelAttribute GenreQueryParamsDTO params) {
         GenreFilter filter = GenreFilterMapper.toFilter(params);
-        List<Genre> genres = this.genreService.getAll(filter);
+        List<GenreDTO> genres = this.genreService.getAll(filter);
         List<ControllerGenreDTO.Response> response = GenreMapper.toResponse(genres);
         return ResponseEntity.ok().body(new ControllerGenreDTO.ListResponse(response));
     }
@@ -64,7 +64,7 @@ public class GenreController {
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerGenreDTO.Response.class)))
     @ApiResponse(responseCode = "404", description = "not found")
     public ResponseEntity<ControllerGenreDTO.Response> getByID(@PathVariable Long id) {
-        Genre genre = this.genreService.getByID(id);
+        GenreDTO genre = this.genreService.getByID(id);
         return ResponseEntity.ok().body(GenreMapper.toResponse(genre));
     }
 

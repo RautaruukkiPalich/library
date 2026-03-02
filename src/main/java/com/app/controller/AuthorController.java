@@ -1,11 +1,11 @@
 package com.app.controller;
 
-import com.app.dto.queryparams.AuthorQueryParamsDTO;
+import com.app.dto.AuthorDTO;
 import com.app.dto.controller.ControllerAuthorDTO;
+import com.app.dto.queryparams.AuthorQueryParamsDTO;
 import com.app.filter.AuthorFilter;
-import com.app.mapper.filter.AuthorFilterMapper;
 import com.app.mapper.AuthorMapper;
-import com.app.model.Author;
+import com.app.mapper.filter.AuthorFilterMapper;
 import com.app.service.IAuthorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,28 +25,24 @@ import java.util.List;
 public class AuthorController {
     private final IAuthorService authorService;
 
-    public AuthorController(
-            IAuthorService authorService
-    ) {
+    public AuthorController(IAuthorService authorService) {
         this.authorService = authorService;
     }
 
     @GetMapping("/")
     @Operation(summary = "get all authors")
-    @ApiResponse(responseCode = "200", description = "success",
-            content = @Content(schema = @Schema(implementation = ControllerAuthorDTO.ListResponse.class)))
+    @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerAuthorDTO.ListResponse.class)))
     public ResponseEntity<ControllerAuthorDTO.ListResponse> getAll() {
-        List<Author> authors = this.authorService.getAll();
+        List<AuthorDTO> authors = this.authorService.getAll();
         List<ControllerAuthorDTO.Response> response = AuthorMapper.toResponse(authors);
         return ResponseEntity.ok().body(new ControllerAuthorDTO.ListResponse(response));
     }
 
     @GetMapping("/search")
-    @ApiResponse(responseCode = "200", description = "success",
-            content = @Content(schema = @Schema(implementation = ControllerAuthorDTO.ListResponse.class)))
+    @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerAuthorDTO.ListResponse.class)))
     public ResponseEntity<ControllerAuthorDTO.ListResponse> search(@ModelAttribute AuthorQueryParamsDTO params) {
         AuthorFilter filter = AuthorFilterMapper.toFilter(params);
-        List<Author> authors = this.authorService.getAll(filter);
+        List<AuthorDTO> authors = this.authorService.getAll(filter);
         List<ControllerAuthorDTO.Response> response = AuthorMapper.toResponse(authors);
         return ResponseEntity.ok().body(new ControllerAuthorDTO.ListResponse(response));
     }
@@ -62,11 +58,10 @@ public class AuthorController {
 
     @GetMapping("/{id}")
     @Operation(summary = "get author by id")
-    @ApiResponse(responseCode = "200", description = "success",
-            content = @Content(schema = @Schema(implementation = ControllerAuthorDTO.Response.class)))
+    @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerAuthorDTO.Response.class)))
     @ApiResponse(responseCode = "404", description = "not found")
     public ResponseEntity<ControllerAuthorDTO.Response> getByID(@PathVariable Long id) {
-        Author author = this.authorService.getByID(id);
+        AuthorDTO author = this.authorService.getByID(id);
         return ResponseEntity.ok().body(AuthorMapper.toResponse(author));
     }
 
