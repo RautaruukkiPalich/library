@@ -20,7 +20,5 @@ public interface IBookService {
 
     Long add(BookDTO book) throws ValidationException;
 
-    ;
-
     void delete(Long id) throws BookNotFoundException;
 }
