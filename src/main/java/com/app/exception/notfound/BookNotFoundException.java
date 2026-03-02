@@ -1,6 +1,9 @@
-package com.app.exception;
+package com.app.exception.notfound;
 
-public class BookNotFoundException extends NotFoundException{
+import lombok.Getter;
+
+@Getter
+public class BookNotFoundException extends NotFoundException {
     private final Long id;
 
     public BookNotFoundException(Long id) {
@@ -8,9 +11,6 @@ public class BookNotFoundException extends NotFoundException{
         this.id = id;
     }
 
-    public Long getId() {
-        return id;
-    }
 }
 
 
