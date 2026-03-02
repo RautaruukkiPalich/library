@@ -137,6 +137,7 @@ public class BookService implements IBookService {
             book.setPageCount(dto.pageCount());
         }
 
+        book.validateStrict();
         this.bookRepo.save(book);
     }
 

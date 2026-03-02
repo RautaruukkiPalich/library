@@ -21,7 +21,7 @@ public class BookMapper {
                 .id(book.getId())
                 .title(book.getTitle())
                 .authorId(book.getAuthor().getId())
-                .genreId(book.getAuthor().getId())
+                .genreId(book.getGenre().getId())
                 .pubYear(book.getPubYear())
                 .isbn(book.getIsbn())
                 .isAvailable(book.isAvailable())

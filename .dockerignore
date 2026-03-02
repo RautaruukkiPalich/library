@@ -65,6 +65,7 @@ credentials/
 *.orig
 
 # Test
+src/test/
 test-output/
 **/surefire-reports/
 **/failsafe-reports/
