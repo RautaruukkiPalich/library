@@ -1,8 +1,12 @@
 package com.app.dto;
 
-public class AuthorDTO {
-    public Long id;
-    public String firstname;
-    public String lastname;
-    public String surname;
+import lombok.Builder;
+
+@Builder
+public record AuthorDTO(
+        Long id,
+        String firstname,
+        String lastname,
+        String surname
+) {
 }

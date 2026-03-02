@@ -1,6 +1,10 @@
 package com.app.dto;
 
-public class GenreDTO {
-    public Long id;
-    public String name;
+import lombok.Builder;
+
+@Builder
+public record GenreDTO(
+        Long id,
+        String name
+) {
 }

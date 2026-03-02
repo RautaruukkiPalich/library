@@ -1,13 +1,17 @@
 package com.app.dto;
 
-public class BookDTO{
-    public Long id;
-    public String title;
-    public Long authorId;
-    public Long genreId;
-    public Integer pubYear;
-    public String isbn;
-    public Boolean isAvailable;
-    public Integer pageCount;
+import lombok.Builder;
+
+@Builder
+public record BookDTO(
+        Long id,
+        String title,
+        Long authorId,
+        Long genreId,
+        Integer pubYear,
+        String isbn,
+        Boolean isAvailable,
+        Integer pageCount
+) {
 }
 
