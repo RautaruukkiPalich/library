@@ -1,14 +1,11 @@
 package com.app.handler;
 
 import com.app.dto.ErrorResponse;
-import com.app.exception.NotFoundException;
-import com.app.exception.ValidationException;
+import com.app.exception.notfound.NotFoundException;
+import com.app.exception.validation.ValidationException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jspecify.annotations.NonNull;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -41,9 +38,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 HttpStatus.NOT_FOUND.value(),
                 "not found",
                 ex.getMessage(),
-                request.getDescription(false).replace("uri=", ""));
+                getPath(request));
 
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
     @ExceptionHandler(ValidationException.class)
@@ -55,37 +52,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 HttpStatus.BAD_REQUEST.value(),
                 "validation error",
                 "invalid request parameters",
-                request.getDescription(false).replace("uri=", ""));
+                getPath(request),
+                ex.getErrorsMap());
 
-        errorResponse.setValidationErrors(ex.getErrorsMap());
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-
-    @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex,
-            @NonNull HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request) {
-
-        Map<String, String> errors = ex.getBindingResult().
-                getFieldErrors().
-                stream().
-                collect(Collectors.toMap(
-                        field -> getJsonPropertyName(field, ex),
-                        field -> Objects.toString(field.getDefaultMessage(), "argument not valid"),
-                        (v1, v2) -> v1 + "; " + v2));
-
-        ErrorResponse errorResponse = new ErrorResponse(
-                status.value(),
-                "validation error",
-                "invalid argument parameter",
-                request.getDescription(false).replace("uri=", ""),
-                errors
-        );
-
-        return handleExceptionInternal(ex, errorResponse, headers, status, request);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)
@@ -101,12 +71,39 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "internal server error",
                 "an unexpected error occurred",
-                request.getDescription(false).replace("uri=", ""));
+                getPath(request));
 
         logger.error("unexpected error", ex);
 
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            @NonNull HttpHeaders headers,
+            HttpStatusCode status,
+            @NonNull WebRequest request) {
+
+        Map<String, String> errors = ex.getBindingResult().
+                getFieldErrors().
+                stream().
+                collect(Collectors.toMap(
+                        field -> getJsonPropertyName(field, ex),
+                        field -> Objects.toString(field.getDefaultMessage(), "argument not valid"),
+                        (v1, v2) -> v1 + "; " + v2));
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                status.value(),
+                "validation error",
+                "invalid argument parameter",
+                getPath(request),
+                errors
+        );
+
+        return handleExceptionInternal(ex, errorResponse, headers, status, request);
+    }
+
 
     private String getJsonPropertyName(FieldError error, MethodArgumentNotValidException ex) {
         String errField = error.getField();
@@ -120,7 +117,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .orElse(errField);
     }
 
-    private Field findField(Class<?> cls, String fieldName){
+    private Field findField(Class<?> cls, String fieldName) {
         if (cls == null || cls == Object.class) {
             return null;
         }
@@ -130,5 +127,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         } catch (NoSuchFieldException e) {
             return findField(cls.getSuperclass(), fieldName);
         }
+    }
+
+    private String getPath(WebRequest request) {
+        return request.getDescription(false).replace("uri=", "");
     }
 }
