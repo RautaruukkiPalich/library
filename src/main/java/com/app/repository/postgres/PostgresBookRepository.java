@@ -1,6 +1,6 @@
 package com.app.repository.postgres;
 
-import com.app.exception.BookNotFoundException;
+import com.app.exception.notfound.BookNotFoundException;
 import com.app.filter.BookFilter;
 import com.app.model.Book;
 import com.app.repository.IBookRepository;
@@ -37,25 +37,25 @@ public class PostgresBookRepository implements IBookRepository {
         if (filter != null) {
             if (filter.getTitle() != null && !filter.getTitle().trim().isEmpty()) {
                 predicates.add(
-                    cb.like(
-                        cb.lower(book.get("title")),
-                        "%" + filter.getTitle().toLowerCase() + "%"
-                    )
+                        cb.like(
+                                cb.lower(book.get("title")),
+                                "%" + filter.getTitle().toLowerCase() + "%"
+                        )
                 );
             }
 
             if (filter.getGenre() != null && !filter.getGenre().trim().isEmpty()) {
                 predicates.add(
-                    cb.like(
-                        cb.lower(book.get("genre").get("name")),
-                        "%" + filter.getGenre().toLowerCase() + "%"
-                    )
+                        cb.like(
+                                cb.lower(book.get("genre").get("name")),
+                                "%" + filter.getGenre().toLowerCase() + "%"
+                        )
                 );
             }
 
-            if (filter.isAvailable() != null) {
+            if (filter.getIsAvailable() != null) {
                 predicates.add(
-                    cb.equal(book.get("isAvailable"), filter.isAvailable())
+                        cb.equal(book.get("isAvailable"), filter.getIsAvailable())
                 );
             }
 
@@ -83,13 +83,13 @@ public class PostgresBookRepository implements IBookRepository {
     }
 
     @Override
-    public Book getByID(Long id) throws BookNotFoundException{
+    public Book getByID(Long id) throws BookNotFoundException {
         String jpql = """
-            SELECT b FROM Book b
-            JOIN FETCH b.author
-            JOIN FETCH b.genre
-            WHERE b.id = :id
-            """;
+                SELECT b FROM Book b
+                JOIN FETCH b.author
+                JOIN FETCH b.genre
+                WHERE b.id = :id
+                """;
 
         try {
             return em.createQuery(jpql, Book.class)
@@ -111,12 +111,7 @@ public class PostgresBookRepository implements IBookRepository {
     }
 
     @Override
-    public void deleteByID(Long id) {
-        Book book = em.find(Book.class, id);
-        if (book != null) {
-            em.remove(book);
-        } else {
-            throw new BookNotFoundException(id);
-        }
+    public void delete(Book book) {
+        em.remove(book);
     }
 }

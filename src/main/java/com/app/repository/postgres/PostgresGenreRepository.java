@@ -1,6 +1,6 @@
 package com.app.repository.postgres;
 
-import com.app.exception.GenreNotFoundException;
+import com.app.exception.notfound.GenreNotFoundException;
 import com.app.filter.GenreFilter;
 import com.app.model.Genre;
 import com.app.repository.IGenreRepository;
@@ -70,7 +70,7 @@ public class PostgresGenreRepository implements IGenreRepository {
     }
 
     @Override
-    public void deleteByID(Long id) {
-        em.remove(getByID(id));
+    public void delete(Genre genre) {
+        em.remove(genre);
     }
 }

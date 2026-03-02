@@ -1,6 +1,6 @@
 package com.app.repository.postgres;
 
-import com.app.exception.AuthorNotFoundException;
+import com.app.exception.notfound.AuthorNotFoundException;
 import com.app.filter.AuthorFilter;
 import com.app.model.Author;
 import com.app.repository.IAuthorRepository;
@@ -71,7 +71,7 @@ public class PostgresAuthorRepository implements IAuthorRepository {
     }
 
     @Override
-    public void deleteByID(Long id) {
-        em.remove(getByID(id));
+    public void delete(Author author) {
+        em.remove(author);
     }
 }
