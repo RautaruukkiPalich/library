@@ -1,6 +1,7 @@
 package com.app.mapper;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -11,63 +12,55 @@ import com.app.model.Book;
 
 @Component
 public class BookMapper {
-    public static ControllerBookDTO.Response toResponse(Book book){
-        if (book == null){
-            return null;
-        }
+    public static ControllerBookDTO.Response toResponse(Book book) {
+        Objects.requireNonNull(book, "book cant be null");
+        Objects.requireNonNull(book.getAuthor(), "author cant be null");
+        Objects.requireNonNull(book.getGenre(), "genre cant be null");
 
-        ControllerBookDTO.Response resp = new ControllerBookDTO.Response();
-        
-        resp.id = book.getId();
-        resp.title = book.getTitle();
-        resp.authorId = book.getAuthor().getId();
-        resp.genreId = book.getGenre().getId();
-        resp.pubYear = book.getPubYear();
-        resp.isbn = book.getIsbn();
-        resp.isAvailable = book.isAvailable();
-        resp.pageCount = book.getPageCount();
-
-        return resp;
+        return ControllerBookDTO.Response.builder()
+                .id(book.getId())
+                .title(book.getTitle())
+                .authorId(book.getAuthor().getId())
+                .genreId(book.getAuthor().getId())
+                .pubYear(book.getPubYear())
+                .isbn(book.getIsbn())
+                .isAvailable(book.isAvailable())
+                .pageCount(book.getPageCount())
+                .build();
     }
 
-    public static BookDTO toDTO(ControllerBookDTO.Create dto){
-        if (dto == null){
-            return null;
-        }
+    public static BookDTO toDTO(ControllerBookDTO.Create dto) {
+        Objects.requireNonNull(dto, "dto cant be null");
 
-        BookDTO book = new BookDTO();
-        book.title = dto.title;
-        book.authorId = dto.authorId;
-        book.genreId = dto.genreId;
-        book.pubYear = dto.pubYear;
-        book.isbn = dto.isbn;
-        book.isAvailable = dto.isAvailable;
-        book.pageCount = dto.pageCount;
+        return BookDTO.builder()
+                .title(dto.getTitle())
+                .authorId(dto.getAuthorId())
+                .genreId(dto.getGenreId())
+                .pubYear(dto.getPubYear())
+                .isbn(dto.getIsbn())
+                .isAvailable(dto.isAvailable())
+                .pageCount(dto.getPageCount())
+                .build();
+    }
 
-        return book;
-    } 
+    public static BookDTO toDTO(ControllerBookDTO.Patch dto) {
+        Objects.requireNonNull(dto, "dto cant be null");
 
-    public static BookDTO toDTO(ControllerBookDTO.Patch dto){
-        if (dto == null){
-            return null;
-        }
-
-        BookDTO book = new BookDTO();
-        book.title = dto.title;
-        book.authorId = dto.authorId;
-        book.genreId = dto.genreId;
-        book.pubYear = dto.pubYear;
-        book.isbn = dto.isbn;
-        book.isAvailable = dto.isAvailable;
-        book.pageCount = dto.pageCount;
-
-        return book;
-    } 
+        return BookDTO.builder()
+                .title(dto.getTitle())
+                .authorId(dto.getAuthorId())
+                .genreId(dto.getGenreId())
+                .pubYear(dto.getPubYear())
+                .isbn(dto.getIsbn())
+                .isAvailable(dto.getIsAvailable())
+                .pageCount(dto.getPageCount())
+                .build();
+    }
 
 
-    public static List<ControllerBookDTO.Response> toResponse(List<Book> books){
+    public static List<ControllerBookDTO.Response> toResponse(List<Book> books) {
         return books.stream()
-        .map(BookMapper::toResponse)
-        .collect(Collectors.toList());
+                .map(BookMapper::toResponse)
+                .collect(Collectors.toList());
     }
 }

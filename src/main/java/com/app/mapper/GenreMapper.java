@@ -7,16 +7,18 @@ import com.app.model.Genre;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
 public class GenreMapper {
     public static ControllerGenreDTO.Response toResponse(Genre genre){
-        ControllerGenreDTO.Response resp = new ControllerGenreDTO.Response();
-        resp.setId(genre.getId());
-        resp.setName(genre.getName());
+        Objects.requireNonNull(genre, "genre cant be null");
 
-        return resp;
+        return ControllerGenreDTO.Response.builder()
+                .id(genre.getId())
+                .name(genre.getName())
+                .build();
     }
 
     public static List<ControllerGenreDTO.Response> toResponse(List<Genre> genres){
@@ -24,8 +26,8 @@ public class GenreMapper {
     }
 
     public static GenreDTO toDTO(ControllerGenreDTO.Create dto){
-        GenreDTO genre = new GenreDTO();
-        genre.name = dto.getName();
-        return genre;
+        Objects.requireNonNull(dto, "dto cant be null");
+
+        return GenreDTO.builder().name(dto.getName()).build();
     }
 }

@@ -3,20 +3,29 @@ package com.app.mapper.filter;
 import com.app.dto.queryparams.BookQueryParamsDTO;
 import com.app.filter.BookFilter;
 
+import java.util.Objects;
+
 public class BookFilterMapper {
-    public static BookFilter toFilter(BookQueryParamsDTO.TitleGenre dto){
-        return new BookFilter(dto.getTitle(), dto.getGenre(), null, null, null);
+    public static BookFilter toFilter(BookQueryParamsDTO.TitleGenre dto) {
+        Objects.requireNonNull(dto, "dto cant be null");
+
+        return BookFilter.builder().title(dto.getTitle()).genre(dto.getGenre()).build();
     }
 
-    public static BookFilter available(){
-        return new BookFilter(null, null, true, null, null);
+    public static BookFilter available() {
+        return BookFilter.builder().isAvailable(true).build();
     }
 
-    public static BookFilter year(Integer year){
-        return new BookFilter(null, null, null, year, year);
+    public static BookFilter year(Integer year) {
+        Objects.requireNonNull(year, "year cant be null");
+
+        return BookFilter.builder().pubYearTo(year).pubYearFrom(year).build();
     }
 
-    public static BookFilter betweenYears(Integer yearFrom, Integer yearTo){
-        return new BookFilter(null, null, null, yearFrom, yearTo);
+    public static BookFilter betweenYears(Integer from, Integer to) {
+        Objects.requireNonNull(from, "from cant be null");
+        Objects.requireNonNull(to, "to cant be null");
+
+        return BookFilter.builder().pubYearFrom(from).pubYearTo(to).build();
     }
 }
