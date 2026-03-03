@@ -15,7 +15,7 @@ jobs:
           cache: maven
 
       - name: Run tests with Testcontainers
-        run: mvn test
+        run: mvn -q test
         env:
           DOCKER_HOST: unix:///var/run/docker.sock
 
