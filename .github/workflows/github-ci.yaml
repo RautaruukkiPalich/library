@@ -2,7 +2,51 @@ name: CI pipeline
 run-name: ${{ github.actor }} is testing out GitHub Actions
 on: [push]
 jobs:
-  Test:
+  test:
     runs-on: self-hosted
     steps:
-      - run: echo "github actions init"
+      - uses: actions/checkout@v4
+
+      - name: Run tests with Testcontainers
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -w /workspace \
+            maven:3.9.12-eclipse-temurin-17 \
+            mvn test
+        env:
+          DOCKER_HOST: unix:///var/run/docker.sock
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: target/surefire-reports/
+
+  build:
+    runs-on: self-hosted
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image using your Dockerfile
+        run: |
+          docker build -t library-app:latest .
+          docker tag library-app:latest library-app:${{ github.sha }}
+
+      - name: Save Docker image
+        run: |
+          docker save library-app:${{ github.sha }} | gzip > library-app.tar.gz
+
+      - name: Upload Docker image as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-image
+          path: library-app.tar.gz
+
+      - name: Test the built image
+        run: |
+          docker run --rm library-app:latest java -version
