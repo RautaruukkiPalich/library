@@ -12,6 +12,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +62,7 @@ public class PostgresAuthorRepository implements IAuthorRepository {
 
 
     @Override
+    @Transactional
     public Author save(Author author) {
         if (author.getId() == null){
             em.persist(author);
@@ -71,6 +73,7 @@ public class PostgresAuthorRepository implements IAuthorRepository {
     }
 
     @Override
+    @Transactional
     public void delete(Author author) {
         em.remove(author);
     }

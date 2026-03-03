@@ -6,7 +6,7 @@ import com.app.filter.AuthorFilter;
 import com.app.mapper.AuthorMapper;
 import com.app.model.Author;
 import com.app.repository.IAuthorRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -27,11 +27,13 @@ public class AuthorService implements IAuthorService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AuthorDTO> getAll() {
         return AuthorMapper.toListDTO(this.authorRepo.getAll());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AuthorDTO> getAll(AuthorFilter filter) {
         Objects.requireNonNull(filter, "filter must not be null");
 
