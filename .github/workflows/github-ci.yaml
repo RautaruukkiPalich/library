@@ -15,9 +15,14 @@ jobs:
           cache: maven
 
       - name: Run tests with Testcontainers
-        run: mvn -q test
+        run: |
+          docker version
+          docker ps
+
+          mvn -q test
         env:
           DOCKER_HOST: unix:///var/run/docker.sock
+          TESTCONTAINERS_RYUK_DISABLED: "false"
 
       - name: Upload test reports
         if: always()
