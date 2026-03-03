@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  java-github-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    environment:
+      - GITHUB_URL=https://github.com/RautaruukkiPalich/library
+      - RUNNER_NAME=java-github-runner
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - runner-data:/home/runner/_work
+    restart: unless-stopped
+
+volumes:
+  runner-data:
