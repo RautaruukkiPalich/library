@@ -3,7 +3,6 @@ package com.app.controller;
 import com.app.BaseIntegrationTest;
 import com.app.utils.JsonTestUtils;
 
-import junit.framework.TestCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
