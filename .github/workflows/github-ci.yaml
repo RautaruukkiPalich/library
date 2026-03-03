@@ -3,6 +3,6 @@ run-name: ${{ github.actor }} is testing out GitHub Actions
 on: [push]
 jobs:
   Test:
-    runs-on: maven:3.9.12-eclipse-temurin-17
+    runs-on: self-hosted
     steps:
       - run: echo "github actions init"
