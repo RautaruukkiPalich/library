@@ -20,7 +20,7 @@ jobs:
 
       - name: Upload test reports
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: target/surefire-reports/
@@ -42,7 +42,7 @@ jobs:
           docker save library-app:${{ github.sha }} | gzip > library-app.tar.gz
 
       - name: Upload Docker image as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker-image
           path: library-app.tar.gz
