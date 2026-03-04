@@ -22,7 +22,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Run tests with Testcontainers disabled
+      - name: Run tests with Testcontainers
         run: |
           mvn -B -q test verify
 
