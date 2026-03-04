@@ -14,14 +14,33 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Debug Docker environment
+        run: |
+          echo "=== Docker Info ==="
+          docker version
+          docker network ls
+          echo "=== Docker Socket ==="
+          ls -la /var/run/docker.sock
+          echo "=== Environment ==="
+          env | grep -E "DOCKER|TESTCONTAINERS"
+
       - name: Run tests with Testcontainers
         run: |
-          docker version
-
+          # Принудительно устанавливаем переменные для Testcontainers
+          export TESTCONTAINERS_RYUK_DISABLED=false
+          export TESTCONTAINERS_REUSE_ENABLE=false
+          export TESTCONTAINERS_HOST_OVERRIDE=$(ip route get 1 | awk '{print $NF;exit}')
+          
+          echo "TESTCONTAINERS_HOST_OVERRIDE: $TESTCONTAINERS_HOST_OVERRIDE"
+          
+          # Запускаем тесты
           mvn -q test
         env:
           DOCKER_HOST: unix:///var/run/docker.sock
           TESTCONTAINERS_RYUK_DISABLED: "false"
+          TESTCONTAINERS_REUSE_ENABLE: "false"
+
+
 
       - name: Upload test reports
         if: always()
