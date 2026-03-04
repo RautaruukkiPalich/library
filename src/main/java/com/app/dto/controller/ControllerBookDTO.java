@@ -43,9 +43,9 @@ public class ControllerBookDTO {
         @Max(value = 2040, message = "year must be lower than 2040")
         private int pubYear;
 
-        @Schema(description = "international standard book number", example = "978-5-127-12345-7", requiredMode = Schema.RequiredMode.REQUIRED, pattern = "\\d{3}-\\d-\\d{3}-\\d{5}-\\d")
+        @Schema(description = "international standard book number", example = "978-5-17-123456-7", pattern = "^\\d{3}-\\d{1,5}-\\d{1,7}-\\d{1,6}-\\d$")
         @JsonProperty("isbn")
-        @Pattern(regexp = "\\d{3}-\\d-\\d{3}-\\d{5}-\\d", message = "Invalid ISBN format")
+        @Pattern(regexp = "^\\d{3}-\\d{1,5}-\\d{1,7}-\\d{1,6}-\\d$", message = "Invalid ISBN format")
         @NotBlank(message = "isbn is required")
         private String isbn;
 
@@ -89,9 +89,9 @@ public class ControllerBookDTO {
         @Max(value = 2040, message = "year must be lower than 2040")
         private Integer pubYear;
 
-        @Schema(description = "international standard book number", example = "978-5-17-123456-7", pattern = "\\d{3}-\\d-\\d{3}-\\d{5}-\\d")
+        @Schema(description = "international standard book number", example = "978-5-17-123456-7", pattern = "^\\d{3}-\\d{1,5}-\\d{1,7}-\\d{1,6}-\\d$")
         @JsonProperty("isbn")
-        @Pattern(regexp = "\\d{3}-\\d-\\d{3}-\\d{5}-\\d", message = "Invalid ISBN format")
+        @Pattern(regexp = "^\\d{3}-\\d{1,5}-\\d{1,7}-\\d{1,6}-\\d$", message = "Invalid ISBN format")
         private String isbn;
 
         @Schema(description = "book page count", example = "123", minimum = "1", maximum = "20000")

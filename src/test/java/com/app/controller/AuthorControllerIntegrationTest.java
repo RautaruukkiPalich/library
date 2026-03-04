@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.*;
 
-public class AuthorContollerIntegrationTest extends BaseIntegrationTest {
+public class AuthorControllerIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
