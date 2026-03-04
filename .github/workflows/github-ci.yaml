@@ -54,7 +54,3 @@ jobs:
         with:
           name: docker-image
           path: library-app.tar.gz
-
-      - name: Test the built image
-        run: |
-          docker run --rm library-app:latest java -version

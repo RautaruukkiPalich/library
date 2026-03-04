@@ -42,8 +42,8 @@ public class Book extends DateMixin {
     @Column(name = "page_count")
     private Integer pageCount;
 
-    private static final Pattern ISBN_PATTERN =
-            Pattern.compile("^\\d{3}-\\d-\\d{3}-\\d{5}-\\d$");
+    private static final Pattern ISBN_PATTERN = 
+        Pattern.compile("^\\d{3}-\\d{1,5}-\\d{1,7}-\\d{1,6}-\\d$");
 
     public Book() {
     }

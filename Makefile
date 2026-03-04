@@ -3,13 +3,13 @@
 run:
 	mvn spring-boot:run
 
-build:
-	mvn clean package
+build: clean
+	mvn package
 
 clean:
 	mvn clean
 
-test:
+test: clean
 	mvn test
 
 dev-up:
