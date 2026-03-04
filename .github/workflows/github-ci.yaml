@@ -17,7 +17,6 @@ jobs:
       - name: Run tests with Testcontainers
         run: |
           docker version
-          docker ps
 
           mvn -q test
         env:

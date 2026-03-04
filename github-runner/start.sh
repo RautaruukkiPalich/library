@@ -1,7 +1,32 @@
 #!/bin/bash
 
+if [ -S /var/run/docker.sock ]; then
+    echo "Docker socket found, checking permissions..."
+    ls -la /var/run/docker.sock
+
+    if ! docker version > /dev/null 2>&1; then
+        echo "Fixing docker socket permissions..."
+        sudo chmod 666 /var/run/docker.sock || true
+    fi
+
+    if ! groups | grep -q docker; then
+        echo "Adding user to docker group..."
+        sudo usermod -aG docker $USER || true
+    fi
+
+    if docker version > /dev/null 2>&1; then
+        echo "Docker is working correctly"
+        docker version --format '{{.Server.Version}}'
+    else
+        echo "WARNING: Docker still not working"
+    fi
+else
+    echo "ERROR: Docker socket not mounted!"
+    exit 1
+fi
+
 if [ -f ".runner" ]; then
-  log "Runner already configured. Skipping registration..."
+  echo "Runner already configured. Skipping registration..."
 else
   if [ -n "${GITHUB_PAT}" ]; then
     echo "Getting registration token from GitHub API..."
