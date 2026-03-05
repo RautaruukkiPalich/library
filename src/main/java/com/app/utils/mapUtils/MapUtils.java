@@ -1,4 +1,4 @@
-package com.app.utils.MapUtils;
+package com.app.utils.mapUtils;
 
 import java.util.Arrays;
 import java.util.Map;
