@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -136,6 +137,8 @@ class AuthorServiceTest {
     void add_shouldSaveAuthorAndReturnId() {
         Author savedAuthor = new Author(authorDTO);
         savedAuthor.setId(1L);
+        savedAuthor.setCreatedAt(OffsetDateTime.now());
+        savedAuthor.setUpdatedAt(OffsetDateTime.now());
 
         when(authorRepository.save(any(Author.class))).thenReturn(savedAuthor);
 

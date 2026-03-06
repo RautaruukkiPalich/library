@@ -2,24 +2,22 @@ package com.app.model;
 
 import com.app.dto.AuthorDTO;
 import com.app.exception.validation.AuthorValidationException;
-import com.app.model.mixin.DateMixin;
-import com.app.utils.MapMerger;
 import com.app.utils.validator.LongValidator;
 import com.app.utils.validator.StringValidator;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BinaryOperator;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "authors")
-public class Author extends DateMixin {
+public class Author extends BaseModel {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
@@ -37,7 +35,7 @@ public class Author extends DateMixin {
     private List<Book> books;
 
     public Author() {
-        super();
+        super(AuthorValidationException::new);
     }
 
     public Author(
@@ -45,14 +43,14 @@ public class Author extends DateMixin {
             String lastname,
             String surname
     ) {
-        super();
+        super(AuthorValidationException::new);
         this.firstname = firstname;
         this.lastname = lastname;
         this.surname = surname;
     }
 
     public Author(AuthorDTO dto) {
-        super();
+        super(AuthorValidationException::new);
         Objects.requireNonNull(dto, "dto must not be null");
 
         this.firstname = dto.firstname();
@@ -60,40 +58,36 @@ public class Author extends DateMixin {
         this.surname = dto.surname();
     }
 
-    public void validate() throws AuthorValidationException {
-        checkValidationErrors(
-                this.validateFirstname(),
-                this.validateLastname(),
-                this.validateSurname()
-        );
+    @Override
+    protected final List<Map<String, String>> validateBaseFields() {
+        List<Map<String, String>> list = new ArrayList<>(super.validateBaseFields());
+        addBaseValidations(list);
+        return list;
     }
 
-    public void validateStrict() throws AuthorValidationException {
-        checkValidationErrors(
-                this.validateId(),
-                this.validateFirstname(),
-                this.validateLastname(),
-                this.validateSurname()
-        );
+    @Override
+    protected final List<Map<String, String>> validateStrictFields() {
+        List<Map<String, String>> list = new ArrayList<>(super.validateStrictFields());
+        addBaseValidations(list);
+        addStrictValidations(list);
+        return list;
+    }
+
+
+    private void addBaseValidations(List<Map<String, String>> list) {
+        list.add(this.validateFirstname());
+        list.add(this.validateLastname());
+        list.add(this.validateSurname());
+    }
+
+    private void addStrictValidations(List<Map<String, String>> list) {
+        list.add(this.validateId());
     }
 
     private static final String ID_KEY = "id";
     private static final String FIRSTNAME_KEY = "firstname";
     private static final String LASTNAME_KEY = "lastname";
     private static final String SURNAME_KEY = "surname";
-
-    private static final BinaryOperator<String> MERGE_FUNC = (v1, v2) -> v1 + "; " + v2;
-
-    @SafeVarargs
-    private void checkValidationErrors(Map<String, String>... maps) throws AuthorValidationException {
-        var errors = new MapMerger<>(maps)
-                .withMergeFunc(MERGE_FUNC)
-                .merge();
-
-        if (errors != null && !errors.isEmpty()) {
-            throw new AuthorValidationException(errors);
-        }
-    }
 
     private Map<String, String> validateId() {
         return new LongValidator(ID_KEY, this.id)
