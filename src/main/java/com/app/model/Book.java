@@ -91,7 +91,7 @@ public class Book extends DateMixin {
 
     public void validateStrict() throws BookValidationException {
         if (this.getId() <= 0) {
-            throw new BookValidationException("id", "id cant be less than 1");
+            throw new BookValidationException("id", "cant be less than 1");
         }
         this.validate();
     }
@@ -123,6 +123,9 @@ public class Book extends DateMixin {
         if (this.author == null) {
             throw new BookValidationException("author", "cant be null");
         }
+        if (this.author.getId() == null) {
+            throw new BookValidationException("author", "author id cant be null");
+        }
         if (this.author.getId() <= 0) {
             throw new BookValidationException("author", "author id cant be less than 1");
         }
@@ -132,8 +135,11 @@ public class Book extends DateMixin {
         if (this.genre == null) {
             throw new BookValidationException("genre", "cant be null");
         }
+        if (this.genre.getId() == null) {
+            throw new BookValidationException("genre", "genre id cant be null");
+        }
         if (this.genre.getId() <= 0) {
-            throw new BookValidationException("genre", "author id cant be less than 1");
+            throw new BookValidationException("genre", "genre id cant be less than 1");
         }
     }
 
