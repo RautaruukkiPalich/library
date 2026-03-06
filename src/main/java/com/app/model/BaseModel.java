@@ -4,10 +4,7 @@ import com.app.exception.validation.ValidationException;
 import com.app.utils.MapMerger;
 import com.app.utils.validator.OffsetDateTimeValidator;
 import com.app.utils.validator.ValidationExceptionFactory;
-import jakarta.persistence.Column;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -46,6 +43,7 @@ public abstract class BaseModel {
         updatedAt = OffsetDateTime.now(ZoneOffset.UTC);
     }
 
+    @Transient
     private final ValidationExceptionFactory exceptionFactory;
 
     protected BaseModel(ValidationExceptionFactory exceptionFactory) {
