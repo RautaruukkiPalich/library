@@ -2,8 +2,7 @@ package com.app.model;
 
 import com.app.dto.GenreDTO;
 import com.app.exception.validation.GenreValidationException;
-import com.app.model.mixin.DateMixin;
-import com.app.utils.validator.LongValidator;
+import com.app.utils.validator.NumberValidator;
 import com.app.utils.validator.StringValidator;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -40,7 +39,7 @@ public class Genre extends BaseModel {
         super(GenreValidationException::new);
     }
 
-    public Genre(String name){
+    public Genre(String name) {
         super(GenreValidationException::new);
         this.name = name;
     }
@@ -72,7 +71,7 @@ public class Genre extends BaseModel {
     private final static String NAME_KEY = "name";
 
     private Map<String, String> validateId() {
-        return new LongValidator(ID_KEY, this.id)
+        return new NumberValidator<>(ID_KEY, this.id)
                 .notNull()
                 .min(1L)
                 .validate();

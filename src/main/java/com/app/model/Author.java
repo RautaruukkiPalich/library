@@ -2,7 +2,7 @@ package com.app.model;
 
 import com.app.dto.AuthorDTO;
 import com.app.exception.validation.AuthorValidationException;
-import com.app.utils.validator.LongValidator;
+import com.app.utils.validator.NumberValidator;
 import com.app.utils.validator.StringValidator;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -90,7 +90,7 @@ public class Author extends BaseModel {
     private static final String SURNAME_KEY = "surname";
 
     private Map<String, String> validateId() {
-        return new LongValidator(ID_KEY, this.id)
+        return new NumberValidator<>(ID_KEY, this.id)
                 .notNull()
                 .min(1L)
                 .validate();
