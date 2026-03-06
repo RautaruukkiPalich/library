@@ -4,8 +4,8 @@ package com.app.utils.validator;
 import java.util.Map;
 
 public class LongValidator extends Validator<Long, LongValidator> {
-    private static final String ERROR_TOO_LOW = "cant be less then %d";
-    private static final String ERROR_TOO_HIGH = "cant be greater then %d";
+    public static final String ERROR_TOO_LOW = "cant be less then %d";
+    public static final String ERROR_TOO_HIGH = "cant be greater then %d";
 
 
     public LongValidator(String key, Long value) {

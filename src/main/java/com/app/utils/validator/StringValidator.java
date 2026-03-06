@@ -3,9 +3,9 @@ package com.app.utils.validator;
 import java.util.Map;
 
 public class StringValidator extends Validator<String, StringValidator> {
-    private static final String ERROR_BLANK = "cant be blank";
-    private static final String ERROR_TOO_SHORT = "cant be shorter %d characters";
-    private static final String ERROR_TOO_LONG = "cant be longer %d characters";
+    public static final String ERROR_BLANK = "cant be blank";
+    public static final String ERROR_TOO_SHORT = "cant be shorter %d characters";
+    public static final String ERROR_TOO_LONG = "cant be longer %d characters";
 
 
     public StringValidator(String key, String value) {
