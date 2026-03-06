@@ -3,18 +3,22 @@ package com.app.model;
 import com.app.dto.GenreDTO;
 import com.app.exception.validation.GenreValidationException;
 import com.app.model.mixin.DateMixin;
+import com.app.utils.validator.LongValidator;
+import com.app.utils.validator.StringValidator;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "genres")
-public class Genre extends DateMixin {
+public class Genre extends BaseModel {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
@@ -26,41 +30,60 @@ public class Genre extends DateMixin {
     private List<Book> books;
 
     public Genre(GenreDTO dto) {
+        super(GenreValidationException::new);
         Objects.requireNonNull(dto, "dto must not be null");
 
         this.name = dto.name();
     }
 
     public Genre() {
+        super(GenreValidationException::new);
     }
 
-    public Genre(String name) {
+    public Genre(String name){
+        super(GenreValidationException::new);
         this.name = name;
     }
 
-    public void validate() throws GenreValidationException {
-        this.validateName();
+    @Override
+    protected final List<Map<String, String>> validateBaseFields() {
+        List<Map<String, String>> list = new ArrayList<>(super.validateBaseFields());
+        addBaseValidations(list);
+        return list;
     }
 
-    public void validateStrict() throws GenreValidationException {
-        if (this.getId() <= 0) {
-            throw new GenreValidationException("id", "id cant be less than 1");
-        }
-        this.validate();
+    @Override
+    protected final List<Map<String, String>> validateStrictFields() {
+        List<Map<String, String>> list = new ArrayList<>(super.validateStrictFields());
+        addBaseValidations(list);
+        addStrictValidations(list);
+        return list;
     }
 
-    private void validateName() throws GenreValidationException {
-        if (this.name == null) {
-            throw new GenreValidationException("name", "cant be null");
-        }
-        if (this.name.isBlank()) {
-            throw new GenreValidationException("name", "cant be blank");
-        }
-        if (this.name.length() < 2) {
-            throw new GenreValidationException("name", "cant be shorter 2 characters");
-        }
-        if (this.name.length() > 255) {
-            throw new GenreValidationException("name", "cant be longer 255 characters");
-        }
+    private void addBaseValidations(List<Map<String, String>> list) {
+        list.add(this.validateName());
+    }
+
+    private void addStrictValidations(List<Map<String, String>> list) {
+        list.add(this.validateId());
+    }
+
+    private static final String ID_KEY = "id";
+    private final static String NAME_KEY = "name";
+
+    private Map<String, String> validateId() {
+        return new LongValidator(ID_KEY, this.id)
+                .notNull()
+                .min(1L)
+                .validate();
+    }
+
+    private Map<String, String> validateName() {
+        return new StringValidator(NAME_KEY, this.name)
+                .notNull()
+                .notBlank()
+                .minLength(2)
+                .maxLength(255)
+                .validate();
     }
 }
