@@ -6,7 +6,6 @@ import com.app.model.mixin.DateMixin;
 import com.app.utils.MapMerger;
 import com.app.utils.validator.LongValidator;
 import com.app.utils.validator.StringValidator;
-import com.app.utils.validator.Validator;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,14 +35,6 @@ public class Author extends DateMixin {
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
     private List<Book> books;
-
-    private static final String ID_KEY = "id";
-    private static final String FIRSTNAME_KEY = "firstname";
-    private static final String LASTNAME_KEY = "lastname";
-    private static final String SURNAME_KEY = "surname";
-
-    private static final BinaryOperator<String> MERGE_FUNC = (v1, v2) -> v1 + "; " + v2;
-
 
     public Author() {
         super();
@@ -86,6 +77,13 @@ public class Author extends DateMixin {
         );
     }
 
+    private static final String ID_KEY = "id";
+    private static final String FIRSTNAME_KEY = "firstname";
+    private static final String LASTNAME_KEY = "lastname";
+    private static final String SURNAME_KEY = "surname";
+
+    private static final BinaryOperator<String> MERGE_FUNC = (v1, v2) -> v1 + "; " + v2;
+
     @SafeVarargs
     private void checkValidationErrors(Map<String, String>... maps) throws AuthorValidationException {
         var errors = new MapMerger<>(maps)
@@ -101,9 +99,7 @@ public class Author extends DateMixin {
         return new LongValidator(ID_KEY, this.id)
                 .notNull()
                 .min(1L)
-                .max(null)
                 .validate();
-//        return Validator.validateLong(ID_KEY, this.id, 1L, null);
     }
 
     private Map<String, String> validateFirstname() {
@@ -113,7 +109,6 @@ public class Author extends DateMixin {
                 .minLength(2)
                 .maxLength(255)
                 .validate();
-//        return Validator.validateString(FIRSTNAME_KEY, this.firstname, 2, 255);
     }
 
     private Map<String, String> validateLastname() {
@@ -123,7 +118,6 @@ public class Author extends DateMixin {
                 .minLength(2)
                 .maxLength(255)
                 .validate();
-//        return Validator.validateString(LASTNAME_KEY, this.lastname, 2, 255);
     }
 
     private Map<String, String> validateSurname() {
@@ -133,6 +127,5 @@ public class Author extends DateMixin {
                 .minLength(2)
                 .maxLength(255)
                 .validate();
-//        return Validator.validateString(SURNAME_KEY, this.surname, 2, 255);
     }
 }

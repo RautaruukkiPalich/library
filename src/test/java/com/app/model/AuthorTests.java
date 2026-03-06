@@ -2,7 +2,9 @@ package com.app.model;
 
 import com.app.dto.AuthorDTO;
 import com.app.exception.validation.AuthorValidationException;
-import com.app.utils.MapUtils;
+import com.app.utils.map.MapUtils;
+import com.app.utils.validator.StringValidator;
+import com.app.utils.validator.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -55,71 +57,85 @@ public class AuthorTests {
         ) {
         }
 
+        final String ERR_NULL = Validator.ERROR_NULL;
+        final String ERR_BLANK = StringValidator.ERROR_BLANK;
+        final String ERR_SHORT_2 = String.format(StringValidator.ERROR_TOO_SHORT, 2);
+        final String ERR_LONG_255 = String.format(StringValidator.ERROR_TOO_LONG, 255);
+
+        final String FIRSTNAME = "firstname";
+        final String LASTNAME = "lastname";
+        final String SURNAME = "surname";
+
+        final String BLANC_STRING = "";
+        final String SHORT_STRING = "1";
+        final String LONG_STRING = "1".repeat(260);
+        final String VALID_STRING = "132";
+
         List<ValidationTestCase> tcs = List.of(
                 new ValidationTestCase(
-                        new Author(null, "321", "321"),
-                        Map.of("firstname", "cant be null")
+                        new Author(null, VALID_STRING, VALID_STRING),
+                        Map.of(FIRSTNAME, ERR_NULL)
                 ),
                 new ValidationTestCase(
-                        new Author("", "321", "321"),
-                        Map.of("firstname", "cant be blank")
+                        new Author(BLANC_STRING, VALID_STRING, VALID_STRING),
+                        Map.of(FIRSTNAME, ERR_BLANK)
                 ),
                 new ValidationTestCase(
-                        new Author("1", "321", "321"),
-                        Map.of("firstname", "cant be shorter 2 characters")
+                        new Author(SHORT_STRING, VALID_STRING, VALID_STRING),
+                        Map.of(FIRSTNAME, ERR_SHORT_2)
                 ),
                 new ValidationTestCase(
-                        new Author("a".repeat(260), "321", "321"),
-                        Map.of("firstname", "cant be longer 255 characters")
-                ),
-
-                new ValidationTestCase(
-                        new Author("132", null, "321"),
-                        Map.of("lastname", "cant be null")
-                ),
-                new ValidationTestCase(
-                        new Author("132", "", "321"),
-                        Map.of("lastname", "cant be blank")
-                ),
-                new ValidationTestCase(
-                        new Author("132", "1", "321"),
-                        Map.of("lastname", "cant be shorter 2 characters")
-                ),
-                new ValidationTestCase(
-                        new Author("321", "a".repeat(260), "321"),
-                        Map.of("lastname", "cant be longer 255 characters")
+                        new Author(LONG_STRING, VALID_STRING, VALID_STRING),
+                        Map.of(FIRSTNAME, ERR_LONG_255)
                 ),
 
                 new ValidationTestCase(
-                        new Author("132", "123", null),
-                        Map.of("surname", "cant be null")
+                        new Author(VALID_STRING, null, VALID_STRING),
+                        Map.of(LASTNAME, ERR_NULL)
                 ),
                 new ValidationTestCase(
-                        new Author("132", "132", ""),
-                        Map.of("surname", "cant be blank")
+                        new Author(VALID_STRING, BLANC_STRING, VALID_STRING),
+                        Map.of(LASTNAME, ERR_BLANK)
                 ),
                 new ValidationTestCase(
-                        new Author("132", "123", "1"),
-                        Map.of("surname", "cant be shorter 2 characters")
+                        new Author(VALID_STRING, SHORT_STRING, VALID_STRING),
+                        Map.of(LASTNAME, ERR_SHORT_2)
                 ),
                 new ValidationTestCase(
-                        new Author("321", "321", "a".repeat(260)),
-                        Map.of("surname", "cant be longer 255 characters")
+                        new Author(VALID_STRING, LONG_STRING, VALID_STRING),
+                        Map.of(LASTNAME, ERR_LONG_255)
+                ),
+
+                new ValidationTestCase(
+                        new Author(VALID_STRING, VALID_STRING, null),
+                        Map.of(SURNAME, ERR_NULL)
                 ),
                 new ValidationTestCase(
-                        new Author("", "", ""),
+                        new Author(VALID_STRING, VALID_STRING, BLANC_STRING),
+                        Map.of(SURNAME, ERR_BLANK)
+                ),
+                new ValidationTestCase(
+                        new Author(VALID_STRING, VALID_STRING, SHORT_STRING),
+                        Map.of(SURNAME, ERR_SHORT_2)
+                ),
+                new ValidationTestCase(
+                        new Author(VALID_STRING, VALID_STRING, LONG_STRING),
+                        Map.of(SURNAME, ERR_LONG_255)
+                ),
+                new ValidationTestCase(
+                        new Author(BLANC_STRING, BLANC_STRING, BLANC_STRING),
                         Map.of(
-                                "firstname", "cant be blank",
-                                "lastname", "cant be blank",
-                                "surname", "cant be blank"
+                                FIRSTNAME, ERR_BLANK,
+                                LASTNAME, ERR_BLANK,
+                                SURNAME, ERR_BLANK
                         )
                 ),
                 new ValidationTestCase(
-                        new Author("1", null, "a".repeat(260)),
+                        new Author(SHORT_STRING, null, LONG_STRING),
                         Map.of(
-                                "firstname", "cant be shorter 2 characters",
-                                "lastname", "cant be null",
-                                "surname", "cant be longer 255 characters"
+                                FIRSTNAME, ERR_SHORT_2,
+                                LASTNAME, ERR_NULL,
+                                SURNAME, ERR_LONG_255
                         )
                 )
 
@@ -135,7 +151,7 @@ public class AuthorTests {
             var actualErrors = ex.getErrorsMap();
             assertNotNull(actualErrors);
             assertFalse(actualErrors.isEmpty());
-            assertTrue(MapUtils.anyMatch(actualErrors, tc.expectedErrors));
+            assertTrue(MapUtils.anyMatch(actualErrors, tc.expectedErrors, String::contains));
         });
 
     }
