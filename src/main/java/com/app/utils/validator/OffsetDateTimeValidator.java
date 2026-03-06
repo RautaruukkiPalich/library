@@ -12,19 +12,19 @@ public class OffsetDateTimeValidator extends Validator<OffsetDateTime, OffsetDat
         super(key, value);
     }
 
-    public OffsetDateTimeValidator from(OffsetDateTime from) {
-        if (from != null) {
+    public OffsetDateTimeValidator after(OffsetDateTime offsetDateTime) {
+        if (offsetDateTime != null) {
             addCheck(() ->
-                    value.isBefore(from) ? Map.of(key, ERROR_DATE_TOO_EARLY) : null
+                    value.isBefore(offsetDateTime) ? Map.of(key, ERROR_DATE_TOO_EARLY) : null
             );
         }
         return this;
     }
 
-    public OffsetDateTimeValidator to(OffsetDateTime to) {
-        if (to != null) {
+    public OffsetDateTimeValidator before(OffsetDateTime offsetDateTime) {
+        if (offsetDateTime != null) {
             addCheck(() ->
-                    value.isAfter(to) ? Map.of(key, ERROR_DATE_TOO_LATE) : null
+                    value.isAfter(offsetDateTime) ? Map.of(key, ERROR_DATE_TOO_LATE) : null
             );
         }
         return this;

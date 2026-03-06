@@ -109,12 +109,14 @@ public abstract class BaseModel {
     protected Map<String, String> validateCreatedAt() {
         return new OffsetDateTimeValidator(CREATED_AT_KEY, this.createdAt)
                 .notNull()
+                .before(OffsetDateTime.now())
                 .validate();
     }
 
     protected Map<String, String> validateUpdatedAt() {
         return new OffsetDateTimeValidator(UPDATED_AT_KEY, this.updatedAt)
                 .notNull()
+                .before(OffsetDateTime.now())
                 .validate();
     }
 
