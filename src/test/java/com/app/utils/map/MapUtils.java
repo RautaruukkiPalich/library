@@ -48,7 +48,13 @@ public class MapUtils<K, V> {
     public static <K, V> boolean match(Map<K, V> actual, Map<K, V> expected, MatchStrategy strategy, Comparator<V> comparator) {
         return strategy.match(
                 expected.entrySet().stream(),
-                entry -> comparator.compare(entry.getValue(), actual.get(entry.getKey()))
+                entry -> {
+                    V actualValue = actual.get(entry.getKey());
+                    if (actualValue == null){
+                        return false;
+                    }
+                    return comparator.compare(entry.getValue(), actualValue);
+                }
         );
     }
 
