@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -114,6 +115,8 @@ class GenreServiceTest {
     void add_shouldSaveGenreAndReturnId() {
         Genre savedGenre = new Genre(genreDTO);
         savedGenre.setId(1L);
+        savedGenre.setCreatedAt(OffsetDateTime.now());
+        savedGenre.setUpdatedAt(OffsetDateTime.now());
 
         when(genreRepository.save(any(Genre.class))).thenReturn(savedGenre);
 
