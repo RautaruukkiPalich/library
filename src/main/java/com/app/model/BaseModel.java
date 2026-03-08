@@ -51,8 +51,8 @@ public abstract class BaseModel {
                 "ValidationExceptionFactory must not be null");
     }
 
-    private static final String CREATED_AT_KEY = "created_at";
-    private static final String UPDATED_AT_KEY = "updated_at";
+    private static final String CREATED_AT_KEY = "createdAt";
+    private static final String UPDATED_AT_KEY = "updatedAt";
 
     public void validate() throws ValidationException {
         checkErrorsAndThrow(
@@ -77,13 +77,6 @@ public abstract class BaseModel {
                 .withMergeFunc(DEFAULT_MERGE_FUNC)
                 .merge(maps);
     }
-
-//    @SafeVarargs
-//    protected final Map<String, String> collectValidateErrors(BinaryOperator<String> mergeFunc, Map<String, String>... maps) {
-//        return new MapMerger<String, String>()
-//                .withMergeFunc(mergeFunc)
-//                .merge(maps);
-//    }
 
     protected List<Map<String, String>> validateBaseFields() {
         List<Map<String, String>> list = new ArrayList<>();
