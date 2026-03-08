@@ -1,6 +1,7 @@
 package com.app.utils.validator;
 
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class StringValidator extends Validator<String, StringValidator> {
     public static final String ERROR_BLANK = "cant be blank";
@@ -32,6 +33,24 @@ public class StringValidator extends Validator<String, StringValidator> {
         addCheck(() ->
                 value.length() > maxLength ?
                         Map.of(key, String.format(ERROR_TOO_LONG, maxLength)) :
+                        null
+        );
+        return this;
+    }
+
+    public StringValidator match(Pattern pattern) {
+        addCheck(() ->
+                !pattern.matcher(value).matches() ?
+                        Map.of(key, String.format("invalid pattern. expected '%s'", pattern)) :
+                        null
+        );
+        return this;
+    }
+
+    public StringValidator match(Pattern pattern, String expectedPattern) {
+        addCheck(() ->
+                !pattern.matcher(value).matches() ?
+                        Map.of(key, String.format("invalid pattern. expected '%s'", expectedPattern)) :
                         null
         );
         return this;
