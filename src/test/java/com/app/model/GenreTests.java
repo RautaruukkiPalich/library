@@ -62,9 +62,9 @@ public class GenreTests {
         genre.setUpdatedAt(OffsetDateTime.now().plusDays(3));
 
         var expectedErrors = Map.of(
-                "created_at", "date is too late",
-                "updated_at", "date is too late",
-                "id", "cant be less then 1"
+                "createdAt", "date is too late",
+                "updatedAt", "date is too late",
+                "id", "cant be less than 1"
         );
 
         GenreValidationException ex = assertThrows(

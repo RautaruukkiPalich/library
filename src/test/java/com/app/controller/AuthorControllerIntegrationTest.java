@@ -2,7 +2,6 @@ package com.app.controller;
 
 import com.app.BaseIntegrationTest;
 import com.app.utils.JsonTestUtils;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,15 +12,14 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class AuthorControllerIntegrationTest extends BaseIntegrationTest {
 
@@ -32,6 +30,7 @@ public class AuthorControllerIntegrationTest extends BaseIntegrationTest {
     private JdbcTemplate jdbcTemplate;
 
     private final static String PREFIX_JSON_PATH = "/controllers/author/json";
+    private final static String BASE_API_AUTHOR_PATH = "/api/authors/";
 
     @BeforeEach
     void setUp() {
@@ -45,12 +44,13 @@ public class AuthorControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void createAuthor_shouldReturn201andAuthorId() throws Exception {
-        String requestBody = JsonTestUtils.readJsonFile(PREFIX_JSON_PATH + "/requests/create-valid-author.json");
+        final String JSON_PATH = "/requests/create-valid-author.json";
+        String requestBody = JsonTestUtils.readJsonFile(PREFIX_JSON_PATH + JSON_PATH);
 
         MvcResult res = mockMvc.perform(
-                post("/api/authors/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+                        post(BASE_API_AUTHOR_PATH)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestBody))
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
                 .andReturn();
@@ -60,8 +60,8 @@ public class AuthorControllerIntegrationTest extends BaseIntegrationTest {
         Long id = Long.parseLong(location.substring(location.lastIndexOf('/') + 1));
 
         mockMvc.perform(
-                get("/api/authors/" + id)
-                        .accept(MediaType.APPLICATION_JSON))
+                        get(BASE_API_AUTHOR_PATH + id)
+                                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("id").value(id))
                 .andExpect(jsonPath("firstname").isNotEmpty())
@@ -75,126 +75,127 @@ public class AuthorControllerIntegrationTest extends BaseIntegrationTest {
     void createAuthor_shouldReturn400andValidationError() throws Exception {
 
         record TestCase(
-            String json,
-            ResultMatcher statusCode,
-            List<ResultMatcher> matchers
-        ){
+                String desc,
+                String json,
+                ResultMatcher statusCode,
+                List<ResultMatcher> matchers
+        ) {
             public ResultMatcher[] combineWith(ResultMatcher... commonMatchers) {
                 return Stream.concat(
-                    Arrays.stream(commonMatchers),
-                    this.matchers.stream()
+                        Arrays.stream(commonMatchers),
+                        this.matchers.stream()
                 ).toArray(ResultMatcher[]::new);
             }
         }
 
         List<TestCase> testCases = List.of(
-            // firstname tests
+                // firstname tests
+                new TestCase(
+                        "on empty firstname expect error",
+                        "{\"lastname\":\"123\", \"surname\":\"123\"}",
+                        status().isBadRequest(),
+                        List.of(jsonPath("*.firstname").value("firstname is required"))
+                ),
+                new TestCase(
+                        "on long firstname expect error",
+                        String.format("{\"firstname\":\"%s\", \"lastname\":\"123\", \"lastname\":\"123\"}", "a".repeat(260)),
+                        status().isBadRequest(),
+                        List.of(jsonPath("*.firstname").value("firstname must be between 2 and 255 characters"))
+                ),
+                new TestCase(
+                        "on short firstname expect error",
+                        "{\"firstname\":\"1\", \"lastname\":\"123\", \"lastname\":\"123\"}",
+                        status().isBadRequest(),
+                        List.of(jsonPath("*.firstname").value("firstname must be between 2 and 255 characters"))
+                ),
 
-            // empty firstname
-            new TestCase(
-                "{\"lastname\":\"123\", \"surname\":\"123\"}",
-                status().isBadRequest(),
-                List.of(jsonPath("*.firstname").value("firstname is required"))
-            ),
-            // long firstname
-            new TestCase(
-                String.format("{\"firstname\":\"%s\", \"lastname\":\"123\", \"lastname\":\"123\"}", "a".repeat(260) ),
-                status().isBadRequest(),
-                List.of(jsonPath("*.firstname").value("firstname must be between 2 and 255 characters"))
-            ),
-            // short firstname
-            new TestCase(
-                "{\"firstname\":\"1\", \"lastname\":\"123\", \"lastname\":\"123\"}",
-                status().isBadRequest(),
-                List.of(jsonPath("*.firstname").value("firstname must be between 2 and 255 characters"))
-            ),
-            // surname tests
+                // surname tests
+                new TestCase(
+                        "on empty surname expect error",
+                        "{\"firstname\":\"123\", \"lastname\":\"123\"}",
+                        status().isBadRequest(),
+                        List.of(jsonPath("*.surname").value("surname is required"))
+                ),
+                new TestCase(
+                        "on long surname expect error",
+                        String.format("{\"firstname\":\"123\", \"lastname\":\"123\", \"surname\":\"%s\"}", "a".repeat(260)),
+                        status().isBadRequest(),
+                        List.of(jsonPath("*.surname").value("surname must be between 2 and 255 characters"))
+                ),
+                new TestCase(
+                        "on short surname expect error",
+                        "{\"firstname\":\"132\", \"lastname\":\"123\", \"surname\":\"1\"}",
+                        status().isBadRequest(),
+                        List.of(jsonPath("*.surname").value("surname must be between 2 and 255 characters"))
+                ),
 
-            // empty surname
-            new TestCase(
-                "{\"firstname\":\"123\", \"lastname\":\"123\"}",
-                status().isBadRequest(),
-                List.of(jsonPath("*.surname").value("surname is required"))
-            ),
-            // long surname
-            new TestCase(
-                String.format("{\"firstname\":\"123\", \"lastname\":\"123\", \"surname\":\"%s\"}", "a".repeat(260) ),
-                status().isBadRequest(),
-                List.of(jsonPath("*.surname").value("surname must be between 2 and 255 characters"))
-            ),
-            // short surname
-            new TestCase(
-                "{\"firstname\":\"132\", \"lastname\":\"123\", \"surname\":\"1\"}",
-                status().isBadRequest(),
-                List.of(jsonPath("*.surname").value("surname must be between 2 and 255 characters"))
-            ),
-            // lastname tests
-
-            // empty lastname
-            new TestCase(
-                "{\"firstname\":\"123\", \"surname\":\"123\"}",
-                status().isBadRequest(),
-                List.of(jsonPath("*.lastname").value("lastname is required"))
-            ),
-            // long lastname
-            new TestCase(
-                String.format("{\"firstname\":\"123\", \"lastname\":\"%s\", \"surname\":\"123\"}", "a".repeat(260) ),
-                status().isBadRequest(),
-                List.of(jsonPath("*.lastname").value("lastname must be between 2 and 255 characters"))
-            ),
-            // short lastname
-            new TestCase(
-                "{\"firstname\":\"123\", \"lastname\":\"1\", \"surname\":\"123\"}",
-                status().isBadRequest(),
-                List.of(jsonPath("*.lastname").value("lastname must be between 2 and 255 characters"))
-            )
+                // lastname tests
+                new TestCase(
+                        "on empty lastname expect error",
+                        "{\"firstname\":\"123\", \"surname\":\"123\"}",
+                        status().isBadRequest(),
+                        List.of(jsonPath("*.lastname").value("lastname is required"))
+                ),
+                new TestCase(
+                        "on long lastname expect error",
+                        String.format("{\"firstname\":\"123\", \"lastname\":\"%s\", \"surname\":\"123\"}", "a".repeat(260)),
+                        status().isBadRequest(),
+                        List.of(jsonPath("*.lastname").value("lastname must be between 2 and 255 characters"))
+                ),
+                new TestCase(
+                        "on short lastname expect error",
+                        "{\"firstname\":\"123\", \"lastname\":\"1\", \"surname\":\"123\"}",
+                        status().isBadRequest(),
+                        List.of(jsonPath("*.lastname").value("lastname must be between 2 and 255 characters"))
+                )
         );
-        
+
 
         testCases.forEach(tc -> {
             try {
                 mockMvc.perform(
-                    post("/api/authors/")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(tc.json))
-                    .andExpect(tc.statusCode)
-                    .andExpectAll(
-                        tc.combineWith(
-                            jsonPath("error").value("validation error"),
-                            jsonPath("message").value("invalid argument parameter"),
-                            jsonPath("path").value("/api/authors/")
-                        )
-                    );
+                                post(BASE_API_AUTHOR_PATH)
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(tc.json))
+                        .andExpect(tc.statusCode)
+                        .andExpectAll(
+                                tc.combineWith(
+                                        jsonPath("error").value("validation error"),
+                                        jsonPath("message").value("invalid argument parameter"),
+                                        jsonPath("path").value(BASE_API_AUTHOR_PATH)
+                                )
+                        );
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new RuntimeException("Failed test: " + tc.desc, e);
             }
         });
     }
 
     @Test
     void getAllAuthors_shouldReturn200andTwoAuthors() throws Exception {
+        final String JSON_PATH_VALID_AUTHOR_1 = "/requests/create-valid-author.json";
+        final String JSON_PATH_VALID_AUTHOR_2 = "/requests/create-valid-author2.json";
 
-        String firstAuthor = JsonTestUtils.readJsonFile(PREFIX_JSON_PATH + "/requests/create-valid-author.json");
-        String secondAuthor = JsonTestUtils.readJsonFile(PREFIX_JSON_PATH + "/requests/create-valid-author2.json");
+        String firstAuthor = JsonTestUtils.readJsonFile(PREFIX_JSON_PATH + JSON_PATH_VALID_AUTHOR_1);
+        String secondAuthor = JsonTestUtils.readJsonFile(PREFIX_JSON_PATH + JSON_PATH_VALID_AUTHOR_2);
 
         mockMvc.perform(
-                post("/api/authors/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(firstAuthor))
+                        post(BASE_API_AUTHOR_PATH)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(firstAuthor))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(
-                post("/api/authors/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(secondAuthor))
+                        post(BASE_API_AUTHOR_PATH)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(secondAuthor))
                 .andExpect(status().isCreated());
 
-        mockMvc.perform(get("/api/authors/").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get(BASE_API_AUTHOR_PATH).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.authors", hasSize(2)))
                 .andExpectAll(
                         jsonPath("$.authors[*].id", everyItem(not(empty()))),
-                        // jsonPath("$.authors[*].id", containsInAnyOrder(1, 2)),
                         jsonPath("$.authors[*].firstname", everyItem(not(emptyString()))),
                         jsonPath("$.authors[*].surname", everyItem(not(emptyString()))),
                         jsonPath("$.authors[*].lastname", everyItem(not(emptyString()))),
@@ -202,14 +203,14 @@ public class AuthorControllerIntegrationTest extends BaseIntegrationTest {
                         jsonPath("$.authors[*].updated_at", everyItem(not(empty()))));
     }
 
-        @Test
+    @Test
     void deleteAuthor_shouldReturn200() throws Exception {
         String requestBody = JsonTestUtils.readJsonFile(PREFIX_JSON_PATH + "/requests/create-valid-author.json");
 
         MvcResult res = mockMvc.perform(
-                post("/api/authors/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+                        post(BASE_API_AUTHOR_PATH)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestBody))
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
                 .andReturn();
@@ -218,20 +219,22 @@ public class AuthorControllerIntegrationTest extends BaseIntegrationTest {
         assertNotNull(location);
         Long id = Long.parseLong(location.substring(location.lastIndexOf('/') + 1));
 
+        final String ID_PATH = BASE_API_AUTHOR_PATH + id;
+
         mockMvc.perform(
-                get("/api/authors/" + id)
-                        .accept(MediaType.APPLICATION_JSON))
+                        get(ID_PATH)
+                                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("id").value(id));
 
         mockMvc.perform(
-            delete("/api/authors/" + id)
-        )
-        .andExpect(status().isNoContent());
+                        delete(ID_PATH)
+                )
+                .andExpect(status().isNoContent());
 
         mockMvc.perform(
-                get("/api/authors/" + id)
-                        .accept(MediaType.APPLICATION_JSON))
+                        get(ID_PATH)
+                                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 }

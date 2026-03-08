@@ -85,7 +85,7 @@ class GenreServiceTest {
                 .isNotNull()
                 .satisfies(genre -> {
                     assertThat(genre.id()).isEqualTo(1L);
-                    assertThat(genre.name()).isEqualTo("Science Fiction");
+                    assertThat(genre.name()).isEqualTo(genre1.getName());
                 });
 
         verify(genreRepository, times(1)).getByID(1L);
@@ -94,19 +94,23 @@ class GenreServiceTest {
 
     @Test
     void getByID_withNullId_shouldThrowNullPointerException() {
+        final String MESSAGE = "id must not be null";
+
         assertThatThrownBy(() -> genreService.getByID(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("id must not be null");
+                .hasMessageContaining(MESSAGE);
     }
 
     @Test
     void getByID_whenGenreNotFound_shouldThrowGenreNotFoundException() {
         Long id = 999L;
+        final String MESSAGE = "genre not found with id: " + id;
+
         when(genreRepository.getByID(id)).thenThrow(new GenreNotFoundException(id));
 
         assertThatThrownBy(() -> genreService.getByID(id))
                 .isInstanceOf(GenreNotFoundException.class)
-                .hasMessageContaining("genre not found with id: " + id);
+                .hasMessageContaining(MESSAGE);
 
         verify(genreRepository, times(1)).getByID(id);
     }
@@ -136,9 +140,11 @@ class GenreServiceTest {
 
     @Test
     void add_withNullDto_shouldThrowNullPointerException() {
+        final String MESSAGE = "dto must not be null";
+
         assertThatThrownBy(() -> genreService.add(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("dto must not be null");
+                .hasMessageContaining(MESSAGE);
     }
 
     @Test
@@ -168,19 +174,23 @@ class GenreServiceTest {
 
     @Test
     void delete_withNullId_shouldThrowNullPointerException() {
+        final String MESSAGE = "id must not be null";
+
         assertThatThrownBy(() -> genreService.delete(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("id must not be null");
+                .hasMessageContaining(MESSAGE);
     }
 
     @Test
     void delete_whenGenreNotFound_shouldThrowGenreNotFoundException() {
         Long id = 999L;
+        final String MESSAGE = "genre not found with id: " + id;
+
         when(genreRepository.getByID(id)).thenThrow(new GenreNotFoundException(id));
 
         assertThatThrownBy(() -> genreService.delete(id))
                 .isInstanceOf(GenreNotFoundException.class)
-                .hasMessageContaining("genre not found with id: " + id);
+                .hasMessageContaining(MESSAGE);
 
         verify(genreRepository, times(1)).getByID(id);
         verify(genreRepository, never()).delete(any());

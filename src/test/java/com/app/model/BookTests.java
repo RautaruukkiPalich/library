@@ -6,11 +6,14 @@ import com.app.utils.map.MapUtils;
 import com.app.utils.validator.StringValidator;
 import com.app.utils.validator.Validator;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -119,8 +122,8 @@ public class BookTests {
         book.setUpdatedAt(OffsetDateTime.now().plusDays(3));
 
         var expectedErrors = Map.of(
-//                "created_at", "date is too late",
-//                "updated_at", "date is too late",
+                "createdAt", "date is too late",
+                "updatedAt", "date is too late",
                 "id", "cant be less than 1"
         );
 
@@ -136,9 +139,10 @@ public class BookTests {
         assertTrue(MapUtils.allMatch(actualErrors, expectedErrors, String::contains));
     }
 
-    @Test
-    void ValidateGenre_throwsValidationException() {
+    @TestFactory
+    Stream<DynamicTest> ValidateBook_throwsValidationException() {
         record ValidationTestCase(
+                String desc,
                 Book book,
                 Map<String, String> expectedErrors
         ) {
@@ -154,7 +158,6 @@ public class BookTests {
         final String GENRE = "genre";
         final String PUB_YEAR = "pubYear";
         final String ISBN = "isbn";
-        final String IS_AVAILABLE = "isAvailable";
         final String PAGE_COUNT = "pageCount";
 
         final String BLANC_STRING = "";
@@ -170,10 +173,12 @@ public class BookTests {
 
         List<ValidationTestCase> tcs = List.of(
                 new ValidationTestCase(
+                        "on null author id expect error",
                         new Book(validBookDTO, invalidAuthor, validGenre),
                         Map.of(AUTHOR, "author id cant be null")
                 ),
                 new ValidationTestCase(
+                        "on invalid author id expect error",
                         new Book(
                                 validBookDTO,
                                 authorInvalidID,
@@ -182,10 +187,12 @@ public class BookTests {
                         Map.of(AUTHOR, "author id cant be less than 1")
                 ),
                 new ValidationTestCase(
+                        "on null genre id expect error",
                         new Book(validBookDTO, validAuthor, invalidGenre),
                         Map.of(GENRE, "genre id cant be null")
                 ),
                 new ValidationTestCase(
+                        "on invalid genre id expect error",
                         new Book(
                                 validBookDTO,
                                 validAuthor,
@@ -194,6 +201,7 @@ public class BookTests {
                         Map.of(GENRE, "genre id cant be less than 1")
                 ),
                 new ValidationTestCase(
+                        "on blank title expect error",
                         new Book(
                                 BLANC_STRING,
                                 validAuthor,
@@ -207,6 +215,7 @@ public class BookTests {
                         Map.of(TITLE, ERR_BLANK)
                 ),
                 new ValidationTestCase(
+                        "on short title expect error",
                         new Book(
                                 SHORT_STRING,
                                 validAuthor,
@@ -220,6 +229,7 @@ public class BookTests {
                         Map.of(TITLE, ERR_SHORT_2)
                 ),
                 new ValidationTestCase(
+                        "on long title expect error",
                         new Book(
                                 LONG_STRING,
                                 validAuthor,
@@ -233,6 +243,7 @@ public class BookTests {
                         Map.of(TITLE, ERR_LONG_255)
                 ),
                 new ValidationTestCase(
+                        "on null isbn expect error",
                         new Book(
                                 VALID_STRING,
                                 validAuthor,
@@ -246,6 +257,7 @@ public class BookTests {
                         Map.of(ISBN, ERR_NULL)
                 ),
                 new ValidationTestCase(
+                        "on blank isbn expect error",
                         new Book(
                                 VALID_STRING,
                                 validAuthor,
@@ -259,19 +271,21 @@ public class BookTests {
                         Map.of(ISBN, ERR_BLANK)
                 ),
                 new ValidationTestCase(
+                        "on invalid isbn expect error",
                         new Book(
                                 VALID_STRING,
                                 validAuthor,
                                 validGenre,
-                                "123123",
+                                "123123121321",
                                 2000,
                                 2000,
                                 true
 
                         ),
-                        Map.of(ISBN, "invalid format. expected format: 978-5-127-12345-7")
+                        Map.of(ISBN, "invalid pattern. expected '^\\d{3}-\\d{1,5}-\\d{1,7}-\\d{1,6}-\\d$'")
                 ),
                 new ValidationTestCase(
+                        "on low pub year expect error",
                         new Book(
                                 VALID_STRING,
                                 validAuthor,
@@ -285,6 +299,7 @@ public class BookTests {
                         Map.of(PUB_YEAR, "cant be less than 1900")
                 ),
                 new ValidationTestCase(
+                        "on high pub year expect error",
                         new Book(
                                 VALID_STRING,
                                 validAuthor,
@@ -298,6 +313,7 @@ public class BookTests {
                         Map.of(PUB_YEAR, "cant be greater than 2040")
                 ),
                 new ValidationTestCase(
+                        "on low page count expect error",
                         new Book(
                                 VALID_STRING,
                                 validAuthor,
@@ -311,6 +327,7 @@ public class BookTests {
                         Map.of(PAGE_COUNT, "cant be less than 1")
                 ),
                 new ValidationTestCase(
+                        "on high page count expect error",
                         new Book(
                                 VALID_STRING,
                                 validAuthor,
@@ -325,7 +342,7 @@ public class BookTests {
                 )
         );
 
-        tcs.forEach(tc -> {
+        return tcs.stream().map(tc -> DynamicTest.dynamicTest(tc.desc, () -> {
             BookValidationException ex = assertThrows(
                     BookValidationException.class,
                     tc.book::validate
@@ -335,8 +352,11 @@ public class BookTests {
             var actualErrors = ex.getErrorsMap();
             assertNotNull(actualErrors);
             assertFalse(actualErrors.isEmpty());
-            assertTrue(MapUtils.anyMatch(actualErrors, tc.expectedErrors, String::contains), "321");
-        });
+
+            assertTrue(MapUtils.anyMatch(actualErrors, tc.expectedErrors, String::contains),
+                    () -> String.format("\nactual: %s\nexpected: %s\n",
+                            actualErrors, tc.expectedErrors));
+        }));
 
     }
 }

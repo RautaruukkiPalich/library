@@ -22,6 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -57,15 +58,25 @@ class BookServiceTest {
     private BookDTO patchDTO;
     private BookFilter bookFilter;
 
+    private final String VALIDATION_ERROR = "validation error";
+
+    private static Book createValidBook(Book book, Long id) {
+        book.setId(id);
+        book.setCreatedAt(OffsetDateTime.now());
+        book.setUpdatedAt(OffsetDateTime.now());
+        return book;
+    }
+
     @BeforeEach
     void setUp() {
+
         author = new Author("Alexander", "Pushkin", "Sergeevich");
         author.setId(1L);
 
         genre = new Genre("Science Fiction");
         genre.setId(1L);
 
-        book1 = new Book(
+        book1 = createValidBook(new Book(
                 "Matrix",
                 author,
                 genre,
@@ -73,10 +84,9 @@ class BookServiceTest {
                 1999,
                 150,
                 true
-        );
-        book1.setId(1L);
+        ), 1L);
 
-        book2 = new Book(
+        book2 = createValidBook(new Book(
                 "Inception",
                 author,
                 genre,
@@ -84,8 +94,7 @@ class BookServiceTest {
                 2010,
                 200,
                 true
-        );
-        book2.setId(2L);
+        ), 2L);
 
         bookDTO = BookDTO.builder()
                 .title("Matrix")
@@ -169,9 +178,12 @@ class BookServiceTest {
 
     @Test
     void getAll_withNullFilter_shouldThrowNullPointerException() {
+
+        final String EXPECT_MESSAGE = "filter must not be null";
+
         assertThatThrownBy(() -> bookService.getAll(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("filter must not be null");
+                .hasMessageContaining(EXPECT_MESSAGE);
     }
 
     @Test
@@ -193,19 +205,23 @@ class BookServiceTest {
 
     @Test
     void getByID_withNullId_shouldThrowNullPointerException() {
+        final String EXPECT_MESSAGE = "id must not be null";
+
         assertThatThrownBy(() -> bookService.getByID(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("id must not be null");
+                .hasMessageContaining(EXPECT_MESSAGE);
     }
 
     @Test
     void getByID_whenBookNotFound_shouldThrowBookNotFoundException() {
         Long id = 999L;
         when(bookRepository.getByID(id)).thenThrow(new BookNotFoundException(id));
+        final String EXPECT_MESSAGE = "book not found with id: " + id;
+
 
         assertThatThrownBy(() -> bookService.getByID(id))
                 .isInstanceOf(BookNotFoundException.class)
-                .hasMessageContaining("book not found with id: " + id);
+                .hasMessageContaining(EXPECT_MESSAGE);
 
         verify(bookRepository, times(1)).getByID(id);
     }
@@ -217,6 +233,8 @@ class BookServiceTest {
 
         Book savedBook = new Book(bookDTO, author, genre);
         savedBook.setId(1L);
+        savedBook.setCreatedAt(OffsetDateTime.now());
+        savedBook.setUpdatedAt(OffsetDateTime.now());
         when(bookRepository.save(any(Book.class))).thenReturn(savedBook);
 
         Long resultId = bookService.add(bookDTO);
@@ -242,9 +260,11 @@ class BookServiceTest {
 
     @Test
     void add_withNullDto_shouldThrowNullPointerException() {
+        final String EXPECT_MESSAGE = "dto must not be null";
+
         assertThatThrownBy(() -> bookService.add(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("dto must not be null");
+                .hasMessageContaining(EXPECT_MESSAGE);
     }
 
     @Test
@@ -260,7 +280,7 @@ class BookServiceTest {
 
         assertThatThrownBy(() -> bookService.add(dtoWithoutAuthor))
                 .isInstanceOf(BookValidationException.class)
-                .hasMessageContaining("validation error")
+                .hasMessageContaining(VALIDATION_ERROR)
                 .satisfies(exception -> {
                     ValidationException ex = (ValidationException) exception;
                     assertThat(ex.getErrorsMap()).containsKey("authorId");
@@ -284,7 +304,7 @@ class BookServiceTest {
 
         assertThatThrownBy(() -> bookService.add(dtoWithoutGenre))
                 .isInstanceOf(BookValidationException.class)
-                .hasMessageContaining("validation error")
+                .hasMessageContaining(VALIDATION_ERROR)
                 .satisfies(exception -> {
                     ValidationException ex = (ValidationException) exception;
                     assertThat(ex.getErrorsMap()).containsKey("genreId");
@@ -293,25 +313,31 @@ class BookServiceTest {
 
     @Test
     void add_whenAuthorNotFound_shouldThrowAuthorNotFoundException() {
-        when(authorRepository.getByID(999L)).thenThrow(new AuthorNotFoundException(999L));
+        final Long id = 999L;
+        final String EXPECT_MESSAGE = "author not found with id: " + id;
+
+        when(authorRepository.getByID(id)).thenThrow(new AuthorNotFoundException(id));
 
         assertThatThrownBy(() -> bookService.add(invalidBookDTO_invalidAuthorId))
                 .isInstanceOf(AuthorNotFoundException.class)
-                .hasMessageContaining("author not found with id: 999");
+                .hasMessageContaining(EXPECT_MESSAGE);
 
-        verify(authorRepository, times(1)).getByID(999L);
+        verify(authorRepository, times(1)).getByID(id);
         verify(genreRepository, never()).getByID(any());
         verify(bookRepository, never()).save(any());
     }
 
     @Test
     void add_whenGenreNotFound_shouldThrowGenreNotFoundException() {
+        final Long id = 999L;
+        final String EXPECT_MESSAGE = "genre not found with id: " + id;
+
         when(authorRepository.getByID(1L)).thenReturn(author);
-        when(genreRepository.getByID(999L)).thenThrow(new GenreNotFoundException(999L));
+        when(genreRepository.getByID(id)).thenThrow(new GenreNotFoundException(id));
 
         assertThatThrownBy(() -> bookService.add(invalidBookDTO_invalidGenreId))
                 .isInstanceOf(GenreNotFoundException.class)
-                .hasMessageContaining("genre not found with id: 999");
+                .hasMessageContaining(EXPECT_MESSAGE);
 
         verify(authorRepository, times(1)).getByID(1L);
         verify(genreRepository, times(1)).getByID(999L);
@@ -320,25 +346,27 @@ class BookServiceTest {
 
     @Test
     void add_withInvalidDto_shouldThrowBookValidationException() {
-        when(authorRepository.getByID(1L)).thenReturn(author);
-        when(genreRepository.getByID(1L)).thenReturn(genre);
+        final Long id = 1L;
+
+        when(authorRepository.getByID(id)).thenReturn(author);
+        when(genreRepository.getByID(id)).thenReturn(genre);
 
         assertThatThrownBy(() -> bookService.add(invalidBookDTO))
                 .isInstanceOf(BookValidationException.class)
-                .hasMessageContaining("validation error")
+                .hasMessageContaining(VALIDATION_ERROR)
                 .satisfies(exception -> {
                     ValidationException ex = (ValidationException) exception;
                     assertThat(ex.getErrorsMap()).containsKey("title");
                 });
 
-        verify(authorRepository, times(1)).getByID(1L);
-        verify(genreRepository, times(1)).getByID(1L);
+        verify(authorRepository, times(1)).getByID(id);
+        verify(genreRepository, times(1)).getByID(id);
         verify(bookRepository, never()).save(any());
     }
 
     @Test
     void delete_shouldDeleteBook() {
-        Long id = 1L;
+        final Long id = 1L;
         when(bookRepository.getByID(id)).thenReturn(book1);
 
         bookService.delete(id);
@@ -350,19 +378,22 @@ class BookServiceTest {
 
     @Test
     void delete_withNullId_shouldThrowNullPointerException() {
+        final String EXPECT_MESSAGE = "id must not be null";
+
         assertThatThrownBy(() -> bookService.delete(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("id must not be null");
+                .hasMessageContaining(EXPECT_MESSAGE);
     }
 
     @Test
     void delete_whenBookNotFound_shouldThrowBookNotFoundException() {
-        Long id = 999L;
+        final Long id = 999L;
+        final String EXPECT_MESSAGE = "book not found with id: " + id;
         when(bookRepository.getByID(id)).thenThrow(new BookNotFoundException(id));
 
         assertThatThrownBy(() -> bookService.delete(id))
                 .isInstanceOf(BookNotFoundException.class)
-                .hasMessageContaining("book not found with id: " + id);
+                .hasMessageContaining(EXPECT_MESSAGE);
 
         verify(bookRepository, times(1)).getByID(id);
         verify(bookRepository, never()).delete(any());
@@ -407,16 +438,20 @@ class BookServiceTest {
 
     @Test
     void putByID_withNullId_shouldThrowNullPointerException() {
+        final String EXPECT_MESSAGE = "id must not be null";
+
         assertThatThrownBy(() -> bookService.putByID(null, bookDTO))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("id must not be null");
+                .hasMessageContaining(EXPECT_MESSAGE);
     }
 
     @Test
     void putByID_withNullDto_shouldThrowNullPointerException() {
+        final String EXPECT_MESSAGE = "dto must not be null";
+
         assertThatThrownBy(() -> bookService.putByID(1L, null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("dto must not be null");
+                .hasMessageContaining(EXPECT_MESSAGE);
     }
 
     @Test
@@ -463,26 +498,31 @@ class BookServiceTest {
 
     @Test
     void patchByID_withNullId_shouldThrowNullPointerException() {
+        final String EXPECT_MESSAGE = "id must not be null";
+
         assertThatThrownBy(() -> bookService.patchByID(null, patchDTO))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("id must not be null");
+                .hasMessageContaining(EXPECT_MESSAGE);
     }
 
     @Test
     void patchByID_withNullDto_shouldThrowNullPointerException() {
+        final String EXPECT_MESSAGE = "dto must not be null";
+
         assertThatThrownBy(() -> bookService.patchByID(1L, null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("dto must not be null");
+                .hasMessageContaining(EXPECT_MESSAGE);
     }
 
     @Test
     void patchByID_whenBookNotFound_shouldThrowBookNotFoundException() {
         Long id = 999L;
+        final String EXPECT_MESSAGE = "book not found with id: " + id;
         when(bookRepository.getByID(id)).thenThrow(new BookNotFoundException(id));
 
         assertThatThrownBy(() -> bookService.patchByID(id, patchDTO))
                 .isInstanceOf(BookNotFoundException.class)
-                .hasMessageContaining("book not found with id: " + id);
+                .hasMessageContaining(EXPECT_MESSAGE);
 
         verify(bookRepository, never()).save(any());
     }
