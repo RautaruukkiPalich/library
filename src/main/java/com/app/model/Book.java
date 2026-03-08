@@ -2,11 +2,16 @@ package com.app.model;
 
 import com.app.dto.BookDTO;
 import com.app.exception.validation.BookValidationException;
-import com.app.model.mixin.DateMixin;
+import com.app.utils.validator.NumberValidator;
+import com.app.utils.validator.ObjectValidator;
+import com.app.utils.validator.StringValidator;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -14,7 +19,7 @@ import java.util.regex.Pattern;
 @Setter
 @Entity
 @Table(name = "books")
-public class Book extends DateMixin {
+public class Book extends BaseModel {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
@@ -42,10 +47,8 @@ public class Book extends DateMixin {
     @Column(name = "page_count")
     private Integer pageCount;
 
-    private static final Pattern ISBN_PATTERN = 
-        Pattern.compile("^\\d{3}-\\d{1,5}-\\d{1,7}-\\d{1,6}-\\d$");
-
     public Book() {
+        super(BookValidationException::new);
     }
 
     public Book(
@@ -57,6 +60,7 @@ public class Book extends DateMixin {
             int pageCount,
             boolean isAvailable
     ) {
+        super(BookValidationException::new);
         this.title = title;
         this.author = author;
         this.genre = genre;
@@ -67,6 +71,7 @@ public class Book extends DateMixin {
     }
 
     public Book(BookDTO dto, Author author, Genre genre) {
+        super(BookValidationException::new);
         Objects.requireNonNull(dto, "dto cant be null");
         Objects.requireNonNull(author, "author cant be null");
         Objects.requireNonNull(genre, "genre cant be null");
@@ -80,22 +85,6 @@ public class Book extends DateMixin {
         this.pageCount = dto.pageCount();
     }
 
-    public void validate() throws BookValidationException {
-        this.validateTitle();
-        this.validateAuthor();
-        this.validateGenre();
-        this.validatePageCount();
-        this.validatePubYear();
-        this.validateIsbn();
-    }
-
-    public void validateStrict() throws BookValidationException {
-        if (this.getId() <= 0) {
-            throw new BookValidationException("id", "cant be less than 1");
-        }
-        this.validate();
-    }
-
     public void setAvailable() {
         this.isAvailable = true;
     }
@@ -104,78 +93,107 @@ public class Book extends DateMixin {
         this.isAvailable = false;
     }
 
-    private void validateTitle() throws BookValidationException {
-        if (this.title == null) {
-            throw new BookValidationException("title", "cant be null");
-        }
-        if (this.title.isBlank()) {
-            throw new BookValidationException("title", "cant be blank");
-        }
-        if (this.title.length() < 2) {
-            throw new BookValidationException("title", "cant be shorter 2 characters");
-        }
-        if (this.title.length() > 255) {
-            throw new BookValidationException("title", "cant be longer 255 characters");
-        }
+    @Override
+    protected final List<Map<String, String>> validateBaseFields() {
+        List<Map<String, String>> list = new ArrayList<>(super.validateBaseFields());
+        addBaseValidations(list);
+        return list;
     }
 
-    private void validateAuthor() throws BookValidationException {
-        if (this.author == null) {
-            throw new BookValidationException("author", "cant be null");
-        }
-        if (this.author.getId() == null) {
-            throw new BookValidationException("author", "author id cant be null");
-        }
-        if (this.author.getId() <= 0) {
-            throw new BookValidationException("author", "author id cant be less than 1");
-        }
+    @Override
+    protected final List<Map<String, String>> validateStrictFields() {
+        List<Map<String, String>> list = new ArrayList<>(super.validateStrictFields());
+        addBaseValidations(list);
+        addStrictValidations(list);
+        return list;
     }
 
-    private void validateGenre() throws BookValidationException {
-        if (this.genre == null) {
-            throw new BookValidationException("genre", "cant be null");
-        }
-        if (this.genre.getId() == null) {
-            throw new BookValidationException("genre", "genre id cant be null");
-        }
-        if (this.genre.getId() <= 0) {
-            throw new BookValidationException("genre", "genre id cant be less than 1");
-        }
+    private void addBaseValidations(List<Map<String, String>> list) {
+        list.add(this.validateTitle());
+        list.add(this.validateAuthor());
+        list.add(this.validateGenre());
+        list.add(this.validateIsbn());
+        list.add(this.validatePubYear());
+        list.add(this.validatePageCount());
     }
 
-    private void validateIsbn() throws BookValidationException {
-        if (this.isbn == null) {
-            throw new BookValidationException("isbn", "cant be null");
-        }
-        if (this.isbn.isBlank()) {
-            throw new BookValidationException("isbn", "cant be blank");
-        }
-        if (!ISBN_PATTERN.matcher(this.isbn).matches()) {
-            throw new BookValidationException("isbn", "invalid format. expected format: 978-5-127-12345-7");
-        }
+    private void addStrictValidations(List<Map<String, String>> list) {
+        list.add(this.validateId());
     }
 
-    private void validatePageCount() throws BookValidationException {
-        if (this.pageCount == null) {
-            throw new BookValidationException("pageCount", "cant be null");
-        }
-        if (this.pageCount < 1) {
-            throw new BookValidationException("pageCount", "cant be less than 1");
-        }
-        if (this.pageCount > 20000) {
-            throw new BookValidationException("pageCount", "cant be greater than 20000");
-        }
+    private static final String ID_KEY = "id";
+    private static final String TITLE_KEY = "title";
+    private static final String AUTHOR_KEY = "author";
+    private static final String GENRE_KEY = "genre";
+    private static final String ISBN_KEY = "isbn";
+    private static final String PUB_YEAR_KEY = "pubYear";
+    private static final String PAGE_COUNT_KEY = "pageCount";
+
+
+    private static final Pattern ISBN_PATTERN =
+            Pattern.compile("^\\d{3}-\\d{1,5}-\\d{1,7}-\\d{1,6}-\\d$");
+
+    private Map<String, String> validateId() {
+        return new NumberValidator<>(ID_KEY, this.id)
+                .notNull()
+                .min(1L)
+                .validate();
     }
 
-    private void validatePubYear() throws BookValidationException {
-        if (this.pubYear == null) {
-            throw new BookValidationException("pubYear", "cant be null");
-        }
-        if (this.pubYear < 1900) {
-            throw new BookValidationException("pubYear", "cant be less than 1900");
-        }
-        if (this.pubYear > 2040) {
-            throw new BookValidationException("pubYear", "cant be greater than 2040");
-        }
+    private Map<String, String> validateTitle() {
+        return new StringValidator(TITLE_KEY, this.title)
+                .notNull()
+                .notBlank()
+                .minLength(2)
+                .maxLength(255)
+                .validate();
+    }
+
+    private Map<String, String> validateAuthor() {
+        return new ObjectValidator<>(AUTHOR_KEY, this.author)
+                .notNull()
+                .validateNumber(
+                        Author::getId,
+                        ID_KEY,
+                        v -> v.notNull().min(1L)
+                )
+                .validate();
+    }
+
+    private Map<String, String> validateGenre() {
+        return new ObjectValidator<>(GENRE_KEY, this.genre)
+                .notNull()
+                .validateNumber(
+                        Genre::getId,
+                        ID_KEY,
+                        v -> v.notNull().min(1L)
+                )
+                .validate();
+    }
+
+    private Map<String, String> validateIsbn() {
+        return new StringValidator(ISBN_KEY, this.isbn)
+                .notNull()
+                .notBlank()
+                .minLength(10)
+//                .maxLength(13)
+                .match(ISBN_PATTERN)
+                .validate();
+    }
+
+    private Map<String, String> validatePageCount() {
+        return new NumberValidator<>(PAGE_COUNT_KEY, this.pageCount)
+                .notNull()
+                .min(1)
+                .max(20000)
+                .validate();
+    }
+
+    private Map<String, String> validatePubYear() {
+        return new NumberValidator<>(PUB_YEAR_KEY, this.pubYear)
+                .notNull()
+                .min(1900)
+                .max(2040)
+                .validate();
     }
 }
