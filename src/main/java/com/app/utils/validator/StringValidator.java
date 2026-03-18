@@ -47,10 +47,10 @@ public class StringValidator extends Validator<String, StringValidator> {
         return this;
     }
 
-    public StringValidator match(Pattern pattern, String expectedPattern) {
+    public StringValidator match(Pattern pattern, String desc) {
         addCheck(() ->
                 !pattern.matcher(value).matches() ?
-                        Map.of(key, String.format("invalid pattern. expected '%s'", expectedPattern)) :
+                        Map.of(key, String.format("invalid pattern. %s", desc)) :
                         null
         );
         return this;
