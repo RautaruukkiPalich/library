@@ -1,13 +1,14 @@
 package com.app.model;
 
+import com.app.auth.IPasswordHasher;
 import com.app.dto.UserDTO;
 import com.app.exception.validation.UserValidationException;
+import com.app.utils.NormalizeSanitizer;
 import com.app.utils.validator.NumberValidator;
 import com.app.utils.validator.StringValidator;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.web.util.HtmlUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,21 +40,21 @@ public class User extends BaseModel {
     @Column(nullable = false, length = 100)
     private String hashedPassword;
 
-    User() {
+    public User() {
         super(UserValidationException::new);
     }
 
-    User(
+    public User(
             UserDTO dto,
             IPasswordHasher hasher
     ) {
         super(UserValidationException::new);
         Objects.requireNonNull(dto, "dto must not be null");
 
-        this.firstname = sanitizeString(dto.firstname());
-        this.surname = sanitizeString(dto.surname());
-        this.lastname = sanitizeString(dto.lastname());
-        this.email = normalizeEmail(dto.email());
+        this.firstname = NormalizeSanitizer.sanitize(dto.firstname());
+        this.surname = NormalizeSanitizer.sanitize(dto.surname());
+        this.lastname = NormalizeSanitizer.sanitize(dto.lastname());
+        this.email = NormalizeSanitizer.normalize(dto.email());
         this.validate();
 
 
@@ -61,17 +62,11 @@ public class User extends BaseModel {
         this.hashedPassword = hashPassword(dto.rawPassword(), hasher);
     }
 
-    private String sanitizeString(String str) {
-        return str == null ?
-                null :
-                HtmlUtils.htmlEscape(
-                        str.trim().replaceAll("\\s+", " "));
-    }
+    public boolean comparePassword(String rawPass, IPasswordHasher hasher) {
+        Objects.requireNonNull(rawPass, "password must not be null");
+        Objects.requireNonNull(hasher, "password hasher must not be null");
 
-    private String normalizeEmail(String email) {
-        return email == null ?
-                null :
-                email.toLowerCase().trim();
+        return hasher.matches(rawPass, this.hashedPassword);
     }
 
     private String hashPassword(String rawPass, IPasswordHasher hasher) {
@@ -79,13 +74,6 @@ public class User extends BaseModel {
         Objects.requireNonNull(hasher, "password hasher must not be null");
 
         return hasher.encode(rawPass);
-    }
-
-    public boolean comparePassword(String rawPass, IPasswordHasher hasher) {
-        Objects.requireNonNull(rawPass, "password must not be null");
-        Objects.requireNonNull(hasher, "password hasher must not be null");
-
-        return hasher.matches(rawPass, this.hashedPassword);
     }
 
     @Override

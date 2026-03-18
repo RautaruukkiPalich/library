@@ -1,5 +1,6 @@
 package com.app.model;
 
+import com.app.auth.IPasswordHasher;
 import com.app.dto.UserDTO;
 import com.app.exception.validation.UserValidationException;
 import com.app.utils.map.MapUtils;

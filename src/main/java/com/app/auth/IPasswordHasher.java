@@ -1,4 +1,4 @@
-package com.app.model;
+package com.app.auth;
 
 public interface IPasswordHasher {
     String encode(String rawPassword);

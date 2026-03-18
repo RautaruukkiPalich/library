@@ -12,7 +12,6 @@ public record UserDTO(
         String surname,
         String email,
         String rawPassword,
-        String hashedPassword,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
 ) {
