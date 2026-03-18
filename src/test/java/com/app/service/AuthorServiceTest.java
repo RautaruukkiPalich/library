@@ -1,12 +1,13 @@
 package com.app.service;
 
-import com.app.dto.AuthorDTO;
-import com.app.exception.notfound.AuthorNotFoundException;
-import com.app.exception.validation.AuthorValidationException;
-import com.app.exception.validation.ValidationException;
-import com.app.mapper.AuthorMapper;
-import com.app.model.Author;
-import com.app.repository.IAuthorRepository;
+import com.app.core.exception.ValidationException;
+import com.app.modules.author.dto.AuthorDTO;
+import com.app.modules.author.exception.AuthorNotFoundException;
+import com.app.modules.author.exception.AuthorValidationException;
+import com.app.modules.author.impl.AuthorServiceImpl;
+import com.app.modules.author.mapper.AuthorMapper;
+import com.app.modules.author.model.Author;
+import com.app.modules.author.repository.AuthorRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,10 +30,10 @@ import static org.mockito.Mockito.*;
 class AuthorServiceTest {
 
     @Mock
-    private IAuthorRepository authorRepository;
+    private AuthorRepository authorRepository;
 
     @InjectMocks
-    private AuthorService authorService;
+    private AuthorServiceImpl authorService;
 
     private Author author1;
     private Author author2;

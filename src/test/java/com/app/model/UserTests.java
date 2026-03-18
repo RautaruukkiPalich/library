@@ -1,11 +1,12 @@
 package com.app.model;
 
-import com.app.auth.IPasswordHasher;
-import com.app.dto.UserDTO;
-import com.app.exception.validation.UserValidationException;
+import com.app.core.utils.passwordHasher.PasswordHasher;
+import com.app.core.utils.validator.StringValidator;
+import com.app.core.utils.validator.Validator;
+import com.app.modules.user.dto.UserDTO;
+import com.app.modules.user.exception.UserValidationException;
+import com.app.modules.user.model.User;
 import com.app.utils.map.MapUtils;
-import com.app.utils.validator.Validator;
-import com.app.utils.validator.StringValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ import static org.mockito.Mockito.*;
 public class UserTests {
 
     private UserDTO validUserDTO;
-    private IPasswordHasher mockHasher;
+    private PasswordHasher mockHasher;
     private final String VALID_PASSWORD = "Password123";
     private final String HASHED_PASSWORD = "hashedPassword123";
 
@@ -39,7 +40,7 @@ public class UserTests {
                 .rawPassword(VALID_PASSWORD)
                 .build();
 
-        mockHasher = mock(IPasswordHasher.class);
+        mockHasher = mock(PasswordHasher.class);
         when(mockHasher.encode(any())).thenReturn(HASHED_PASSWORD);
         when(mockHasher.matches(any(), any())).thenReturn(true);
     }

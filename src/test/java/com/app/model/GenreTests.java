@@ -1,10 +1,11 @@
 package com.app.model;
 
-import com.app.dto.GenreDTO;
-import com.app.exception.validation.GenreValidationException;
+import com.app.core.utils.validator.StringValidator;
+import com.app.core.utils.validator.Validator;
+import com.app.modules.genre.dto.GenreDTO;
+import com.app.modules.genre.exception.GenreValidationException;
+import com.app.modules.genre.model.Genre;
 import com.app.utils.map.MapUtils;
-import com.app.utils.validator.StringValidator;
-import com.app.utils.validator.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

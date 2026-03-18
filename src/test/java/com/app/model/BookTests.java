@@ -1,10 +1,13 @@
 package com.app.model;
 
-import com.app.dto.BookDTO;
-import com.app.exception.validation.BookValidationException;
+import com.app.core.utils.validator.StringValidator;
+import com.app.core.utils.validator.Validator;
+import com.app.modules.author.model.Author;
+import com.app.modules.book.dto.BookDTO;
+import com.app.modules.book.exception.BookValidationException;
+import com.app.modules.book.model.Book;
+import com.app.modules.genre.model.Genre;
 import com.app.utils.map.MapUtils;
-import com.app.utils.validator.StringValidator;
-import com.app.utils.validator.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
