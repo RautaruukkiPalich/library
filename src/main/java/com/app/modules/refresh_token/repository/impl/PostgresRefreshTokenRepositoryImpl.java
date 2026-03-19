@@ -1,7 +1,7 @@
-package com.app.modules.auth.repository.impl;
+package com.app.modules.refresh_token.repository.impl;
 
-import com.app.modules.auth.model.RefreshToken;
-import com.app.modules.auth.repository.RefreshTokenRepository;
+import com.app.modules.refresh_token.model.RefreshToken;
+import com.app.modules.refresh_token.repository.RefreshTokenRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
@@ -16,7 +16,7 @@ public class PostgresRefreshTokenRepositoryImpl implements RefreshTokenRepositor
 
     @Override
     public Optional<RefreshToken> getByToken(String token) {
-        String jpql = "SELECT rt FROM RefreshToken rt JOIN FETCH rt.user WHERE rt.token = :token";
+        String jpql = "SELECT rt FROM RefreshToken rt WHERE rt.token = :token";
 
         return Optional.ofNullable(em.createQuery(jpql, RefreshToken.class)
                 .setParameter("token", token)
@@ -35,7 +35,7 @@ public class PostgresRefreshTokenRepositoryImpl implements RefreshTokenRepositor
 
     @Override
     public void revokeAllUserTokens(Long userId) {
-        String jpql = "UPDATE FROM RefreshToken rt SET rt.revoked = true WHERE rt.user.id = :id and rt.revoked = false";
+        String jpql = "UPDATE FROM RefreshToken rt SET rt.revoked = true WHERE rt.user_id = :user_id and rt.revoked = false";
 
         em.createQuery(jpql)
                 .setParameter("user_id", userId)

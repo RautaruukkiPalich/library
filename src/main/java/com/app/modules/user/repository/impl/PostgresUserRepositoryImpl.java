@@ -1,9 +1,9 @@
 package com.app.modules.user.repository.impl;
 
-import com.app.modules.auth.repository.AuthRepository;
-import com.app.modules.user.exception.UserNotFoundException;
 import com.app.modules.user.model.User;
-import com.app.modules.user.repository.UserRepository;
+import com.app.modules.user.repository.UserDeleterRepository;
+import com.app.modules.user.repository.UserGetterRepository;
+import com.app.modules.user.repository.UserPersisterRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public class PostgresUserRepositoryImpl implements UserRepository, AuthRepository {
+public class PostgresUserRepositoryImpl implements UserGetterRepository, UserPersisterRepository, UserDeleterRepository {
 
     @PersistenceContext
     private EntityManager em;
@@ -22,7 +22,7 @@ public class PostgresUserRepositoryImpl implements UserRepository, AuthRepositor
     }
 
     @Override
-    public Optional<User> getByEmail(String email) throws UserNotFoundException {
+    public Optional<User> getByEmail(String email) {
         String jpql = "SELECT u FROM User u WHERE u.email = :email";
 
         return Optional.ofNullable(em.createQuery(jpql, User.class)

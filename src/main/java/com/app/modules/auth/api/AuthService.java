@@ -6,8 +6,6 @@ import com.app.modules.auth.dto.TokenPairDTO;
 
 public interface AuthService {
     TokenPairDTO login(LoginDTO dto);
-
     TokenPairDTO refreshTokens(String token);
-
     void register(RegisterDTO dto);
 }

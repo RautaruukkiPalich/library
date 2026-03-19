@@ -8,6 +8,6 @@ public record RegisterDTO(
         String lastname,
         String surname,
         String email,
-        String rawPassword
+        String password
 ) {
 }

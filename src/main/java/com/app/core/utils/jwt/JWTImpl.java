@@ -1,6 +1,5 @@
-package com.app.modules.auth.impl;
+package com.app.core.utils.jwt;
 
-import com.app.modules.auth.api.JWTService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -13,7 +12,7 @@ import java.util.Date;
 import java.util.function.Function;
 
 @Component
-public class JWTServiceImpl implements JWTService {
+public class JWTImpl implements JWTExtractor, JWTGenerator {
     @Value("${jwt.secret}")
     private String secret;
 

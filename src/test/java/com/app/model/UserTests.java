@@ -3,7 +3,7 @@ package com.app.model;
 import com.app.core.utils.passwordHasher.PasswordHasher;
 import com.app.core.utils.validator.StringValidator;
 import com.app.core.utils.validator.Validator;
-import com.app.modules.user.dto.UserDTO;
+import com.app.modules.user.dto.RegisterUserDTO;
 import com.app.modules.user.exception.UserValidationException;
 import com.app.modules.user.model.User;
 import com.app.utils.map.MapUtils;
@@ -25,19 +25,19 @@ import static org.mockito.Mockito.*;
 
 public class UserTests {
 
-    private UserDTO validUserDTO;
+    private RegisterUserDTO validUserRegisterDTO;
     private PasswordHasher mockHasher;
     private final String VALID_PASSWORD = "Password123";
     private final String HASHED_PASSWORD = "hashedPassword123";
 
     @BeforeEach
     void setUp() {
-        validUserDTO = UserDTO.builder()
+        validUserRegisterDTO = RegisterUserDTO.builder()
                 .firstname("John")
                 .surname("Doe")
                 .lastname("Smith")
                 .email("john.smith@example.com")
-                .rawPassword(VALID_PASSWORD)
+                .password(VALID_PASSWORD)
                 .build();
 
         mockHasher = mock(PasswordHasher.class);
@@ -47,16 +47,16 @@ public class UserTests {
 
     @Test
     void NewUser_onValidDtoAndHasherReturnsNotNullObject() {
-        User user = new User(validUserDTO, mockHasher);
+        User user = new User(validUserRegisterDTO, mockHasher);
 
         assertThat(user)
                 .isNotNull()
                 .satisfies(u -> {
                     assertThat(u.getId()).isNull();
-                    assertThat(u.getFirstname()).isEqualTo(validUserDTO.firstname());
-                    assertThat(u.getSurname()).isEqualTo(validUserDTO.surname());
-                    assertThat(u.getLastname()).isEqualTo(validUserDTO.lastname());
-                    assertThat(u.getEmail()).isEqualTo(validUserDTO.email().toLowerCase().trim());
+                    assertThat(u.getFirstname()).isEqualTo(validUserRegisterDTO.firstname());
+                    assertThat(u.getSurname()).isEqualTo(validUserRegisterDTO.surname());
+                    assertThat(u.getLastname()).isEqualTo(validUserRegisterDTO.lastname());
+                    assertThat(u.getEmail()).isEqualTo(validUserRegisterDTO.email().toLowerCase().trim());
                     assertThat(u.getHashedPassword()).isEqualTo(HASHED_PASSWORD);
                     assertDoesNotThrow(u::validate);
                 });
@@ -73,14 +73,14 @@ public class UserTests {
 
     @Test
     void NewUser_onNullHasherThrowsNPE() {
-        assertThatThrownBy(() -> new User(validUserDTO, null))
+        assertThatThrownBy(() -> new User(validUserRegisterDTO, null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("password hasher must not be null");
     }
 
     @Test
     void comparePassword_onValidPasswordReturnsTrue() {
-        User user = new User(validUserDTO, mockHasher);
+        User user = new User(validUserRegisterDTO, mockHasher);
 
         assertTrue(user.comparePassword(VALID_PASSWORD, mockHasher));
 
@@ -90,7 +90,7 @@ public class UserTests {
     @Test
     void comparePassword_onInvalidPasswordReturnsFalse() {
         when(mockHasher.matches(any(), any())).thenReturn(false);
-        User user = new User(validUserDTO, mockHasher);
+        User user = new User(validUserRegisterDTO, mockHasher);
 
         assertFalse(user.comparePassword("WrongPassword", mockHasher));
 
@@ -99,7 +99,7 @@ public class UserTests {
 
     @Test
     void comparePassword_onNullPasswordThrowsNPE() {
-        User user = new User(validUserDTO, mockHasher);
+        User user = new User(validUserRegisterDTO, mockHasher);
 
         assertThatThrownBy(() -> user.comparePassword(null, mockHasher))
                 .isInstanceOf(NullPointerException.class)
@@ -108,7 +108,7 @@ public class UserTests {
 
     @Test
     void comparePassword_onNullHasherThrowsNPE() {
-        User user = new User(validUserDTO, mockHasher);
+        User user = new User(validUserRegisterDTO, mockHasher);
 
         assertThatThrownBy(() -> user.comparePassword(VALID_PASSWORD, null))
                 .isInstanceOf(NullPointerException.class)
@@ -117,7 +117,7 @@ public class UserTests {
 
     @Test
     void LoadedUser_onValidFieldsNoErrors() {
-        User user = new User(validUserDTO, mockHasher);
+        User user = new User(validUserRegisterDTO, mockHasher);
         user.setId(1L);
         user.setCreatedAt(OffsetDateTime.now());
         user.setUpdatedAt(OffsetDateTime.now());
@@ -127,7 +127,7 @@ public class UserTests {
 
     @Test
     void LoadedUser_onInvalidFieldsThrowException() {
-        User user = new User(validUserDTO, mockHasher);
+        User user = new User(validUserRegisterDTO, mockHasher);
         user.setId(0L);
         user.setCreatedAt(OffsetDateTime.now().plusDays(3));
         user.setUpdatedAt(OffsetDateTime.now().plusDays(3));
@@ -152,12 +152,12 @@ public class UserTests {
 
     @Test
     void constructor_sanitizesNames() {
-        UserDTO dto = UserDTO.builder()
+        RegisterUserDTO dto = RegisterUserDTO.builder()
                 .firstname("  John  Doe  ")
                 .surname("  Smith  ")
                 .lastname("  Johnson  ")
                 .email("test@test.com")
-                .rawPassword(VALID_PASSWORD)
+                .password(VALID_PASSWORD)
                 .build();
 
         User user = new User(dto, mockHasher);
@@ -172,12 +172,12 @@ public class UserTests {
 
     @Test
     void constructor_normalizesEmail() {
-        UserDTO dto = UserDTO.builder()
+        RegisterUserDTO dto = RegisterUserDTO.builder()
                 .firstname("John")
                 .surname("Smith")
                 .lastname("Johnson")
                 .email("  John.Smith@Example.COM  ")
-                .rawPassword(VALID_PASSWORD)
+                .password(VALID_PASSWORD)
                 .build();
 
         User user = new User(dto, mockHasher);
@@ -187,12 +187,12 @@ public class UserTests {
 
     @Test
     void constructor_removesHtmlFromNames() {
-        UserDTO dto = UserDTO.builder()
+        RegisterUserDTO dto = RegisterUserDTO.builder()
                 .firstname("John<script>alert('xss')</script>")
                 .surname("<b>Smith</b>")
                 .lastname("Johnson&quot;")
                 .email("test@test.com")
-                .rawPassword(VALID_PASSWORD)
+                .password(VALID_PASSWORD)
                 .build();
 
         User user = new User(dto, mockHasher);
@@ -214,7 +214,7 @@ public class UserTests {
     Stream<DynamicTest> ValidateUser_throwsValidationException() {
         record ValidationTestCase(
                 String desc,
-                UserDTO dto,
+                RegisterUserDTO dto,
                 Map<String, String> expectedErrors
         ) {
         }
@@ -248,226 +248,226 @@ public class UserTests {
         List<ValidationTestCase> tcs = List.of(
                 new ValidationTestCase(
                         "on null firstname expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(null)
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
                                 .email(VALID_EMAIL)
-                                .rawPassword(VALID_PASSWORD)
+                                .password(VALID_PASSWORD)
                                 .build(),
                         Map.of(FIRSTNAME, ERR_NULL)
                 ),
                 new ValidationTestCase(
                         "on blank firstname expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(BLANK_STRING)
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
                                 .email(VALID_EMAIL)
-                                .rawPassword(VALID_PASSWORD)
+                                .password(VALID_PASSWORD)
                                 .build(),
                         Map.of(FIRSTNAME, ERR_BLANK)
                 ),
                 new ValidationTestCase(
                         "on short firstname expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(SHORT_STRING)
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
                                 .email(VALID_EMAIL)
-                                .rawPassword(VALID_PASSWORD)
+                                .password(VALID_PASSWORD)
                                 .build(),
                         Map.of(FIRSTNAME, ERR_SHORT_2)
                 ),
                 new ValidationTestCase(
                         "on long firstname expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(LONG_STRING)
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
                                 .email(VALID_EMAIL)
-                                .rawPassword(VALID_PASSWORD)
+                                .password(VALID_PASSWORD)
                                 .build(),
                         Map.of(FIRSTNAME, ERR_LONG_100)
                 ),
 
                 new ValidationTestCase(
                         "on null surname expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(VALID_STRING)
                                 .surname(null)
                                 .lastname(VALID_STRING)
                                 .email(VALID_EMAIL)
-                                .rawPassword(VALID_PASSWORD)
+                                .password(VALID_PASSWORD)
                                 .build(),
                         Map.of(SURNAME, ERR_NULL)
                 ),
                 new ValidationTestCase(
                         "on blank surname expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(VALID_STRING)
                                 .surname(BLANK_STRING)
                                 .lastname(VALID_STRING)
                                 .email(VALID_EMAIL)
-                                .rawPassword(VALID_PASSWORD)
+                                .password(VALID_PASSWORD)
                                 .build(),
                         Map.of(SURNAME, ERR_BLANK)
                 ),
 
                 new ValidationTestCase(
                         "on null lastname expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(VALID_STRING)
                                 .surname(VALID_STRING)
                                 .lastname(null)
                                 .email(VALID_EMAIL)
-                                .rawPassword(VALID_PASSWORD)
+                                .password(VALID_PASSWORD)
                                 .build(),
                         Map.of(LASTNAME, ERR_NULL)
                 ),
                 new ValidationTestCase(
                         "on blank lastname expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(VALID_STRING)
                                 .surname(VALID_STRING)
                                 .lastname(BLANK_STRING)
                                 .email(VALID_EMAIL)
-                                .rawPassword(VALID_PASSWORD)
+                                .password(VALID_PASSWORD)
                                 .build(),
                         Map.of(LASTNAME, ERR_BLANK)
                 ),
 
                 new ValidationTestCase(
                         "on null email expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(VALID_STRING)
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
                                 .email(null)
-                                .rawPassword(VALID_PASSWORD)
+                                .password(VALID_PASSWORD)
                                 .build(),
                         Map.of(EMAIL, ERR_NULL)
                 ),
                 new ValidationTestCase(
                         "on blank email expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(VALID_STRING)
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
                                 .email(BLANK_STRING)
-                                .rawPassword(VALID_PASSWORD)
+                                .password(VALID_PASSWORD)
                                 .build(),
                         Map.of(EMAIL, ERR_BLANK)
                 ),
                 new ValidationTestCase(
                         "on invalid email without domain expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(VALID_STRING)
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
                                 .email(INVALID_EMAIL_WITHOUT_DOMAIN)
-                                .rawPassword(VALID_PASSWORD)
+                                .password(VALID_PASSWORD)
                                 .build(),
                         Map.of(EMAIL, ERR_INVALID_EMAIL_PATTERN)
                 ),
                 new ValidationTestCase(
                         "on invalid email with double at expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(VALID_STRING)
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
                                 .email(INVALID_EMAIL_DOUBLE_AT)
-                                .rawPassword(VALID_PASSWORD)
+                                .password(VALID_PASSWORD)
                                 .build(),
                         Map.of(EMAIL, ERR_INVALID_EMAIL_PATTERN)
                 ),
                 new ValidationTestCase(
                         "on invalid email without at expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(VALID_STRING)
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
                                 .email(INVALID_EMAIL_WITHOUT_AT)
-                                .rawPassword(VALID_PASSWORD)
+                                .password(VALID_PASSWORD)
                                 .build(),
                         Map.of(EMAIL, ERR_INVALID_EMAIL_PATTERN)
                 ),
 
                 new ValidationTestCase(
                         "on null password expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(VALID_STRING)
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
                                 .email(VALID_EMAIL)
-                                .rawPassword(null)
+                                .password(null)
                                 .build(),
                         Map.of(PASSWORD, ERR_NULL)
                 ),
                 new ValidationTestCase(
                         "on blank password expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(VALID_STRING)
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
                                 .email(VALID_EMAIL)
-                                .rawPassword(BLANK_STRING)
+                                .password(BLANK_STRING)
                                 .build(),
                         Map.of(PASSWORD, ERR_BLANK)
                 ),
                 new ValidationTestCase(
                         "on short password expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(VALID_STRING)
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
                                 .email(VALID_EMAIL)
-                                .rawPassword("Pass1")
+                                .password("Pass1")
                                 .build(),
                         Map.of(PASSWORD, ERR_SHORT_8)
                 ),
                 new ValidationTestCase(
                         "on password without uppercase expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(VALID_STRING)
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
                                 .email(VALID_EMAIL)
-                                .rawPassword("password123")
+                                .password("password123")
                                 .build(),
                         Map.of(PASSWORD, "invalid pattern. must contain uppercase letter")
                 ),
                 new ValidationTestCase(
                         "on password without lowercase expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(VALID_STRING)
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
                                 .email(VALID_EMAIL)
-                                .rawPassword("PASSWORD123")
+                                .password("PASSWORD123")
                                 .build(),
                         Map.of(PASSWORD, "invalid pattern. must contain lowercase letter")
                 ),
                 new ValidationTestCase(
                         "on password without digit expect error",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(VALID_STRING)
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
                                 .email(VALID_EMAIL)
-                                .rawPassword("Password")
+                                .password("Password")
                                 .build(),
                         Map.of(PASSWORD, "invalid pattern. must contain digit")
                 ),
 
                 new ValidationTestCase(
                         "on multiple invalid fields expect multiple errors",
-                        UserDTO.builder()
+                        RegisterUserDTO.builder()
                                 .firstname(SHORT_STRING)
                                 .surname(BLANK_STRING)
                                 .lastname(null)
                                 .email("invalid")
-                                .rawPassword("weak")
+                                .password("weak")
                                 .build(),
                         Map.of(
                                 FIRSTNAME, ERR_SHORT_2,

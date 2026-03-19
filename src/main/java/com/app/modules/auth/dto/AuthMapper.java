@@ -14,7 +14,7 @@ public class AuthMapper {
                 .lastname(form.getLastname())
                 .surname(form.getSurname())
                 .email(form.getEmail())
-                .rawPassword(form.getPassword())
+                .password(form.getPassword())
                 .build();
     }
 }

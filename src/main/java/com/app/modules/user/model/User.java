@@ -5,6 +5,7 @@ import com.app.core.utils.NormalizeSanitizer;
 import com.app.core.utils.passwordHasher.PasswordHasher;
 import com.app.core.utils.validator.NumberValidator;
 import com.app.core.utils.validator.StringValidator;
+import com.app.modules.user.dto.RegisterUserDTO;
 import com.app.modules.user.dto.UserDTO;
 import com.app.modules.user.exception.UserValidationException;
 import jakarta.persistence.*;
@@ -46,7 +47,7 @@ public class User extends BaseModel {
     }
 
     public User(
-            UserDTO dto,
+            RegisterUserDTO dto,
             PasswordHasher hasher
     ) {
         super(UserValidationException::new);
@@ -59,8 +60,8 @@ public class User extends BaseModel {
         this.validate();
 
 
-        validateRawPassword(dto.rawPassword());
-        this.hashedPassword = hashPassword(dto.rawPassword(), hasher);
+        validateRawPassword(dto.password());
+        this.hashedPassword = hashPassword(dto.password(), hasher);
     }
 
     public boolean comparePassword(String rawPass, PasswordHasher hasher) {

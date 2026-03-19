@@ -1,8 +1,7 @@
-package com.app.modules.auth.model;
+package com.app.modules.refresh_token.model;
 
 import com.app.core.model.BaseModel;
-import com.app.modules.auth.exception.RefreshTokenValidationException;
-import com.app.modules.user.model.User;
+import com.app.modules.refresh_token.exception.RefreshTokenValidationException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,9 +24,8 @@ public class RefreshToken extends BaseModel {
     @Column(nullable = false, length = 100)
     private String token;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Column(name = "expires_at", nullable = false)
     private OffsetDateTime expiresAt;

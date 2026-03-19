@@ -1,6 +1,6 @@
-package com.app.modules.auth.repository;
+package com.app.modules.refresh_token.repository;
 
-import com.app.modules.auth.model.RefreshToken;
+import com.app.modules.refresh_token.model.RefreshToken;
 
 import java.util.Optional;
 

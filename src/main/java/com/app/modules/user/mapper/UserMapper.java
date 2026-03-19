@@ -1,6 +1,7 @@
 package com.app.modules.user.mapper;
 
 import com.app.modules.user.dto.ControllerUserDTO;
+import com.app.modules.user.dto.UserAuthInfoDTO;
 import com.app.modules.user.dto.UserDTO;
 import com.app.modules.user.model.User;
 import org.springframework.stereotype.Component;
@@ -9,6 +10,13 @@ import java.util.Objects;
 
 @Component
 public class UserMapper {
+
+    public static UserAuthInfoDTO convert(User user){
+        Objects.requireNonNull(user, "user cant be null");
+        return UserAuthInfoDTO.builder()
+                .id(user.getId())
+                .build();
+    }
 
     public static UserDTO toDTO(User user) {
         Objects.requireNonNull(user, "user cant be null");

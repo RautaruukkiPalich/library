@@ -1,18 +1,18 @@
 package com.app.modules.auth.impl;
 
 import com.app.core.utils.NormalizeSanitizer;
-import com.app.core.utils.passwordHasher.PasswordHasher;
+import com.app.core.utils.jwt.JWTGenerator;
 import com.app.modules.auth.api.AuthService;
-import com.app.modules.auth.api.JWTService;
-import com.app.modules.auth.api.RefreshTokenService;
 import com.app.modules.auth.dto.LoginDTO;
 import com.app.modules.auth.dto.RegisterDTO;
 import com.app.modules.auth.dto.TokenPairDTO;
 import com.app.modules.auth.exception.AuthenticateException;
-import com.app.modules.auth.mapper.AuthMapper;
-import com.app.modules.auth.model.RefreshToken;
-import com.app.modules.auth.repository.AuthRepository;
-import com.app.modules.user.api.UserService;
+import com.app.modules.refresh_token.api.RefreshTokenService;
+import com.app.modules.refresh_token.dto.RefreshTokenInfoDTO;
+import com.app.modules.user.api.UserAuthService;
+import com.app.modules.user.dto.LoginUserDTO;
+import com.app.modules.user.dto.RegisterUserDTO;
+import com.app.modules.user.dto.UserAuthInfoDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,23 +21,17 @@ import java.util.Objects;
 @Service
 @Transactional
 public class AuthServiceImpl implements AuthService {
-    private final UserService userService;
-    private final AuthRepository authRepository;
+    private final UserAuthService userAuthService;
     private final RefreshTokenService refreshTokenService;
-    private final JWTService jwtService;
-    private final PasswordHasher passwordHasher;
+    private final JWTGenerator jwtGenerator;
 
     public AuthServiceImpl(
-            UserService userService,
-            AuthRepository authRepository,
+            UserAuthService userAuthService,
             RefreshTokenService refreshTokenService,
-            JWTService jwtService,
-            PasswordHasher passwordHasher) {
-        this.userService = userService;
-        this.authRepository = authRepository;
+            JWTGenerator jwtGenerator) {
+        this.userAuthService = userAuthService;
         this.refreshTokenService = refreshTokenService;
-        this.jwtService = jwtService;
-        this.passwordHasher = passwordHasher;
+        this.jwtGenerator = jwtGenerator;
     }
 
     @Override
@@ -49,33 +43,45 @@ public class AuthServiceImpl implements AuthService {
             throw AuthenticateException.invalidCredentials();
         }
 
-        Long userId = authRepository.getByEmail(normalizedEmail)
-                .filter(u -> u.comparePassword(dto.password(), passwordHasher))
-                .map(u -> u.getId())
+        Long userId = userAuthService.checkCredentials(
+                        LoginUserDTO.builder()
+                                .email(normalizedEmail)
+                                .password(dto.password())
+                                .build()
+                )
+                .map(UserAuthInfoDTO::id)
                 .orElseThrow(AuthenticateException::invalidCredentials);
 
         return TokenPairDTO.builder()
-                .access(jwtService.generateToken(String.valueOf(userId)))
-                .refresh(refreshTokenService.create(userId).getToken())
+                .access(jwtGenerator.generateToken(String.valueOf(userId)))
+                .refresh(refreshTokenService.create(userId).token())
                 .build();
     }
 
     @Override
     public void register(RegisterDTO dto) {
         Objects.requireNonNull(dto, "dto must not be null");
-        this.userService.add(AuthMapper.toUserDTO(dto));
+        this.userAuthService.register(
+                RegisterUserDTO.builder()
+                        .firstname(dto.firstname())
+                        .lastname(dto.lastname())
+                        .surname(dto.lastname())
+                        .email(dto.email())
+                        .password(dto.password())
+                        .build()
+        );
     }
 
     @Override
     public TokenPairDTO refreshTokens(String token) {
         Objects.requireNonNull(token);
 
-        RefreshToken refreshToken = refreshTokenService.rotate(token);
-        String accessToken = jwtService.generateToken(String.valueOf(refreshToken.getUser().getId()));
+        RefreshTokenInfoDTO rt = refreshTokenService.rotate(token);
+        String at = jwtGenerator.generateToken(String.valueOf(rt.userId()));
 
         return TokenPairDTO.builder()
-                .access(accessToken)
-                .refresh(refreshToken.getToken())
+                .access(at)
+                .refresh(rt.token())
                 .build();
     }
 }

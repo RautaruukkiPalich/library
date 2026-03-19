@@ -1,4 +1,4 @@
-package com.app.modules.auth.exception;
+package com.app.modules.refresh_token.exception;
 
 import com.app.core.exception.ValidationException;
 

@@ -4,6 +4,4 @@ import com.app.modules.user.dto.UserDTO;
 
 public interface UserService {
     UserDTO getByID(Long id);
-
-    Long add(UserDTO dto);
 }
