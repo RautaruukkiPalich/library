@@ -56,6 +56,12 @@ public class UserServiceImpl implements UserService, UserAuthService {
     }
 
     @Override
+    public Optional<UserAuthInfoDTO> getById(Long id) {
+        return this.userGetterRepository.getByID(id)
+                .map(UserMapper::convert);
+    }
+
+    @Override
     public void register(RegisterUserDTO dto) {
         Objects.requireNonNull(dto, "dto must not be null");
         String normalizedEmail = NormalizeSanitizer.normalize(dto.email());

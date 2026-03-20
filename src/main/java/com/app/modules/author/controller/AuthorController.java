@@ -1,6 +1,8 @@
 package com.app.modules.author.controller;
 
 import com.app.core.annotation.PublicMethod;
+import com.app.core.security.RequireRoles;
+import com.app.core.security.Role;
 import com.app.modules.author.api.AuthorService;
 import com.app.modules.author.dto.AuthorControllerDTO;
 import com.app.modules.author.dto.AuthorDTO;
@@ -53,6 +55,7 @@ public class AuthorController {
 
     @PostMapping("/")
     @SecurityRequirement(name = "bearerAuth")
+    @RequireRoles(roles = {Role.ADMIN, Role.MANAGER})
     @Operation(summary = "create new author")
     @ApiResponse(responseCode = "201", description = "success")
     @ApiResponse(responseCode = "400", description = "validation error")
@@ -73,6 +76,7 @@ public class AuthorController {
 
     @DeleteMapping("/{id}")
     @SecurityRequirement(name = "bearerAuth")
+    @RequireRoles(roles = {Role.ADMIN, Role.MANAGER})
     @Operation(summary = "delete book by id")
     @ApiResponse(responseCode = "204", description = "success")
     public ResponseEntity<Void> deleteByID(@PathVariable Long id) {

@@ -4,7 +4,11 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
@@ -20,26 +24,78 @@ public class ProceedMW implements Filter {
 
         long startTime = System.currentTimeMillis();
 
-        ContentCachingResponseWrapper responseWrapper =
-                new ContentCachingResponseWrapper(httpResponse);
+        ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(httpRequest, 0);
+        ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(httpResponse);
 
         try {
             chain.doFilter(request, responseWrapper);
         } finally {
             long duration = System.currentTimeMillis() - startTime;
-            String path = httpRequest.getRequestURI();
-            String method = httpRequest.getMethod();
-            int code = responseWrapper.getStatus();
-            String remoteAddr = request.getRemoteAddr();
 
-            log.info("{} {} | Code: {} | IP: {} | Elapsed: {}ms",
-                    method, path,
-                    code,
-                    remoteAddr,
-                    duration
-            );
+            String method = httpRequest.getMethod();
+            String path = httpRequest.getRequestURI();
+            String queryString = httpRequest.getQueryString();
+            int status = responseWrapper.getStatus();
+            String remoteAddr = getClientIp(httpRequest);
+            String userAgent = httpRequest.getHeader("User-Agent");
+            String userId = getUserIdFromRequest(httpRequest);
+
+            StringBuilder logMessage = new StringBuilder();
+            logMessage.append(String.format("%s %s", method, path));
+
+            if (queryString != null && !queryString.isEmpty()) {
+                logMessage.append("?").append(queryString);
+            }
+
+            logMessage.append(String.format(" | Status: %d", status));
+            logMessage.append(String.format(" | IP: %s", remoteAddr));
+            logMessage.append(String.format(" | User-Agent: %s", userAgent));
+            logMessage.append(String.format(" | Duration: %dms", duration));
+
+            if (userId != null) {
+                logMessage.append(String.format(" | UserId: %s", userId));
+            }
+
+            if (status >= 500) {
+                log.error(logMessage.toString());
+            } else if (status >= 400) {
+                log.warn(logMessage.toString());
+            } else {
+                log.info(logMessage.toString());
+            }
 
             responseWrapper.copyBodyToResponse();
         }
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isEmpty()) {
+            return xRealIp;
+        }
+
+        return request.getRemoteAddr();
+    }
+
+    private String getUserIdFromRequest(HttpServletRequest request) {
+        String userId = request.getHeader("X-User-Id");
+        if (userId != null) {
+            return userId;
+        }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            Object principal = auth.getPrincipal();
+            if (principal != null) {
+                return principal.toString();
+            }
+        }
+
+        return null;
     }
 }

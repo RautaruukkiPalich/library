@@ -1,6 +1,7 @@
 package com.app.modules.auth.filter;
 
 import com.app.core.exception.AuthException;
+import com.app.core.utils.PublicEndpointChecker;
 import com.app.core.utils.jwt.JWTExtractor;
 import com.app.modules.auth.exception.AuthorizationException;
 import jakarta.servlet.FilterChain;
@@ -12,13 +13,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 
 @Slf4j
 @Component
@@ -26,6 +28,7 @@ import java.util.List;
 @ConditionalOnProperty(name = "app.security.enabled", havingValue = "true", matchIfMissing = true)
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JWTExtractor jwtExtractor;
+    private final PublicEndpointChecker publicEndpointChecker;
 
     private static final String AUTHORIZATION_PREFIX = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
@@ -36,24 +39,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+
         final String authHeader = request.getHeader(AUTHORIZATION_PREFIX);
 
         if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
-            log.info("no valid authorization header found");
+//            log.info("no valid authorization header found");
             filterChain.doFilter(request, response);
             return;
         }
 
         final String token = authHeader.substring(BEARER_PREFIX.length());
 
+        boolean isPublic = publicEndpointChecker.isPublic(request);
+
         try {
             validateAndSetAuthentication(token);
         } catch (AuthException e) {
             log.warn("Authorization failed: {}", e.getMessage());
-            throw e;
+            if (!isPublic) {
+                throw e;
+            }
         } catch (Exception e) {
             log.error("JWT authentication failed: {}", e.getMessage());
-            throw e;
+            if (!isPublic) {
+                throw e;
+            }
         }
 
         filterChain.doFilter(request, response);
@@ -74,13 +84,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throw AuthorizationException.tokenExpired();
         }
 
+        Collection<? extends GrantedAuthority> authorities = jwtExtractor
+                .extractRoles(token)
+                .stream()
+                .map(role -> new SimpleGrantedAuthority(role.getSpringRole()))
+                .toList();
+
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             Long userId = Long.parseLong(sub);
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(
                             userId,
                             null,
-                            List.of(new SimpleGrantedAuthority("USER"))
+                            authorities
                     );
             SecurityContextHolder.getContext().setAuthentication(authToken);
 

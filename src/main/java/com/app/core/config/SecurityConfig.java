@@ -42,21 +42,15 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers(
-                                "/swagger-ui/**",
-                                "/api-docs/**",
-                                "/v3/api-docs/**"
-                        ).permitAll()
                         .anyRequest()
                         .access(
                                 (sup, ctx) -> {
-                                    Authentication auth = sup.get();
                                     Objects.requireNonNull(ctx, "context cant be null");
-
                                     if (publicEndpointChecker.isPublic(ctx.getRequest())) {
                                         return new AuthorizationDecision(true);
                                     }
 
+                                    Authentication auth = sup.get();
                                     if (auth == null || auth instanceof AnonymousAuthenticationToken || !auth.isAuthenticated()) {
                                         throw AuthenticateException.authRequired();
                                     }

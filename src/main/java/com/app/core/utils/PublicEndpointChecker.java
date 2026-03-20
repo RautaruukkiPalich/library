@@ -7,9 +7,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import java.util.Objects;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -17,18 +18,48 @@ import java.util.Objects;
 public class PublicEndpointChecker {
 
     private final RequestMappingHandlerMapping handlerMapping;
+    private static final List<String> PUBLIC_PATTERNS = List.of(
+            "/swagger-ui/**",
+            "/api-docs/**",
+            "/v3/api-docs/**"
+    );
 
     public boolean isPublic(HttpServletRequest request) {
-        try {
-            Object handler = Objects.requireNonNull(handlerMapping.getHandler(request)).getHandler();
+        String uri = request.getRequestURI();
 
-            if (handler instanceof HandlerMethod handlerMethod) {
-                log.info("method: {}", handlerMethod);
+        if (matchesPublicPattern(uri)) {
+            return true;
+        }
+
+        return hasPublicAnnotation(request);
+    }
+
+    private boolean matchesPublicPattern(String uri) {
+        return PUBLIC_PATTERNS.stream().anyMatch(pattern -> matchesPattern(uri, pattern));
+    }
+
+    private boolean matchesPattern(String uri, String pattern) {
+        if (pattern.endsWith("/**")) {
+            String prefix = pattern.substring(0, pattern.length() - 3);
+            return uri.startsWith(prefix);
+        }
+        return uri.equals(pattern);
+    }
+
+    private boolean hasPublicAnnotation(HttpServletRequest request) {
+
+        try {
+            HandlerExecutionChain handler = handlerMapping.getHandler(request);
+            if (handler == null) {
+                return false;
+            }
+
+            Object handlerObj = handler.getHandler();
+
+            if (handlerObj instanceof HandlerMethod handlerMethod) {
                 return handlerMethod.hasMethodAnnotation(PublicMethod.class) ||
                         handlerMethod.getBeanType().isAnnotationPresent(PublicMethod.class);
             }
-
-            log.info("request is not instance of HandlerMethod: {}", request.getRequestURI());
 
             return false;
         } catch (Exception e) {

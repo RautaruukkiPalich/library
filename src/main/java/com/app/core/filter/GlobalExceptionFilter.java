@@ -50,7 +50,7 @@ public class GlobalExceptionFilter implements Filter {
             log.info("🔒  Forbidden: {}", ex.getMessage());
             writeErrorResponse(httpResponse, HttpStatus.FORBIDDEN, ex.getMessage(), httpRequest);
         } catch (Exception ex) {
-            log.error("🔥 Exception: {}", ex.getMessage());
+            log.error("🔥 Exception: {}", ex.getMessage(), ex);
             writeErrorResponse(httpResponse, HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", httpRequest);
         }
     }

@@ -43,18 +43,17 @@ public class AuthServiceImpl implements AuthService {
             throw AuthenticateException.invalidCredentials();
         }
 
-        Long userId = userAuthService.checkCredentials(
+        UserAuthInfoDTO user = userAuthService.checkCredentials(
                         LoginUserDTO.builder()
                                 .email(normalizedEmail)
                                 .password(dto.password())
                                 .build()
                 )
-                .map(UserAuthInfoDTO::id)
                 .orElseThrow(AuthenticateException::invalidCredentials);
 
         return TokenPairDTO.builder()
-                .access(jwtGenerator.generateToken(String.valueOf(userId)))
-                .refresh(refreshTokenService.create(userId).token())
+                .access(jwtGenerator.generateToken(String.valueOf(user.id()), user.roles()))
+                .refresh(refreshTokenService.create(user.id()).token())
                 .build();
     }
 
@@ -77,7 +76,11 @@ public class AuthServiceImpl implements AuthService {
         Objects.requireNonNull(token);
 
         RefreshTokenInfoDTO rt = refreshTokenService.rotate(token);
-        String at = jwtGenerator.generateToken(String.valueOf(rt.userId()));
+
+        UserAuthInfoDTO user = userAuthService.getById(rt.userId())
+                .orElseThrow(AuthenticateException::invalidCredentials);
+
+        String at = jwtGenerator.generateToken(String.valueOf(rt.userId()), user.roles());
 
         return TokenPairDTO.builder()
                 .access(at)

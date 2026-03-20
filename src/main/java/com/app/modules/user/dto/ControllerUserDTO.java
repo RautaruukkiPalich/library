@@ -1,10 +1,13 @@
 package com.app.modules.user.dto;
 
+import com.app.core.security.Role;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+
+import java.util.List;
 
 @Schema(description = "ControllerUserDTO")
 public class ControllerUserDTO {
@@ -34,5 +37,9 @@ public class ControllerUserDTO {
         @Schema(description = "user email", example = "test@test.test", requiredMode = Schema.RequiredMode.REQUIRED)
         @JsonProperty("email")
         private String email;
+
+        @Schema(description = "roles", example = "USER,ADMIN", requiredMode = Schema.RequiredMode.REQUIRED)
+        @JsonProperty("roles")
+        private List<Role> roles;
     }
 }

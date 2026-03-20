@@ -1,8 +1,10 @@
 package com.app.modules.user.dto;
 
+import com.app.core.security.Role;
 import lombok.Builder;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Builder
 public record UserDTO(
@@ -11,7 +13,7 @@ public record UserDTO(
         String lastname,
         String surname,
         String email,
-        String rawPassword,
+        List<Role> roles,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
 ) {

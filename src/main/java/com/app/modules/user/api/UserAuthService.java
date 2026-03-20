@@ -8,5 +8,8 @@ import java.util.Optional;
 
 public interface UserAuthService {
     Optional<UserAuthInfoDTO> checkCredentials(LoginUserDTO dto);
+
+    Optional<UserAuthInfoDTO> getById(Long id);
+
     void register(RegisterUserDTO dto);
 }

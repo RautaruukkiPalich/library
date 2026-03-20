@@ -11,10 +11,11 @@ import java.util.Objects;
 @Component
 public class UserMapper {
 
-    public static UserAuthInfoDTO convert(User user){
+    public static UserAuthInfoDTO convert(User user) {
         Objects.requireNonNull(user, "user cant be null");
         return UserAuthInfoDTO.builder()
                 .id(user.getId())
+                .roles(user.getRoles().stream().toList())
                 .build();
     }
 
@@ -26,6 +27,7 @@ public class UserMapper {
                 .lastname(user.getLastname())
                 .surname(user.getSurname())
                 .email(user.getEmail())
+                .roles(user.getRoles().stream().toList())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();
@@ -40,6 +42,7 @@ public class UserMapper {
                 .surname(u.surname())
                 .lastname(u.lastname())
                 .email(u.email())
+                .roles(u.roles())
                 .build();
     }
 }
