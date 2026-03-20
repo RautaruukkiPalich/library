@@ -22,6 +22,10 @@ spring:
     ttl: ${JWT_TTL:3600}
     refresh-ttl: ${JWT_REFRESH_TTL:86400}
 
+  app:
+    security:
+      enabled: true
+
   springdoc:
     api-docs:
       path: /api-docs
