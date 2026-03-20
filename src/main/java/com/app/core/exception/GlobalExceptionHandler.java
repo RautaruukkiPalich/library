@@ -2,6 +2,7 @@ package com.app.core.exception;
 
 import com.app.core.response.ErrorResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -30,18 +32,44 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 path.contains("/swagger-ui");
     }
 
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<ErrorResponse> handleAuth(
+            AuthException ex,
+            WebRequest request) {
+
+        log.info("Auth: {}", ex.getMessage());
+
+        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleForbidden(
+            ForbiddenException ex,
+            WebRequest request) {
+
+        log.info("Forbidden: {}", ex.getMessage());
+
+        return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(
             NotFoundException ex,
             WebRequest request) {
 
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                "not found",
-                ex.getMessage(),
-                getPath(request));
+        log.info("Not found: {}", ex.getMessage());
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(DuplicateException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicate(
+            DuplicateException ex,
+            WebRequest request) {
+
+        log.info("Duplicate: {}", ex.getMessage());
+
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
     @ExceptionHandler(ValidationException.class)
@@ -49,14 +77,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             ValidationException ex,
             WebRequest request) {
 
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                "validation error",
-                "invalid request parameters",
-                getPath(request),
-                ex.getErrorsMap());
+        log.info("Validation: {}", ex.getMessage());
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        return buildResponseWithDetails(HttpStatus.BAD_REQUEST, ex.getMessage(), request, ex.getErrorsMap());
     }
 
     @ExceptionHandler(Exception.class)
@@ -68,15 +91,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             throw ex;
         }
 
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "internal server error",
-                "an unexpected error occurred",
-                getPath(request));
+        log.info("unexpected error", ex);
 
-        logger.error("unexpected error", ex);
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "an unexpected error occurred", request);
     }
 
     @Override
@@ -132,5 +149,33 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private String getPath(WebRequest request) {
         return request.getDescription(false).replace("uri=", "");
+    }
+
+    private ResponseEntity<ErrorResponse> buildResponse(
+            HttpStatus status, String message, WebRequest request) {
+        return ResponseEntity
+                .status(status)
+                .body(new ErrorResponse(
+                        status.value(),
+                        status.getReasonPhrase(),
+                        message,
+                        getPath(request)));
+    }
+
+    private ResponseEntity<ErrorResponse> buildResponseWithDetails(
+            HttpStatus status, String message, WebRequest request, Map<String, String> details) {
+        return buildResponseWithDetails(status, message, status.getReasonPhrase(), request, details);
+    }
+
+    private ResponseEntity<ErrorResponse> buildResponseWithDetails(
+            HttpStatus status, String message, String reason, WebRequest request, Map<String, String> details) {
+        return ResponseEntity
+                .status(status)
+                .body(new ErrorResponse(
+                        status.value(),
+                        reason,
+                        message,
+                        getPath(request),
+                        details));
     }
 }

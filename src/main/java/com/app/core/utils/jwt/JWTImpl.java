@@ -2,12 +2,14 @@ package com.app.core.utils.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -19,16 +21,41 @@ public class JWTImpl implements JWTExtractor, JWTGenerator {
     @Value("${jwt.ttl}")
     private long ttl;
 
-    private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
+    private SecretKey signingKey;
+
+    @PostConstruct
+    public void init() {
+        this.signingKey = getSigningKey();
+        validateSecret();
+    }
+
+    private void validateSecret() {
+        byte[] bytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (bytes.length < 32) {
+            throw new IllegalStateException(
+                    "JWT secret must be at least 32 bytes. Current length: " + bytes.length
+            );
+        }
+    }
+
+    private SecretKey getSigningKey() {
+        byte[] bytes;
+
+        try {
+            bytes = Base64.getDecoder().decode(secret);
+        } catch (IllegalArgumentException e) {
+            bytes = secret.getBytes(StandardCharsets.UTF_8);
+        }
+
+        return Keys.hmacShaKeyFor(bytes);
     }
 
     public String generateToken(String sub) {
         return Jwts.builder()
-                .setSubject(sub)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + ttl * 1000))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .subject(sub)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + ttl * 1000))
+                .signWith(signingKey)
                 .compact();
     }
 
@@ -46,11 +73,11 @@ public class JWTImpl implements JWTExtractor, JWTGenerator {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+        return Jwts.parser()
+                .verifyWith(signingKey)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     private Date extractExpiration(String token) {

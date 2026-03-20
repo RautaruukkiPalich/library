@@ -1,5 +1,6 @@
 package com.app.modules.auth.controller;
 
+import com.app.core.annotation.PublicMethod;
 import com.app.modules.auth.api.AuthService;
 import com.app.modules.auth.dto.AuthControllerDTO;
 import com.app.modules.auth.dto.AuthMapper;
@@ -14,10 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URI;
-
 @RestController
 @RequestMapping("/api/auth")
+@PublicMethod
 @Tag(name = "auth", description = "auth api methods")
 public class AuthController {
 
@@ -36,7 +36,7 @@ public class AuthController {
             @Valid @RequestBody AuthControllerDTO.Register body
     ) {
         this.authService.register(AuthMapper.toRegisterDTO(body));
-        return ResponseEntity.created(URI.create("/api/auth/login")).build();
+        return ResponseEntity.status(201).build();
     }
 
     @PostMapping("/login")

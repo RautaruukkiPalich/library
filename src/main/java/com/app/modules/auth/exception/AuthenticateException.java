@@ -15,4 +15,8 @@ public class AuthenticateException extends AuthException {
     public static AuthenticateException invalidCredentials() {
         return new AuthenticateException("Invalid email or password");
     }
+
+    public static AuthenticateException authRequired() {
+        return new AuthenticateException("Authenticate required");
+    }
 }

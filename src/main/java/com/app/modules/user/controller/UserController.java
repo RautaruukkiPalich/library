@@ -1,5 +1,6 @@
 package com.app.modules.user.controller;
 
+import com.app.core.annotation.PublicMethod;
 import com.app.modules.user.api.UserService;
 import com.app.modules.user.dto.ControllerUserDTO;
 import com.app.modules.user.dto.UserDTO;
@@ -26,6 +27,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PublicMethod
     @Operation(summary = "get user by id")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerUserDTO.Response.class)))
     @ApiResponse(responseCode = "404", description = "not found")

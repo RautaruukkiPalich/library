@@ -1,5 +1,6 @@
 package com.app.modules.book.controller;
 
+import com.app.core.annotation.PublicMethod;
 import com.app.modules.book.api.BookService;
 import com.app.modules.book.dto.BookControllerDTO;
 import com.app.modules.book.dto.BookDTO;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +33,7 @@ public class BookController {
     }
 
     @GetMapping("/")
+    @PublicMethod
     @Operation(summary = "get all books")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = BookControllerDTO.ListResponse.class)))
     public ResponseEntity<BookControllerDTO.ListResponse> getAll() {
@@ -40,6 +43,7 @@ public class BookController {
     }
 
     @GetMapping("/search")
+    @PublicMethod
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = BookControllerDTO.ListResponse.class)))
     public ResponseEntity<BookControllerDTO.ListResponse> search(
             @ModelAttribute BookQueryParamsDTO.TitleGenre params
@@ -51,6 +55,7 @@ public class BookController {
     }
 
     @GetMapping("/available")
+    @PublicMethod
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = BookControllerDTO.ListResponse.class)))
     public ResponseEntity<BookControllerDTO.ListResponse> available() {
         BookFilter filter = BookFilterMapper.available();
@@ -60,6 +65,7 @@ public class BookController {
     }
 
     @GetMapping("/year/{year}")
+    @PublicMethod
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = BookControllerDTO.ListResponse.class)))
     public ResponseEntity<BookControllerDTO.ListResponse> year(
             @PathVariable Integer year
@@ -71,6 +77,7 @@ public class BookController {
     }
 
     @GetMapping("/year-range")
+    @PublicMethod
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = BookControllerDTO.ListResponse.class)))
     public ResponseEntity<BookControllerDTO.ListResponse> yearRange(
             @ModelAttribute BookQueryParamsDTO.PubYears params
@@ -89,6 +96,7 @@ public class BookController {
     // }
 
     @PostMapping("/")
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "create new book")
     @ApiResponse(responseCode = "201", description = "success")
     @ApiResponse(responseCode = "400", description = "validation error")
@@ -100,6 +108,7 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
+    @PublicMethod
     @Operation(summary = "get book by id")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = BookControllerDTO.Response.class)))
     @ApiResponse(responseCode = "404", description = "not found")
@@ -109,6 +118,7 @@ public class BookController {
     }
 
     @PutMapping("/{id}")
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "put book by id")
     @ApiResponse(responseCode = "200", description = "success")
     @ApiResponse(responseCode = "400", description = "validation error")
@@ -121,6 +131,7 @@ public class BookController {
     }
 
     @PatchMapping("/{id}")
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "patch book by id")
     @ApiResponse(responseCode = "200", description = "success")
     @ApiResponse(responseCode = "404", description = "not found")
@@ -132,6 +143,7 @@ public class BookController {
     }
 
     @DeleteMapping("/{id}")
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "delete book by id")
     @ApiResponse(responseCode = "204", description = "success")
     public ResponseEntity<Void> deleteByID(@PathVariable Long id) {

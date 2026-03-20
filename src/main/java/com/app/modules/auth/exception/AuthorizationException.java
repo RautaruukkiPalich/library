@@ -12,10 +12,6 @@ public class AuthorizationException extends AuthException {
         super(String.format("Authorization failed: %s", reason), cause);
     }
 
-    public static AuthorizationException insufficientPermissions() {
-        return new AuthorizationException("Insufficient permissions");
-    }
-
     public static AuthorizationException tokenExpired() {
         return new AuthorizationException("Token expired");
     }

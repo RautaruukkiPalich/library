@@ -1,5 +1,6 @@
 package com.app.modules.genre.controller;
 
+import com.app.core.annotation.PublicMethod;
 import com.app.modules.book.dto.BookControllerDTO;
 import com.app.modules.genre.api.GenreService;
 import com.app.modules.genre.dto.ControllerGenreDTO;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +35,7 @@ public class GenreController {
     }
 
     @GetMapping("/")
+    @PublicMethod
     @Operation(summary = "get all genres")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerGenreDTO.ListResponse.class)))
     public ResponseEntity<ControllerGenreDTO.ListResponse> getAll() {
@@ -42,6 +45,7 @@ public class GenreController {
     }
 
     @GetMapping("/search")
+    @PublicMethod
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = BookControllerDTO.ListResponse.class)))
     public ResponseEntity<ControllerGenreDTO.ListResponse> search(@ModelAttribute GenreQueryParamsDTO params) {
         GenreFilter filter = GenreFilterMapper.toFilter(params);
@@ -51,6 +55,7 @@ public class GenreController {
     }
 
     @PostMapping("/")
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "create new genre")
     @ApiResponse(responseCode = "201", description = "success")
     @ApiResponse(responseCode = "400", description = "validation error")
@@ -60,6 +65,7 @@ public class GenreController {
     }
 
     @GetMapping("/{id}")
+    @PublicMethod
     @Operation(summary = "get genre by id")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerGenreDTO.Response.class)))
     @ApiResponse(responseCode = "404", description = "not found")
@@ -69,6 +75,7 @@ public class GenreController {
     }
 
     @DeleteMapping("/{id}")
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "delete book by id")
     @ApiResponse(responseCode = "204", description = "success")
     public ResponseEntity<Void> deleteByID(@PathVariable Long id) {

@@ -5,6 +5,7 @@ import com.app.modules.user.repository.UserDeleterRepository;
 import com.app.modules.user.repository.UserGetterRepository;
 import com.app.modules.user.repository.UserPersisterRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 
@@ -25,9 +26,13 @@ public class PostgresUserRepositoryImpl implements UserGetterRepository, UserPer
     public Optional<User> getByEmail(String email) {
         String jpql = "SELECT u FROM User u WHERE u.email = :email";
 
-        return Optional.ofNullable(em.createQuery(jpql, User.class)
-                .setParameter("email", email)
-                .getSingleResult());
+        try {
+            return Optional.of(em.createQuery(jpql, User.class)
+                    .setParameter("email", email)
+                    .getSingleResult());
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
     }
 
     @Override
