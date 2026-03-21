@@ -1,4 +1,4 @@
-package com.app.core.security;
+package com.app.core.security.rbac;
 
 
 import com.app.core.exception.ForbiddenException;
@@ -8,7 +8,6 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -21,16 +20,12 @@ public class RequireRoleAspect {
 
     private final RBACService rbacService;
 
-    @Before("@annotation(requireRoles)")
-    public void checkRoles(JoinPoint joinPoint, RequireRoles requireRoles) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        Role[] requiredRoles = requireRoles.roles();
-        Logical logical = requireRoles.logical();
-
-//        log.info("Checking roles: {}", Arrays.toString(requiredRoles));
-
-        if (!rbacService.hasRoles(auth, requiredRoles, logical)) {
+    @Before("@annotation(requireRole)")
+    public void checkRoles(JoinPoint joinPoint, RequireRole requireRole) {
+        if (!rbacService.hasRole(
+                SecurityContextHolder.getContext().getAuthentication(),
+                requireRole.value())
+        ) {
             throw ForbiddenException.insufficientPermissions();
         }
     }

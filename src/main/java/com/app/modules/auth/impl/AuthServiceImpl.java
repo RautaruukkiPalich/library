@@ -16,6 +16,7 @@ import com.app.modules.user.dto.UserAuthInfoDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -24,6 +25,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserAuthService userAuthService;
     private final RefreshTokenService refreshTokenService;
     private final JWTGenerator jwtGenerator;
+
+    private static final String ROLE_KEY = "role";
 
     public AuthServiceImpl(
             UserAuthService userAuthService,
@@ -52,7 +55,7 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(AuthenticateException::invalidCredentials);
 
         return TokenPairDTO.builder()
-                .access(jwtGenerator.generateToken(String.valueOf(user.id()), user.roles()))
+                .access(generateAccessToken(user))
                 .refresh(refreshTokenService.create(user.id()).token())
                 .build();
     }
@@ -80,11 +83,17 @@ public class AuthServiceImpl implements AuthService {
         UserAuthInfoDTO user = userAuthService.getById(rt.userId())
                 .orElseThrow(AuthenticateException::invalidCredentials);
 
-        String at = jwtGenerator.generateToken(String.valueOf(rt.userId()), user.roles());
-
         return TokenPairDTO.builder()
-                .access(at)
+                .access(generateAccessToken(user))
                 .refresh(rt.token())
                 .build();
+    }
+
+    private String generateAccessToken(UserAuthInfoDTO u) {
+        Objects.requireNonNull(u, "dto must not be null");
+        return jwtGenerator.generateToken(
+                String.valueOf(u.id()),
+                Map.of(ROLE_KEY, u.role().getAuthority())
+        );
     }
 }

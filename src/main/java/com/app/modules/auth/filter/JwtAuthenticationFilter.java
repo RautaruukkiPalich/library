@@ -1,6 +1,7 @@
 package com.app.modules.auth.filter;
 
 import com.app.core.exception.AuthException;
+import com.app.core.security.rbac.Role;
 import com.app.core.utils.PublicEndpointChecker;
 import com.app.core.utils.jwt.JWTExtractor;
 import com.app.modules.auth.exception.AuthorizationException;
@@ -13,14 +14,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -32,6 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String AUTHORIZATION_PREFIX = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
+    private static final String ROLE_KEY = "role";
 
     @Override
     protected void doFilterInternal(
@@ -84,23 +85,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throw AuthorizationException.tokenExpired();
         }
 
-        Collection<? extends GrantedAuthority> authorities = jwtExtractor
-                .extractRoles(token)
-                .stream()
-                .map(role -> new SimpleGrantedAuthority(role.getSpringRole()))
-                .toList();
+        String strRole = jwtExtractor.extractClaims(token).get(ROLE_KEY).toString();
 
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
+
             Long userId = Long.parseLong(sub);
+            Role role = Role.extractRole(strRole)
+                    .orElseGet(() -> {
+                        log.warn("Unknown role: {}", strRole);
+                        return Role.GUEST;
+                    });
+
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(
                             userId,
                             null,
-                            authorities
+                            List.of(new SimpleGrantedAuthority(role.getSpringRole()))
                     );
+
             SecurityContextHolder.getContext().setAuthentication(authToken);
 
-            log.debug("User {} authenticated successfully", userId);
+            log.debug("User {} authenticated successfully with role {}", userId, role);
         }
     }
 }

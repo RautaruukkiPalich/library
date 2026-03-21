@@ -12,6 +12,7 @@ import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -55,6 +56,10 @@ public class ProceedMW implements Filter {
             if (userId != null) {
                 logMessage.append(String.format(" | UserId: %s", userId));
             }
+
+            Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+                    .map(Authentication::getAuthorities)
+                    .ifPresent(a -> logMessage.append(String.format(" | Role: %s", a)));
 
             if (status >= 500) {
                 log.error(logMessage.toString());

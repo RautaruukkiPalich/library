@@ -15,7 +15,7 @@ public class UserMapper {
         Objects.requireNonNull(user, "user cant be null");
         return UserAuthInfoDTO.builder()
                 .id(user.getId())
-                .roles(user.getRoles().stream().toList())
+                .role(user.getRole())
                 .build();
     }
 
@@ -27,7 +27,7 @@ public class UserMapper {
                 .lastname(user.getLastname())
                 .surname(user.getSurname())
                 .email(user.getEmail())
-                .roles(user.getRoles().stream().toList())
+                .role(user.getRole())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();
@@ -42,7 +42,7 @@ public class UserMapper {
                 .surname(u.surname())
                 .lastname(u.lastname())
                 .email(u.email())
-                .roles(u.roles())
+                .role(u.role())
                 .build();
     }
 }

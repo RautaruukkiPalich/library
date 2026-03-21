@@ -1,19 +1,22 @@
 package com.app.modules.user.model;
 
 import com.app.core.model.BaseModel;
-import com.app.core.security.Role;
+import com.app.core.security.rbac.Role;
 import com.app.core.utils.NormalizeSanitizer;
 import com.app.core.utils.passwordHasher.PasswordHasher;
 import com.app.core.utils.validator.NumberValidator;
 import com.app.core.utils.validator.StringValidator;
 import com.app.modules.user.dto.RegisterUserDTO;
 import com.app.modules.user.exception.UserValidationException;
-import com.app.modules.user.repository.RoleSetConverter;
+import com.app.modules.user.utils.RoleNameConverter;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 @Getter
@@ -40,9 +43,9 @@ public class User extends BaseModel {
     @Column(nullable = false, length = 100)
     private String hashedPassword;
 
-    @Column(nullable = false, columnDefinition = "VARCHAR(255) DEFAULT 'USER'")
-    @Convert(converter = RoleSetConverter.class)
-    private Set<Role> roles = EnumSet.noneOf(Role.class);
+    @Convert(converter = RoleNameConverter.class)
+    @Column(nullable = false)
+    private Role role = Role.USER;
 
     public User() {
         super(UserValidationException::new);
@@ -59,7 +62,7 @@ public class User extends BaseModel {
         this.surname = NormalizeSanitizer.sanitize(dto.surname());
         this.lastname = NormalizeSanitizer.sanitize(dto.lastname());
         this.email = NormalizeSanitizer.normalize(dto.email());
-        this.roles = EnumSet.of(Role.USER);
+        this.role = Role.USER;
         this.validate();
 
 
