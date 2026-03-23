@@ -1,7 +1,7 @@
 package com.app.modules.author.controller;
 
-import com.app.core.annotation.PublicMethod;
-import com.app.core.security.rbac.RequireRole;
+import com.app.core.annotation.public_endpoint.PublicEndpoint;
+import com.app.core.aop.require_role.RequireRole;
 import com.app.core.security.rbac.Role;
 import com.app.modules.author.api.AuthorService;
 import com.app.modules.author.dto.AuthorControllerDTO;
@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
+import static com.app.core.config.OpenAPIConfig.BEARER_SECURITY_SCHEME_NAME;
+
 @RestController
 @RequestMapping("/api/authors")
 @Tag(name = "authors", description = "authors api methods")
@@ -34,7 +36,7 @@ public class AuthorController {
     }
 
     @GetMapping("/")
-    @PublicMethod
+    @PublicEndpoint
     @Operation(summary = "get all authors")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = AuthorControllerDTO.ListResponse.class)))
     public ResponseEntity<AuthorControllerDTO.ListResponse> getAll() {
@@ -44,7 +46,7 @@ public class AuthorController {
     }
 
     @GetMapping("/search")
-    @PublicMethod
+    @PublicEndpoint
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = AuthorControllerDTO.ListResponse.class)))
     public ResponseEntity<AuthorControllerDTO.ListResponse> search(@ModelAttribute AuthorQueryParamsDTO params) {
         AuthorFilter filter = AuthorFilterMapper.toFilter(params);
@@ -54,7 +56,7 @@ public class AuthorController {
     }
 
     @PostMapping("/")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = BEARER_SECURITY_SCHEME_NAME)
     @RequireRole(Role.MANAGER)
     @Operation(summary = "create new author")
     @ApiResponse(responseCode = "201", description = "success")
@@ -65,7 +67,7 @@ public class AuthorController {
     }
 
     @GetMapping("/{id}")
-    @PublicMethod
+    @PublicEndpoint
     @Operation(summary = "get author by id")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = AuthorControllerDTO.Response.class)))
     @ApiResponse(responseCode = "404", description = "not found")
@@ -75,7 +77,7 @@ public class AuthorController {
     }
 
     @DeleteMapping("/{id}")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = BEARER_SECURITY_SCHEME_NAME)
     @RequireRole(Role.MANAGER)
     @Operation(summary = "delete book by id")
     @ApiResponse(responseCode = "204", description = "success")

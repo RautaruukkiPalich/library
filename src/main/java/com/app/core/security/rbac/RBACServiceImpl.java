@@ -26,20 +26,11 @@ public class RBACServiceImpl implements RBACService {
         return auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .filter(Objects::nonNull)
-                .anyMatch(r -> Role.extractRole(extractRoleName(r))
+                .anyMatch(r -> Role.extractRole(r)
                         .orElseGet(() -> {
                             log.warn("Unknown role {}", r);
                             return Role.GUEST;
                         })
                         .hasEnoughPermission(requiredRole));
-    }
-
-    private String extractRoleName(String authority) {
-        final String ROLE_PREFIX = "ROLE_";
-
-        if (authority.startsWith(ROLE_PREFIX)) {
-            return authority.substring(ROLE_PREFIX.length());
-        }
-        return authority;
     }
 }

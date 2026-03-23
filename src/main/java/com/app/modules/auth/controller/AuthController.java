@@ -1,6 +1,6 @@
 package com.app.modules.auth.controller;
 
-import com.app.core.annotation.PublicMethod;
+import com.app.core.annotation.public_endpoint.PublicEndpoint;
 import com.app.modules.auth.api.AuthService;
 import com.app.modules.auth.dto.AuthControllerDTO;
 import com.app.modules.auth.dto.AuthMapper;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
-@PublicMethod
+@PublicEndpoint
 @Tag(name = "auth", description = "auth api methods")
 public class AuthController {
 

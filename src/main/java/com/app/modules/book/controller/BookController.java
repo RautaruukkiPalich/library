@@ -1,6 +1,6 @@
 package com.app.modules.book.controller;
 
-import com.app.core.annotation.PublicMethod;
+import com.app.core.annotation.public_endpoint.PublicEndpoint;
 import com.app.modules.book.api.BookService;
 import com.app.modules.book.dto.BookControllerDTO;
 import com.app.modules.book.dto.BookDTO;
@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
+import static com.app.core.config.OpenAPIConfig.BEARER_SECURITY_SCHEME_NAME;
+
 @RestController
 @RequestMapping("/api/books")
 @Tag(name = "books", description = "books api methods")
@@ -33,7 +35,7 @@ public class BookController {
     }
 
     @GetMapping("/")
-    @PublicMethod
+    @PublicEndpoint
     @Operation(summary = "get all books")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = BookControllerDTO.ListResponse.class)))
     public ResponseEntity<BookControllerDTO.ListResponse> getAll() {
@@ -43,7 +45,7 @@ public class BookController {
     }
 
     @GetMapping("/search")
-    @PublicMethod
+    @PublicEndpoint
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = BookControllerDTO.ListResponse.class)))
     public ResponseEntity<BookControllerDTO.ListResponse> search(
             @ModelAttribute BookQueryParamsDTO.TitleGenre params
@@ -55,7 +57,7 @@ public class BookController {
     }
 
     @GetMapping("/available")
-    @PublicMethod
+    @PublicEndpoint
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = BookControllerDTO.ListResponse.class)))
     public ResponseEntity<BookControllerDTO.ListResponse> available() {
         BookFilter filter = BookFilterMapper.available();
@@ -65,7 +67,7 @@ public class BookController {
     }
 
     @GetMapping("/year/{year}")
-    @PublicMethod
+    @PublicEndpoint
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = BookControllerDTO.ListResponse.class)))
     public ResponseEntity<BookControllerDTO.ListResponse> year(
             @PathVariable Integer year
@@ -77,7 +79,7 @@ public class BookController {
     }
 
     @GetMapping("/year-range")
-    @PublicMethod
+    @PublicEndpoint
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = BookControllerDTO.ListResponse.class)))
     public ResponseEntity<BookControllerDTO.ListResponse> yearRange(
             @ModelAttribute BookQueryParamsDTO.PubYears params
@@ -96,7 +98,7 @@ public class BookController {
     // }
 
     @PostMapping("/")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = BEARER_SECURITY_SCHEME_NAME)
     @Operation(summary = "create new book")
     @ApiResponse(responseCode = "201", description = "success")
     @ApiResponse(responseCode = "400", description = "validation error")
@@ -108,7 +110,7 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    @PublicMethod
+    @PublicEndpoint
     @Operation(summary = "get book by id")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = BookControllerDTO.Response.class)))
     @ApiResponse(responseCode = "404", description = "not found")
@@ -118,7 +120,7 @@ public class BookController {
     }
 
     @PutMapping("/{id}")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = BEARER_SECURITY_SCHEME_NAME)
     @Operation(summary = "put book by id")
     @ApiResponse(responseCode = "200", description = "success")
     @ApiResponse(responseCode = "400", description = "validation error")
@@ -131,7 +133,7 @@ public class BookController {
     }
 
     @PatchMapping("/{id}")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = BEARER_SECURITY_SCHEME_NAME)
     @Operation(summary = "patch book by id")
     @ApiResponse(responseCode = "200", description = "success")
     @ApiResponse(responseCode = "404", description = "not found")
@@ -143,7 +145,7 @@ public class BookController {
     }
 
     @DeleteMapping("/{id}")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = BEARER_SECURITY_SCHEME_NAME)
     @Operation(summary = "delete book by id")
     @ApiResponse(responseCode = "204", description = "success")
     public ResponseEntity<Void> deleteByID(@PathVariable Long id) {

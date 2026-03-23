@@ -1,4 +1,4 @@
-package com.app.modules.auth.exception;
+package com.app.core.security.jwt;
 
 import com.app.core.exception.AuthException;
 

@@ -11,23 +11,27 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenAPIConfig {
 
+    public static final String BEARER_SECURITY_SCHEME_NAME = "bearerAuth";
+
+    private static final String BEARER_SCHEME = "bearer";
+    private static final String BEARER_JWT_FORMAT = "JWT";
+    private static final String SECURITY_SCHEME_DESC =
+            "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'";
+
     @Bean
     public OpenAPI customOpenAPI() {
-        final String securitySchemeName = "bearerAuth";
-        final String bearerScheme = "bearer";
-        final String bearerJWTFormat = "JWT";
+
 
         return new OpenAPI()
                 .components(new Components()
-                        .addSecuritySchemes(securitySchemeName,
+                        .addSecuritySchemes(BEARER_SECURITY_SCHEME_NAME,
                                 new SecurityScheme()
                                         .name("Authorization")
                                         .type(SecurityScheme.Type.HTTP)
                                         .in(SecurityScheme.In.HEADER)
-                                        .scheme(bearerScheme)
-                                        .bearerFormat(bearerJWTFormat)
-                                        .description("JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'")))
-                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
+                                        .scheme(BEARER_SCHEME)
+                                        .bearerFormat(BEARER_JWT_FORMAT)
+                                        .description(SECURITY_SCHEME_DESC)))
                 .info(new Info()
                         .title("Book API")
                         .description("REST API for Book Library")

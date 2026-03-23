@@ -1,7 +1,8 @@
-package com.app.core.security.rbac;
+package com.app.core.aop.require_role;
 
 
 import com.app.core.exception.ForbiddenException;
+import com.app.core.security.rbac.RBACService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;

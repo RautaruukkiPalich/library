@@ -1,10 +1,9 @@
-package com.app.modules.auth.filter;
+package com.app.core.security.jwt;
 
+import com.app.core.annotation.public_endpoint.PublicEndpointChecker;
 import com.app.core.exception.AuthException;
 import com.app.core.security.rbac.Role;
-import com.app.core.utils.PublicEndpointChecker;
 import com.app.core.utils.jwt.JWTExtractor;
-import com.app.modules.auth.exception.AuthorizationException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,7 +43,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader(AUTHORIZATION_PREFIX);
 
         if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
-//            log.info("no valid authorization header found");
             filterChain.doFilter(request, response);
             return;
         }

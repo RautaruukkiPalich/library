@@ -1,9 +1,8 @@
 package com.app.core.config;
 
+import com.app.core.annotation.public_endpoint.PublicEndpointChecker;
 import com.app.core.filter.GlobalExceptionFilter;
-import com.app.core.utils.PublicEndpointChecker;
-import com.app.modules.auth.exception.AuthenticateException;
-import com.app.modules.auth.filter.JwtAuthenticationFilter;
+import com.app.core.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

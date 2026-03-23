@@ -1,6 +1,6 @@
 package com.app.modules.genre.controller;
 
-import com.app.core.annotation.PublicMethod;
+import com.app.core.annotation.public_endpoint.PublicEndpoint;
 import com.app.modules.book.dto.BookControllerDTO;
 import com.app.modules.genre.api.GenreService;
 import com.app.modules.genre.dto.ControllerGenreDTO;
@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
+import static com.app.core.config.OpenAPIConfig.BEARER_SECURITY_SCHEME_NAME;
+
 @RestController
 @RequestMapping("/api/genres")
 @Tag(name = "genres", description = "genres api methods")
@@ -35,7 +37,7 @@ public class GenreController {
     }
 
     @GetMapping("/")
-    @PublicMethod
+    @PublicEndpoint
     @Operation(summary = "get all genres")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerGenreDTO.ListResponse.class)))
     public ResponseEntity<ControllerGenreDTO.ListResponse> getAll() {
@@ -45,7 +47,7 @@ public class GenreController {
     }
 
     @GetMapping("/search")
-    @PublicMethod
+    @PublicEndpoint
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = BookControllerDTO.ListResponse.class)))
     public ResponseEntity<ControllerGenreDTO.ListResponse> search(@ModelAttribute GenreQueryParamsDTO params) {
         GenreFilter filter = GenreFilterMapper.toFilter(params);
@@ -55,7 +57,7 @@ public class GenreController {
     }
 
     @PostMapping("/")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = BEARER_SECURITY_SCHEME_NAME)
     @Operation(summary = "create new genre")
     @ApiResponse(responseCode = "201", description = "success")
     @ApiResponse(responseCode = "400", description = "validation error")
@@ -65,7 +67,7 @@ public class GenreController {
     }
 
     @GetMapping("/{id}")
-    @PublicMethod
+    @PublicEndpoint
     @Operation(summary = "get genre by id")
     @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = ControllerGenreDTO.Response.class)))
     @ApiResponse(responseCode = "404", description = "not found")
@@ -75,7 +77,7 @@ public class GenreController {
     }
 
     @DeleteMapping("/{id}")
-    @SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = BEARER_SECURITY_SCHEME_NAME)
     @Operation(summary = "delete book by id")
     @ApiResponse(responseCode = "204", description = "success")
     public ResponseEntity<Void> deleteByID(@PathVariable Long id) {

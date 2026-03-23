@@ -1,4 +1,4 @@
-package com.app.modules.auth.exception;
+package com.app.core.config;
 
 import com.app.core.exception.AuthException;
 
@@ -12,7 +12,7 @@ public class AuthenticateException extends AuthException {
         super(String.format("Authentication failed: %s", reason), cause);
     }
 
-    public static AuthenticateException invalidCredentials() {
-        return new AuthenticateException("Invalid email or password");
+    public static AuthenticateException authRequired() {
+        return new AuthenticateException("Authentication required");
     }
 }

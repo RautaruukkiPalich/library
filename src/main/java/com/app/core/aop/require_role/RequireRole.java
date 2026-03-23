@@ -1,4 +1,6 @@
-package com.app.core.security.rbac;
+package com.app.core.aop.require_role;
+
+import com.app.core.security.rbac.Role;
 
 import java.lang.annotation.*;
 

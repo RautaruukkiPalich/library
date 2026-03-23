@@ -4,6 +4,7 @@ import com.app.core.exception.AuthException;
 import com.app.core.exception.ForbiddenException;
 import com.app.core.response.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,7 +29,7 @@ public class GlobalExceptionFilter implements Filter {
     public GlobalExceptionFilter() {
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
-        this.objectMapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
     @Override
@@ -36,7 +37,7 @@ public class GlobalExceptionFilter implements Filter {
             @NonNull ServletRequest request,
             @NonNull ServletResponse response,
             @NonNull FilterChain filterChain
-    ) throws ServletException, IOException {
+    ) throws IOException {
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
@@ -44,7 +45,7 @@ public class GlobalExceptionFilter implements Filter {
         try {
             filterChain.doFilter(httpRequest, response);
         } catch (AuthException ex) {
-            log.info("🔒  Auth: {}", ex.getMessage());
+            log.info("🔒  Authenticate: {}", ex.getMessage());
             writeErrorResponse(httpResponse, HttpStatus.UNAUTHORIZED, ex.getMessage(), httpRequest);
         } catch (ForbiddenException ex) {
             log.info("🔒  Forbidden: {}", ex.getMessage());
