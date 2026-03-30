@@ -1,10 +1,11 @@
 package com.app.model;
 
-import com.app.dto.AuthorDTO;
-import com.app.exception.validation.AuthorValidationException;
+import com.app.core.utils.validator.StringValidator;
+import com.app.core.utils.validator.Validator;
+import com.app.modules.author.dto.AuthorDTO;
+import com.app.modules.author.exception.AuthorValidationException;
+import com.app.modules.author.model.Author;
 import com.app.utils.map.MapUtils;
-import com.app.utils.validator.StringValidator;
-import com.app.utils.validator.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

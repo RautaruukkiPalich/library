@@ -1,19 +1,20 @@
 package com.app.service;
 
-import com.app.dto.BookDTO;
-import com.app.exception.notfound.AuthorNotFoundException;
-import com.app.exception.notfound.BookNotFoundException;
-import com.app.exception.notfound.GenreNotFoundException;
-import com.app.exception.validation.BookValidationException;
-import com.app.exception.validation.ValidationException;
-import com.app.filter.BookFilter;
-import com.app.mapper.BookMapper;
-import com.app.model.Author;
-import com.app.model.Book;
-import com.app.model.Genre;
-import com.app.repository.IAuthorRepository;
-import com.app.repository.IBookRepository;
-import com.app.repository.IGenreRepository;
+import com.app.core.exception.ValidationException;
+import com.app.modules.author.exception.AuthorNotFoundException;
+import com.app.modules.author.model.Author;
+import com.app.modules.author.repository.AuthorRepository;
+import com.app.modules.book.dto.BookDTO;
+import com.app.modules.book.dto.BookFilter;
+import com.app.modules.book.exception.BookNotFoundException;
+import com.app.modules.book.exception.BookValidationException;
+import com.app.modules.book.impl.BookServiceImpl;
+import com.app.modules.book.mapper.BookMapper;
+import com.app.modules.book.model.Book;
+import com.app.modules.book.repository.BookRepository;
+import com.app.modules.genre.exception.GenreNotFoundException;
+import com.app.modules.genre.model.Genre;
+import com.app.modules.genre.repository.GenreRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,16 +37,16 @@ import static org.mockito.Mockito.*;
 class BookServiceTest {
 
     @Mock
-    private IBookRepository bookRepository;
+    private BookRepository bookRepository;
 
     @Mock
-    private IAuthorRepository authorRepository;
+    private AuthorRepository authorRepository;
 
     @Mock
-    private IGenreRepository genreRepository;
+    private GenreRepository genreRepository;
 
     @InjectMocks
-    private BookService bookService;
+    private BookServiceImpl bookService;
 
     private Book book1;
     private Book book2;
