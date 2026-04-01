@@ -12,6 +12,7 @@ import com.app.modules.user.dto.RegisterUserDTO;
 import com.app.modules.user.dto.UserAuthInfoDTO;
 import com.app.modules.user.dto.UserDTO;
 import com.app.modules.user.exception.UserNotFoundException;
+import com.app.modules.user.exception.UserValidationException;
 import com.app.modules.user.mapper.UserMapper;
 import com.app.modules.user.model.User;
 import com.app.modules.user.repository.UserGetterRepository;
@@ -43,6 +44,22 @@ public class UserServiceImpl implements UserService, UserAuthService {
                 .orElseThrow(() -> new UserNotFoundException(id));
 
         return UserMapper.toDTO(user);
+    }
+
+    @Override
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
+        Objects.requireNonNull(userId, "userId must not be null");
+        Objects.requireNonNull(oldPassword, "old password must not be null");
+        Objects.requireNonNull(newPassword, "new password must not be null");
+
+        this.userGetterRepository.getByID(userId)
+                .ifPresent(u -> {
+                    if (!u.comparePassword(oldPassword, passwordHasher)) {
+                        throw new UserValidationException("old password", "invalid");
+                    }
+                    u.setPassword(newPassword, passwordHasher);
+                    this.userPersisterRepository.save(u);
+                });
     }
 
     @Override
@@ -93,9 +110,7 @@ public class UserServiceImpl implements UserService, UserAuthService {
         userGetterRepository.getByEmail(normalizedEmail).ifPresent(
                 u -> {
                     String pwrd = generateRandomPassword();
-
-                    u.setHashedPassword(passwordHasher.encode(pwrd));
-                    u.validateStrict();
+                    u.setPassword(pwrd, passwordHasher);
                     userPersisterRepository.save(u);
 
                     emailService.send(

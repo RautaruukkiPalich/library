@@ -65,9 +65,15 @@ public class User extends BaseModel {
         this.role = Role.USER;
         this.validate();
 
+        this.setPassword(dto.password(), hasher);
+    }
 
-        validateRawPassword(dto.password());
-        this.hashedPassword = hashPassword(dto.password(), hasher);
+    public void setPassword(String rawPass, PasswordHasher hasher){
+        Objects.requireNonNull(rawPass, "password must not be null");
+        Objects.requireNonNull(hasher, "password hasher must not be null");
+
+        validateRawPassword(rawPass);
+        this.hashedPassword = hashPassword(rawPass, hasher);
     }
 
     public boolean comparePassword(String rawPass, PasswordHasher hasher) {

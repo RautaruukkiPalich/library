@@ -1,11 +1,13 @@
 package com.app.modules.auth.dto;
 
+import com.app.core.utils.apiValidations.EmailValidation;
+import com.app.core.utils.apiValidations.PasswordValidation;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
@@ -15,6 +17,7 @@ public class AuthControllerDTO {
     @Setter
     @Getter
     @SuperBuilder
+    @NoArgsConstructor
     @Schema(name = "register user", description = "register user")
     public static class Register extends Login {
         @Schema(description = "user firstname", example = "Alexander", requiredMode = Schema.RequiredMode.REQUIRED, minLength = 2, maxLength = 255)
@@ -34,49 +37,35 @@ public class AuthControllerDTO {
         @NotBlank(message = "surname is required")
         @Size(min = 2, max = 100, message = "surname must be between 2 and 100 characters")
         private String surname;
-
-        public Register() {
-        }
     }
 
     @Setter
     @Getter
     @SuperBuilder
+    @NoArgsConstructor
     @Schema(name = "email")
     public static class Email {
-        @Schema(description = "user email", example = "test@test.test", requiredMode = Schema.RequiredMode.REQUIRED, minLength = 2, maxLength = 255)
         @JsonProperty("email")
-        @NotBlank(message = "email is required")
-        @Size(min = 2, max = 100, message = "email must be between 2 and 100 characters")
-        @Pattern(regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9-]+\\.[a-zA-Z]+$")
+        private String email;
+    }
+
+    @Setter
+    @Getter
+    @SuperBuilder
+    @NoArgsConstructor
+    @Schema(name = "login user", description = "login user")
+    public static class Login implements EmailValidation, PasswordValidation {
+        @JsonProperty("email")
         private String email;
 
-        public Email() {
-        }
-    }
-
-    @Setter
-    @Getter
-    @SuperBuilder
-    @Schema(name = "login user", description = "login user")
-    public static class Login extends Email {
-
-        @Schema(description = "user password", example = "QWErty123", requiredMode = Schema.RequiredMode.REQUIRED, minLength = 2, maxLength = 255)
         @JsonProperty("password")
-        @NotBlank(message = "password is required")
-        @Size(min = 8, max = 100, message = "password must be between 8 and 100 characters")
-        @Pattern(regexp = ".*[A-Z].*", message = "must contain uppercase letter")
-        @Pattern(regexp = ".*[a-z].*", message = "must contain lowercase letter")
-        @Pattern(regexp = ".*\\d.*", message = "must contain digit")
         private String password;
-
-        public Login() {
-        }
     }
 
     @Setter
     @Getter
     @SuperBuilder
+    @NoArgsConstructor
     @Schema(name = "refresh tokens", description = "refresh tokens")
     public static class RefreshTokens {
 
@@ -84,9 +73,6 @@ public class AuthControllerDTO {
         @JsonProperty("refresh_token")
         @NotBlank(message = "refresh_token is required")
         private String token;
-
-        public RefreshTokens() {
-        }
     }
 
     @Schema(name = "token pair response", description = "access + refresh token pair")

@@ -1,6 +1,6 @@
 package com.app.modules.user.mapper;
 
-import com.app.modules.user.dto.ControllerUserDTO;
+import com.app.modules.user.dto.UserControllerDTO;
 import com.app.modules.user.dto.UserAuthInfoDTO;
 import com.app.modules.user.dto.UserDTO;
 import com.app.modules.user.model.User;
@@ -33,9 +33,22 @@ public class UserMapper {
                 .build();
     }
 
-    public static ControllerUserDTO.Response toResponse(UserDTO u) {
-        Objects.requireNonNull(u, "author cant be null");
-        return ControllerUserDTO.Response
+    public static UserControllerDTO.PublicResponse toPublicResponse(UserDTO u) {
+        Objects.requireNonNull(u, "user cant be null");
+        return UserControllerDTO.PublicResponse
+                .builder()
+                .id(u.id())
+                .firstname(u.firstname())
+                .surname(u.surname())
+                .lastname(u.lastname())
+                .email(u.email())
+                .role(u.role())
+                .build();
+    }
+
+    public static UserControllerDTO.PrivateResponse toPrivateResponse(UserDTO u) {
+        Objects.requireNonNull(u, "user cant be null");
+        return UserControllerDTO.PrivateResponse
                 .builder()
                 .id(u.id())
                 .firstname(u.firstname())

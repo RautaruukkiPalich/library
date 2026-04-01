@@ -82,7 +82,6 @@ public class AuthController {
     @PostMapping("/revoke-tokens")
     @Operation(summary = "revoke all refresh tokens")
     @ApiResponse(responseCode = "200", description = "success")
-    @ApiResponse(responseCode = "")
     public ResponseEntity<Void> revokeAllTokens(
             @AuthenticationPrincipal Long userId
     ){
