@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
-@PublicEndpoint
 @Tag(name = "auth", description = "auth api methods")
 public class AuthController {
 
@@ -28,6 +28,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
+    @PublicEndpoint
     @Operation(summary = "register new user")
     @ApiResponse(responseCode = "201", description = "success")
     @ApiResponse(responseCode = "400", description = "validation error")
@@ -40,6 +41,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @PublicEndpoint
     @Operation(summary = "login user")
     @ApiResponse(responseCode = "200", description = "success")
     @ApiResponse(responseCode = "400", description = "validation error")
@@ -53,6 +55,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-tokens")
+    @PublicEndpoint
     @Operation(summary = "refresh token pair")
     @ApiResponse(responseCode = "200", description = "success")
     @ApiResponse(responseCode = "400", description = "validation error")
@@ -62,5 +65,28 @@ public class AuthController {
         TokenPairDTO tokens = this.authService.refreshTokens(body.getToken());
         var resp = new AuthControllerDTO.TokenPairResponse(tokens.access(), tokens.refresh());
         return ResponseEntity.ok().body(resp);
+    }
+
+    @PostMapping("/reset-password")
+    @PublicEndpoint
+    @Operation(summary = "reset password")
+    @ApiResponse(responseCode = "200", description = "success")
+    @ApiResponse(responseCode = "400", description = "validation error")
+    public ResponseEntity<Void> resetPassword(
+            @Valid @RequestBody AuthControllerDTO.Email body
+    ){
+        authService.resetPassword(body.getEmail());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/revoke-tokens")
+    @Operation(summary = "revoke all refresh tokens")
+    @ApiResponse(responseCode = "200", description = "success")
+    @ApiResponse(responseCode = "")
+    public ResponseEntity<Void> revokeAllTokens(
+            @AuthenticationPrincipal Long userId
+    ){
+        authService.revokeAllRefreshTokens(userId);
+        return ResponseEntity.ok().build();
     }
 }

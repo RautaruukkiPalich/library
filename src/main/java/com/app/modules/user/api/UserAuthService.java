@@ -10,6 +10,9 @@ public interface UserAuthService {
     Optional<UserAuthInfoDTO> checkCredentials(LoginUserDTO dto);
 
     Optional<UserAuthInfoDTO> getById(Long id);
+    Optional<UserAuthInfoDTO> getByEmail(String email);
 
     void register(RegisterUserDTO dto);
+
+    void resetPassword(String email);
 }

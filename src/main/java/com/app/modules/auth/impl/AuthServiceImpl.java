@@ -13,6 +13,8 @@ import com.app.modules.user.api.UserAuthService;
 import com.app.modules.user.dto.LoginUserDTO;
 import com.app.modules.user.dto.RegisterUserDTO;
 import com.app.modules.user.dto.UserAuthInfoDTO;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,22 +22,15 @@ import java.util.Map;
 import java.util.Objects;
 
 @Service
+@Slf4j
 @Transactional
+@AllArgsConstructor
 public class AuthServiceImpl implements AuthService {
     private final UserAuthService userAuthService;
     private final RefreshTokenService refreshTokenService;
     private final JWTGenerator jwtGenerator;
 
     private static final String ROLE_KEY = "role";
-
-    public AuthServiceImpl(
-            UserAuthService userAuthService,
-            RefreshTokenService refreshTokenService,
-            JWTGenerator jwtGenerator) {
-        this.userAuthService = userAuthService;
-        this.refreshTokenService = refreshTokenService;
-        this.jwtGenerator = jwtGenerator;
-    }
 
     @Override
     public TokenPairDTO login(LoginDTO dto) {
@@ -61,13 +56,31 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public void resetPassword(String email) {
+        Objects.requireNonNull(email);
+
+        userAuthService.getByEmail(email)
+                .map(u -> {
+                    log.info("Resetting password for user: {}", email);
+                    userAuthService.resetPassword(email);
+                    refreshTokenService.revokeAllUserTokens(u.id());
+                    return u;
+                })
+                .orElseThrow(() -> {
+                    log.warn("Password reset failed - user not found: {}", email);
+                    return new RuntimeException("password reset failed");
+                });
+    }
+
+    @Override
     public void register(RegisterDTO dto) {
         Objects.requireNonNull(dto, "dto must not be null");
+
         this.userAuthService.register(
                 RegisterUserDTO.builder()
                         .firstname(dto.firstname())
                         .lastname(dto.lastname())
-                        .surname(dto.lastname())
+                        .surname(dto.surname())
                         .email(dto.email())
                         .password(dto.password())
                         .build()
@@ -87,6 +100,12 @@ public class AuthServiceImpl implements AuthService {
                 .access(generateAccessToken(user))
                 .refresh(rt.token())
                 .build();
+    }
+
+    @Override
+    public void revokeAllRefreshTokens(Long userId) {
+        Objects.requireNonNull(userId);
+        refreshTokenService.revokeAllUserTokens(userId);
     }
 
     private String generateAccessToken(UserAuthInfoDTO u) {

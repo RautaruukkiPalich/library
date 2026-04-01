@@ -5,7 +5,11 @@ import com.app.modules.auth.dto.RegisterDTO;
 import com.app.modules.auth.dto.TokenPairDTO;
 
 public interface AuthService {
-    TokenPairDTO login(LoginDTO dto);
-    TokenPairDTO refreshTokens(String token);
     void register(RegisterDTO dto);
+    TokenPairDTO login(LoginDTO dto);
+
+    void resetPassword(String email);
+
+    TokenPairDTO refreshTokens(String token);
+    void revokeAllRefreshTokens(Long userId);
 }

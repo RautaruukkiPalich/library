@@ -35,10 +35,10 @@ public class PostgresRefreshTokenRepositoryImpl implements RefreshTokenRepositor
 
     @Override
     public void revokeAllUserTokens(Long userId) {
-        String jpql = "UPDATE FROM RefreshToken rt SET rt.revoked = true WHERE rt.user_id = :user_id and rt.revoked = false";
+        String jpql = "UPDATE RefreshToken rt SET rt.revoked = true WHERE rt.userId = :userId and rt.revoked = false";
 
         em.createQuery(jpql)
-                .setParameter("user_id", userId)
+                .setParameter("userId", userId)
                 .executeUpdate();
 
     }

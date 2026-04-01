@@ -3,6 +3,8 @@ package com.app.modules.user.impl;
 import com.app.core.exception.DuplicateException;
 import com.app.core.utils.NormalizeSanitizer;
 import com.app.core.utils.passwordHasher.PasswordHasher;
+import com.app.modules.email.api.EmailService;
+import com.app.modules.email.dto.EmailDTO;
 import com.app.modules.user.api.UserAuthService;
 import com.app.modules.user.api.UserService;
 import com.app.modules.user.dto.LoginUserDTO;
@@ -14,30 +16,25 @@ import com.app.modules.user.mapper.UserMapper;
 import com.app.modules.user.model.User;
 import com.app.modules.user.repository.UserGetterRepository;
 import com.app.modules.user.repository.UserPersisterRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
 
 @Primary
 @Service
 @Transactional
+@AllArgsConstructor
 public class UserServiceImpl implements UserService, UserAuthService {
 
+    private final EmailService emailService;
     private final UserGetterRepository userGetterRepository;
     private final UserPersisterRepository userPersisterRepository;
     private final PasswordHasher passwordHasher;
-
-    UserServiceImpl(
-            UserGetterRepository userGetterRepository,
-            UserPersisterRepository userPersisterRepository,
-            PasswordHasher passwordHasher) {
-        this.userGetterRepository = userGetterRepository;
-        this.userPersisterRepository = userPersisterRepository;
-        this.passwordHasher = passwordHasher;
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -57,7 +54,18 @@ public class UserServiceImpl implements UserService, UserAuthService {
 
     @Override
     public Optional<UserAuthInfoDTO> getById(Long id) {
+        Objects.requireNonNull(id, "id must not be null");
+
         return this.userGetterRepository.getByID(id)
+                .map(UserMapper::convert);
+    }
+
+    @Override
+    public Optional<UserAuthInfoDTO> getByEmail(String email) {
+        Objects.requireNonNull(email, "email must not be null");
+        String normalizedEmail = NormalizeSanitizer.normalize(email);
+
+        return this.userGetterRepository.getByEmail(normalizedEmail)
                 .map(UserMapper::convert);
     }
 
@@ -75,5 +83,43 @@ public class UserServiceImpl implements UserService, UserAuthService {
 
         User savedUser = this.userPersisterRepository.save(user);
         savedUser.validateStrict();
+    }
+
+    @Override
+    public void resetPassword(String email) {
+        Objects.requireNonNull(email, "email must not be null");
+        String normalizedEmail = NormalizeSanitizer.normalize(email);
+
+        userGetterRepository.getByEmail(normalizedEmail).ifPresent(
+                u -> {
+                    String pwrd = generateRandomPassword();
+
+                    u.setHashedPassword(passwordHasher.encode(pwrd));
+                    u.validateStrict();
+                    userPersisterRepository.save(u);
+
+                    emailService.send(
+                            EmailDTO.builder()
+                                    .to(normalizedEmail)
+                                    .subject("reset password")
+                                    .body(String.format("new password: '%s'", pwrd))
+                                    .build()
+                    );
+                }
+        );
+    }
+
+    //TODO: change realization
+    public String generateRandomPassword() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+        StringBuilder password = new StringBuilder();
+        Random random = new Random();
+
+        for (int i = 0; i < 10; i++) {
+            int index = random.nextInt(chars.length());
+            password.append(chars.charAt(index));
+        }
+
+        return password.toString();
     }
 }
