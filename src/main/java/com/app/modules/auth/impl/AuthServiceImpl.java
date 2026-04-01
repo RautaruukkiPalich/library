@@ -1,5 +1,6 @@
 package com.app.modules.auth.impl;
 
+import com.app.core.security.rbac.Role;
 import com.app.core.utils.NormalizeSanitizer;
 import com.app.core.utils.jwt.JWTGenerator;
 import com.app.modules.auth.api.AuthService;
@@ -9,7 +10,10 @@ import com.app.modules.auth.dto.TokenPairDTO;
 import com.app.modules.auth.exception.AuthenticateException;
 import com.app.modules.refresh_token.api.RefreshTokenService;
 import com.app.modules.refresh_token.dto.RefreshTokenInfoDTO;
+import com.app.modules.user.api.UserAuthQueryService;
 import com.app.modules.user.api.UserAuthService;
+import com.app.modules.user.api.UserPasswordResetService;
+import com.app.modules.user.api.UserRegistrationService;
 import com.app.modules.user.dto.LoginUserDTO;
 import com.app.modules.user.dto.RegisterUserDTO;
 import com.app.modules.user.dto.UserAuthInfoDTO;
@@ -27,6 +31,9 @@ import java.util.Objects;
 @AllArgsConstructor
 public class AuthServiceImpl implements AuthService {
     private final UserAuthService userAuthService;
+    private final UserRegistrationService userRegistrationService;
+    private final UserAuthQueryService userAuthQueryService;
+    private final UserPasswordResetService userPasswordResetService;
     private final RefreshTokenService refreshTokenService;
     private final JWTGenerator jwtGenerator;
 
@@ -50,33 +57,25 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(AuthenticateException::invalidCredentials);
 
         return TokenPairDTO.builder()
-                .access(generateAccessToken(user))
+                .access(generateAccessToken(user.id(), user.role()))
                 .refresh(refreshTokenService.create(user.id()).token())
                 .build();
     }
 
     @Override
     public void resetPassword(String email) {
-        Objects.requireNonNull(email);
+        Objects.requireNonNull(email, "email must not be null");
 
-        userAuthService.getByEmail(email)
-                .map(u -> {
-                    log.info("Resetting password for user: {}", email);
-                    userAuthService.resetPassword(email);
-                    refreshTokenService.revokeAllUserTokens(u.id());
-                    return u;
-                })
-                .orElseThrow(() -> {
-                    log.warn("Password reset failed - user not found: {}", email);
-                    return new RuntimeException("password reset failed");
-                });
+        UserAuthInfoDTO dto = userAuthQueryService.getByEmail(email);
+        userPasswordResetService.resetPassword(email);
+        refreshTokenService.revokeAllUserTokens(dto.id());
     }
 
     @Override
     public void register(RegisterDTO dto) {
         Objects.requireNonNull(dto, "dto must not be null");
 
-        this.userAuthService.register(
+        userRegistrationService.register(
                 RegisterUserDTO.builder()
                         .firstname(dto.firstname())
                         .lastname(dto.lastname())
@@ -89,30 +88,30 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public TokenPairDTO refreshTokens(String token) {
-        Objects.requireNonNull(token);
+        Objects.requireNonNull(token, "token must not be null");
 
         RefreshTokenInfoDTO rt = refreshTokenService.rotate(token);
-
-        UserAuthInfoDTO user = userAuthService.getById(rt.userId())
-                .orElseThrow(AuthenticateException::invalidCredentials);
+        UserAuthInfoDTO user = userAuthQueryService.getById(rt.userId());
 
         return TokenPairDTO.builder()
-                .access(generateAccessToken(user))
+                .access(generateAccessToken(user.id(), user.role()))
                 .refresh(rt.token())
                 .build();
     }
 
     @Override
     public void revokeAllRefreshTokens(Long userId) {
-        Objects.requireNonNull(userId);
+        Objects.requireNonNull(userId, "userId must not be null");
         refreshTokenService.revokeAllUserTokens(userId);
     }
 
-    private String generateAccessToken(UserAuthInfoDTO u) {
-        Objects.requireNonNull(u, "dto must not be null");
+    private String generateAccessToken(Long userId, Role role) {
+        Objects.requireNonNull(userId, "userId must not be null");
+        Objects.requireNonNull(role, "role must not be null");
+
         return jwtGenerator.generateToken(
-                String.valueOf(u.id()),
-                Map.of(ROLE_KEY, u.role().getAuthority())
+                String.valueOf(userId),
+                Map.of(ROLE_KEY, role.getAuthority())
         );
     }
 }

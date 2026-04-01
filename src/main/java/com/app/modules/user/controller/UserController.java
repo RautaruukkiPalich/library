@@ -1,6 +1,7 @@
 package com.app.modules.user.controller;
 
 import com.app.core.annotation.public_endpoint.PublicEndpoint;
+import com.app.modules.user.api.UserProfileService;
 import com.app.modules.user.api.UserService;
 import com.app.modules.user.dto.UserControllerDTO;
 import com.app.modules.user.dto.UserDTO;
@@ -25,6 +26,7 @@ import static com.app.core.config.OpenAPIConfig.BEARER_SECURITY_SCHEME_NAME;
 @Tag(name = "users", description = "users api methods")
 public class UserController {
     private final UserService userService;
+    private final UserProfileService userProfileService;
 
     @GetMapping("/{id:\\d+}")
     @PublicEndpoint
@@ -57,7 +59,7 @@ public class UserController {
             @AuthenticationPrincipal Long userId,
             @Valid @RequestBody UserControllerDTO.ChangePassword body
     ) {
-        userService.changePassword(userId, body.getOldPassword(), body.getPassword());
+        userProfileService.changePassword(userId, body.getOldPassword(), body.getPassword());
         return ResponseEntity.ok().build();
     }
 }

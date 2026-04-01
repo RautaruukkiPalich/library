@@ -11,7 +11,7 @@ import java.util.Objects;
 @Component
 public class UserMapper {
 
-    public static UserAuthInfoDTO convert(User user) {
+    public static UserAuthInfoDTO convertToAuthInfo(User user) {
         Objects.requireNonNull(user, "user cant be null");
         return UserAuthInfoDTO.builder()
                 .id(user.getId())
