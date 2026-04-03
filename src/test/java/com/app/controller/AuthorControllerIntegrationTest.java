@@ -2,19 +2,22 @@ package com.app.controller;
 
 import com.app.BaseIntegrationTest;
 import com.app.config.TestSecurityConfig;
+import com.app.utils.IntegrationTestCase;
 import com.app.utils.JsonTestUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -23,6 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@SpringBootTest
+@AutoConfigureMockMvc
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Import(TestSecurityConfig.class)
 public class AuthorControllerIntegrationTest extends BaseIntegrationTest {
 
@@ -40,9 +46,8 @@ public class AuthorControllerIntegrationTest extends BaseIntegrationTest {
         cleanupDatabase();
     }
 
-    @Transactional
-    public void cleanupDatabase() {
-        jdbcTemplate.execute("TRUNCATE TABLE authors RESTART IDENTITY CASCADE;");
+    void cleanupDatabase() {
+        truncate(jdbcTemplate, "authors");
     }
 
     @Test
@@ -74,104 +79,107 @@ public class AuthorControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("updated_at").isNotEmpty());
     }
 
-    @Test
-    void createAuthor_shouldReturn400andValidationError() throws Exception {
-
-        record TestCase(
-                String desc,
-                String json,
-                ResultMatcher statusCode,
-                List<ResultMatcher> matchers
-        ) {
-            public ResultMatcher[] combineWith(ResultMatcher... commonMatchers) {
-                return Stream.concat(
-                        Arrays.stream(commonMatchers),
-                        this.matchers.stream()
-                ).toArray(ResultMatcher[]::new);
-            }
-        }
-
-        List<TestCase> testCases = List.of(
+    @TestFactory
+    Stream<DynamicTest> createAuthor_shouldReturn400andValidationError() throws Exception {
+        List<IntegrationTestCase> tcs = List.of(
                 // firstname tests
-                new TestCase(
-                        "on empty firstname expect error",
-                        "{\"lastname\":\"123\", \"surname\":\"123\"}",
-                        status().isBadRequest(),
-                        List.of(jsonPath("*.firstname").value("firstname is required"))
-                ),
-                new TestCase(
-                        "on long firstname expect error",
-                        String.format("{\"firstname\":\"%s\", \"lastname\":\"123\", \"lastname\":\"123\"}", "a".repeat(260)),
-                        status().isBadRequest(),
-                        List.of(jsonPath("*.firstname").value("firstname must be between 2 and 255 characters"))
-                ),
-                new TestCase(
-                        "on short firstname expect error",
-                        "{\"firstname\":\"1\", \"lastname\":\"123\", \"lastname\":\"123\"}",
-                        status().isBadRequest(),
-                        List.of(jsonPath("*.firstname").value("firstname must be between 2 and 255 characters"))
-                ),
+                IntegrationTestCase.builder()
+                        .desc("on empty firstname expect error")
+                        .jsonBody("{\"lastname\":\"123\", \"surname\":\"123\"}")
+                        .statusMatcher(status().isBadRequest())
+                        .matchers(List.of(
+                                jsonPath("$.validation_errors.firstname").value("firstname is required")
+                        ))
+                        .build(),
+
+                IntegrationTestCase.builder()
+                        .desc("on long firstname expect error")
+                        .jsonBody(String.format("{\"firstname\":\"%s\", \"lastname\":\"123\", \"surname\":\"123\"}", "a".repeat(260)))
+                        .statusMatcher(status().isBadRequest())
+                        .matchers(List.of(
+                                jsonPath("$.validation_errors.firstname").value("firstname must be between 2 and 255 characters")
+                        ))
+                        .build(),
+
+                IntegrationTestCase.builder()
+                        .desc("on short firstname expect error")
+                        .jsonBody("{\"firstname\":\"1\", \"lastname\":\"123\", \"surname\":\"123\"}")
+                        .statusMatcher(status().isBadRequest())
+                        .matchers(List.of(
+                                jsonPath("$.validation_errors.firstname").value("firstname must be between 2 and 255 characters")
+                        ))
+                        .build(),
 
                 // surname tests
-                new TestCase(
-                        "on empty surname expect error",
-                        "{\"firstname\":\"123\", \"lastname\":\"123\"}",
-                        status().isBadRequest(),
-                        List.of(jsonPath("*.surname").value("surname is required"))
-                ),
-                new TestCase(
-                        "on long surname expect error",
-                        String.format("{\"firstname\":\"123\", \"lastname\":\"123\", \"surname\":\"%s\"}", "a".repeat(260)),
-                        status().isBadRequest(),
-                        List.of(jsonPath("*.surname").value("surname must be between 2 and 255 characters"))
-                ),
-                new TestCase(
-                        "on short surname expect error",
-                        "{\"firstname\":\"132\", \"lastname\":\"123\", \"surname\":\"1\"}",
-                        status().isBadRequest(),
-                        List.of(jsonPath("*.surname").value("surname must be between 2 and 255 characters"))
-                ),
+                IntegrationTestCase.builder()
+                        .desc("on empty surname expect error")
+                        .jsonBody("{\"firstname\":\"123\", \"lastname\":\"123\"}")
+                        .statusMatcher(status().isBadRequest())
+                        .matchers(List.of(
+                                jsonPath("$.validation_errors.surname").value("surname is required")
+                        ))
+                        .build(),
+
+                IntegrationTestCase.builder()
+                        .desc("on long surname expect error")
+                        .jsonBody(String.format("{\"firstname\":\"123\", \"lastname\":\"123\", \"surname\":\"%s\"}", "a".repeat(260)))
+                        .statusMatcher(status().isBadRequest())
+                        .matchers(List.of(
+                                jsonPath("$.validation_errors.surname").value("surname must be between 2 and 255 characters")
+                        ))
+                        .build(),
+
+                IntegrationTestCase.builder()
+                        .desc("on short surname expect error")
+                        .jsonBody("{\"firstname\":\"132\", \"lastname\":\"123\", \"surname\":\"1\"}")
+                        .statusMatcher(status().isBadRequest())
+                        .matchers(List.of(
+                                jsonPath("$.validation_errors.surname").value("surname must be between 2 and 255 characters")
+                        ))
+                        .build(),
 
                 // lastname tests
-                new TestCase(
-                        "on empty lastname expect error",
-                        "{\"firstname\":\"123\", \"surname\":\"123\"}",
-                        status().isBadRequest(),
-                        List.of(jsonPath("*.lastname").value("lastname is required"))
-                ),
-                new TestCase(
-                        "on long lastname expect error",
-                        String.format("{\"firstname\":\"123\", \"lastname\":\"%s\", \"surname\":\"123\"}", "a".repeat(260)),
-                        status().isBadRequest(),
-                        List.of(jsonPath("*.lastname").value("lastname must be between 2 and 255 characters"))
-                ),
-                new TestCase(
-                        "on short lastname expect error",
-                        "{\"firstname\":\"123\", \"lastname\":\"1\", \"surname\":\"123\"}",
-                        status().isBadRequest(),
-                        List.of(jsonPath("*.lastname").value("lastname must be between 2 and 255 characters"))
-                )
+                IntegrationTestCase.builder()
+                        .desc("on empty lastname expect error")
+                        .jsonBody("{\"firstname\":\"123\", \"surname\":\"123\"}")
+                        .statusMatcher(status().isBadRequest())
+                        .matchers(List.of(
+                                jsonPath("$.validation_errors.lastname").value("lastname is required")
+                        ))
+                        .build(),
+
+                IntegrationTestCase.builder()
+                        .desc("on long lastname expect error")
+                        .jsonBody(String.format("{\"firstname\":\"123\", \"lastname\":\"%s\", \"surname\":\"123\"}", "a".repeat(260)))
+                        .statusMatcher(status().isBadRequest())
+                        .matchers(List.of(
+                                jsonPath("$.validation_errors.lastname").value("lastname must be between 2 and 255 characters")
+                        ))
+                        .build(),
+
+                IntegrationTestCase.builder()
+                        .desc("on short lastname expect error")
+                        .jsonBody("{\"firstname\":\"123\", \"lastname\":\"1\", \"surname\":\"123\"}")
+                        .statusMatcher(status().isBadRequest())
+                        .matchers(List.of(
+                                jsonPath("$.validation_errors.lastname").value("lastname must be between 2 and 255 characters")
+                        ))
+                        .build()
         );
 
 
-        testCases.forEach(tc -> {
-            try {
-                mockMvc.perform(
-                                post(BASE_API_AUTHOR_PATH)
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(tc.json))
-                        .andExpect(tc.statusCode)
-                        .andExpectAll(
-                                tc.combineWith(
-                                        jsonPath("error").value("validation error"),
-                                        jsonPath("message").value("invalid argument parameter"),
-                                        jsonPath("path").value(BASE_API_AUTHOR_PATH)
-                                )
-                        );
-            } catch (Exception e) {
-                throw new RuntimeException("Failed test: " + tc.desc, e);
-            }
-        });
+        return tcs.stream().map(tc -> DynamicTest.dynamicTest(tc.desc(), () -> mockMvc.perform(
+                        post(BASE_API_AUTHOR_PATH)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(tc.jsonBody()))
+                .andExpect(tc.statusMatcher())
+                .andExpectAll(
+                        tc.combineWith(
+                                jsonPath("error").value("validation error"),
+                                jsonPath("message").value("invalid argument parameter"),
+                                jsonPath("path").value(BASE_API_AUTHOR_PATH)
+                        )
+                )));
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.app.modules.refresh_token.impl;
 
+import com.app.core.config.AuthenticateException;
 import com.app.modules.refresh_token.api.RefreshTokenService;
 import com.app.modules.refresh_token.dto.RefreshTokenInfoDTO;
 import com.app.modules.refresh_token.model.RefreshToken;
@@ -51,7 +52,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                             .userId(saved.getUserId())
                             .build();
                 })
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(AuthenticateException::authRequired);
     }
 
     @Override

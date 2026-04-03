@@ -1,5 +1,6 @@
 package com.app.modules.user.impl;
 
+import com.app.core.exception.ValidationException;
 import com.app.core.utils.NormalizeSanitizer;
 import com.app.core.utils.passwordHasher.PasswordHasher;
 import com.app.modules.email.api.EmailPreparerService;
@@ -7,6 +8,7 @@ import com.app.modules.email.dto.EmailDTO;
 import com.app.modules.user.api.UserPasswordResetService;
 import com.app.modules.user.model.User;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,7 @@ import java.util.Random;
 
 @Service
 @Transactional
+@Slf4j
 @AllArgsConstructor
 public class UserPasswordResetServiceImpl implements UserPasswordResetService {
     private final UserOperations userOperations;
@@ -28,11 +31,9 @@ public class UserPasswordResetServiceImpl implements UserPasswordResetService {
 
         User u = userOperations.getOrThrowNotFound(normalizedEmail);
 
-        String pwrd = generateRandomPassword();
-        u.setPassword(pwrd, passwordHasher);
-        userOperations.validateAndSave(u);
+        String temporaryPassword = generateAndValidatePassword(u);
 
-        emailPreparerService.prepare(buildResetPasswordMessage(u.getEmail(), pwrd));
+        emailPreparerService.prepare(buildResetPasswordMessage(u.getEmail(), temporaryPassword));
     }
 
     private EmailDTO buildResetPasswordMessage(String email, String newPassword) {
@@ -43,13 +44,35 @@ public class UserPasswordResetServiceImpl implements UserPasswordResetService {
                 .build();
     }
 
+    private String generateAndValidatePassword(User user){
+        int maxAttempts = 10;
+        int attempt = 0;
+
+        while (attempt < maxAttempts) {
+            try {
+                String password = generateRandomPassword(10);
+                user.setPassword(password, passwordHasher);
+                userOperations.validateAndSave(user);
+                log.debug("generated valid password after {} attempts", attempt + 1);
+                return password;
+            } catch (ValidationException e) {
+                attempt++;
+                log.debug("generated invalid password (attempt {}): {}", attempt, e.getErrorsMap());
+            }
+        }
+
+        throw new IllegalStateException(
+                String.format("failed to generate valid password after %d attempts", maxAttempts)
+        );
+    }
+
     //TODO: change realization
-    public String generateRandomPassword() {
+    public String generateRandomPassword(int length) {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
         StringBuilder password = new StringBuilder();
         Random random = new Random();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < length; i++) {
             int index = random.nextInt(chars.length());
             password.append(chars.charAt(index));
         }

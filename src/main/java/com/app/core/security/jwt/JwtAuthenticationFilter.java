@@ -4,6 +4,7 @@ import com.app.core.annotation.public_endpoint.PublicEndpointChecker;
 import com.app.core.exception.AuthException;
 import com.app.core.security.rbac.Role;
 import com.app.core.utils.jwt.JWTExtractor;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,14 +55,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             validateAndSetAuthentication(token);
         } catch (AuthException e) {
-            log.warn("Authorization failed: {}", e.getMessage());
+            log.warn("authorization failed for: {} | cause: {}", token, e.getMessage());
             if (!isPublic) {
                 throw e;
             }
-        } catch (Exception e) {
-            log.error("JWT authentication failed: {}", e.getMessage());
+        }catch (JwtException e) {
+            log.error("jwt auth failed for: {} | cause: {}", token, e.getMessage());
             if (!isPublic) {
-                throw e;
+                throw AuthorizationException.invalidToken();
             }
         }
 
@@ -75,10 +76,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String sub = jwtExtractor.extractSub(token);
 
-        if (sub == null) {
-            throw AuthorizationException.invalidToken();
-        }
-
         if (jwtExtractor.isTokenExpired(token)) {
             throw AuthorizationException.tokenExpired();
         }
@@ -90,7 +87,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Long userId = Long.parseLong(sub);
             Role role = Role.extractRole(strRole)
                     .orElseGet(() -> {
-                        log.warn("Unknown role: {}", strRole);
+                        log.warn("unknown role: {}", strRole);
                         return Role.GUEST;
                     });
 
@@ -103,7 +100,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(authToken);
 
-            log.debug("User {} authenticated successfully with role {}", userId, role);
+            log.debug("user: \"{}\" authenticated successfully with role \"{}\"", userId, role);
         }
     }
 }

@@ -69,7 +69,6 @@ public class User extends BaseModel {
     }
 
     public void setPassword(String rawPass, PasswordHasher hasher){
-        Objects.requireNonNull(rawPass, "password must not be null");
         Objects.requireNonNull(hasher, "password hasher must not be null");
 
         validateRawPassword(rawPass);

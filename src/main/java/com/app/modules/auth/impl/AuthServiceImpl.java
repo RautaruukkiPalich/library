@@ -1,5 +1,8 @@
 package com.app.modules.auth.impl;
 
+import com.app.core.exception.AuthException;
+import com.app.core.exception.NotFoundException;
+import com.app.core.exception.ValidationException;
 import com.app.core.security.rbac.Role;
 import com.app.core.utils.NormalizeSanitizer;
 import com.app.core.utils.jwt.JWTGenerator;
@@ -66,9 +69,15 @@ public class AuthServiceImpl implements AuthService {
     public void resetPassword(String email) {
         Objects.requireNonNull(email, "email must not be null");
 
-        UserAuthInfoDTO dto = userAuthQueryService.getByEmail(email);
-        userPasswordResetService.resetPassword(email);
-        refreshTokenService.revokeAllUserTokens(dto.id());
+        try {
+            UserAuthInfoDTO dto = userAuthQueryService.getByEmail(email);
+            userPasswordResetService.resetPassword(email);
+            refreshTokenService.revokeAllUserTokens(dto.id());
+        } catch (NotFoundException |  AuthException e) {
+            log.error("failed reset password: {}", e.getMessage());
+            log.debug("debug: failed reset password", e);
+            throw AuthenticateException.invalidCredentials();
+        }
     }
 
     @Override
@@ -90,13 +99,18 @@ public class AuthServiceImpl implements AuthService {
     public TokenPairDTO refreshTokens(String token) {
         Objects.requireNonNull(token, "token must not be null");
 
-        RefreshTokenInfoDTO rt = refreshTokenService.rotate(token);
-        UserAuthInfoDTO user = userAuthQueryService.getById(rt.userId());
-
-        return TokenPairDTO.builder()
-                .access(generateAccessToken(user.id(), user.role()))
-                .refresh(rt.token())
-                .build();
+        try {
+            RefreshTokenInfoDTO rt = refreshTokenService.rotate(token);
+            UserAuthInfoDTO user = userAuthQueryService.getById(rt.userId());
+            return TokenPairDTO.builder()
+                    .access(generateAccessToken(user.id(), user.role()))
+                    .refresh(rt.token())
+                    .build();
+        } catch (NotFoundException | ValidationException | AuthException e) {
+            log.error("failed refresh tokens: {}", e.getMessage());
+            log.debug("debug: failed refresh tokens", e);
+            throw AuthenticateException.invalidCredentials();
+        }
     }
 
     @Override

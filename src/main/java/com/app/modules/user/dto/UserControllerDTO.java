@@ -1,7 +1,6 @@
 package com.app.modules.user.dto;
 
 import com.app.core.security.rbac.Role;
-import com.app.core.utils.apiValidations.PasswordValidation;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -18,6 +17,7 @@ public class UserControllerDTO {
     @Getter
     @Setter
     @SuperBuilder
+    @NoArgsConstructor
     @Schema(name = "response user public")
     public static class PublicResponse {
         @Schema(description = "unique user identifier", example = "101", accessMode = Schema.AccessMode.READ_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
@@ -55,17 +55,23 @@ public class UserControllerDTO {
     @SuperBuilder
     @NoArgsConstructor
     @Schema(name = "change password schema")
-    public static class ChangePassword implements PasswordValidation {
+    public static class ChangePassword {
         @JsonProperty("old_password")
         @Schema(description = "old_password", example = "QWErty123", requiredMode = Schema.RequiredMode.REQUIRED, minLength = 2, maxLength = 255)
-        @NotBlank(message = "old_password is required")
+        @NotBlank(message = "is required")
         @Size(min = 8, max = 100, message = "password must be between 8 and 100 characters")
         @Pattern(regexp = ".*[A-Z].*", message = "must contain uppercase letter")
         @Pattern(regexp = ".*[a-z].*", message = "must contain lowercase letter")
         @Pattern(regexp = ".*\\d.*", message = "must contain digit")
         private String oldPassword;
 
+        @Schema(description = "password", example = "QWErty123", requiredMode = Schema.RequiredMode.REQUIRED, minLength = 2, maxLength = 255)
         @JsonProperty("password")
+        @NotBlank(message = "is required")
+        @Size(min = 8, max = 100, message = "must be between 2 and 100 characters")
+        @Pattern(regexp = ".*[A-Z].*", message = "must contain uppercase letter")
+        @Pattern(regexp = ".*[a-z].*", message = "must contain lowercase letter")
+        @Pattern(regexp = ".*\\d.*", message = "must contain digit")
         private String password;
     }
 }
