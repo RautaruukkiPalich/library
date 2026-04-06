@@ -7,8 +7,10 @@ import com.app.modules.email.api.EmailPreparerService;
 import com.app.modules.email.dto.EmailDTO;
 import com.app.modules.user.api.UserPasswordResetService;
 import com.app.modules.user.model.User;
+import com.app.modules.user.repository.UserGetterRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,23 +22,24 @@ import java.util.Random;
 @Slf4j
 @AllArgsConstructor
 public class UserPasswordResetServiceImpl implements UserPasswordResetService {
+    private final UserGetterRepository userGetterRepository;
     private final UserOperations userOperations;
     private final PasswordHasher passwordHasher;
     private final EmailPreparerService emailPreparerService;
 
     @Override
-    public void resetPassword(String email) {
+    public void resetPassword(@NonNull String email) {
         Objects.requireNonNull(email, "email must not be null");
         String normalizedEmail = NormalizeSanitizer.normalize(email);
 
-        User u = userOperations.getOrThrowNotFound(normalizedEmail);
+        User u = userGetterRepository.getByEmail(normalizedEmail);
 
         String temporaryPassword = generateAndValidatePassword(u);
 
         emailPreparerService.prepare(buildResetPasswordMessage(u.getEmail(), temporaryPassword));
     }
 
-    private EmailDTO buildResetPasswordMessage(String email, String newPassword) {
+    private EmailDTO buildResetPasswordMessage(@NonNull String email, @NonNull String newPassword) {
         return EmailDTO.builder()
                 .to(email)
                 .subject("reset password")
@@ -44,7 +47,7 @@ public class UserPasswordResetServiceImpl implements UserPasswordResetService {
                 .build();
     }
 
-    private String generateAndValidatePassword(User user){
+    private String generateAndValidatePassword(@NonNull User user) {
         int maxAttempts = 10;
         int attempt = 0;
 

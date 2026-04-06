@@ -10,12 +10,12 @@ public abstract class Validator<T, V extends Validator<T, V>> {
     protected final String key;
     protected final T value;
 
-    public static final String ERROR_NULL = "cant be null";
+    public static final String ERROR_NULL = "must not be null";
 
     private final List<Supplier<Map<String, String>>> checkFuncs = new ArrayList<>();
 
     public Validator(String key, T value) {
-        this.key = Objects.requireNonNull(key, "key can't be null");
+        this.key = Objects.requireNonNull(key, "key must not be null");
         this.value = value;
     }
 

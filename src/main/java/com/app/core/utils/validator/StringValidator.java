@@ -4,9 +4,9 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class StringValidator extends Validator<String, StringValidator> {
-    public static final String ERROR_BLANK = "cant be blank";
-    public static final String ERROR_TOO_SHORT = "cant be shorter %d characters";
-    public static final String ERROR_TOO_LONG = "cant be longer %d characters";
+    public static final String ERROR_BLANK = "must not be blank";
+    public static final String ERROR_TOO_SHORT = "must not be shorter %d characters";
+    public static final String ERROR_TOO_LONG = "must not be longer %d characters";
 
 
     public StringValidator(String key, String value) {

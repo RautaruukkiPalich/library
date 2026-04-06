@@ -50,7 +50,7 @@ public class MapUtils<K, V> {
                 expected.entrySet().stream(),
                 entry -> {
                     V actualValue = actual.get(entry.getKey());
-                    if (actualValue == null){
+                    if (actualValue == null) {
                         return false;
                     }
                     return comparator.compare(entry.getValue(), actualValue);

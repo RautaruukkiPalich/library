@@ -7,6 +7,7 @@ import com.app.modules.author.exception.AuthorValidationException;
 import com.app.modules.author.mapper.AuthorMapper;
 import com.app.modules.author.model.Author;
 import com.app.modules.author.repository.AuthorRepository;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,19 +31,19 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     @Transactional(readOnly = true)
     public List<AuthorDTO> getAll() {
-        return AuthorMapper.toListDTO(this.authorRepo.getAll());
+        return AuthorMapper.toListDTO(this.authorRepo.findAll());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<AuthorDTO> getAll(AuthorFilter filter) {
+    public List<AuthorDTO> getAll(@NonNull AuthorFilter filter) {
         Objects.requireNonNull(filter, "filter must not be null");
 
-        return AuthorMapper.toListDTO(this.authorRepo.getAll(filter));
+        return AuthorMapper.toListDTO(this.authorRepo.findAll(filter));
     }
 
     @Override
-    public Long add(AuthorDTO dto) {
+    public Long add(@NonNull AuthorDTO dto) {
         Objects.requireNonNull(dto, "dto must not be null");
 
         Author author = new Author(dto);
@@ -54,25 +55,25 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
-    public AuthorDTO getByID(Long id) {
+    public AuthorDTO getByID(@NonNull Long id) {
         Objects.requireNonNull(id, "id must not be null");
 
         this.validateId(id);
-        return AuthorMapper.toDTO(this.authorRepo.getByID(id));
+        return AuthorMapper.toDTO(this.authorRepo.getById(id));
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(@NonNull Long id) {
         Objects.requireNonNull(id, "id must not be null");
 
         this.validateId(id);
-        Author author = this.authorRepo.getByID(id);
+        Author author = this.authorRepo.getById(id);
         this.authorRepo.delete(author);
     }
 
     private void validateId(Long id) throws AuthorValidationException {
         if (id < 1) {
-            throw new AuthorValidationException("id", "cant be less than 1");
+            throw new AuthorValidationException("id", "must not be less than 1");
         }
     }
 }

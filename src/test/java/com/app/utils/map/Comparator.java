@@ -65,8 +65,7 @@ public interface Comparator<T> {
      * @param expected the reference value to compare against
      * @param actual   the value to check
      * @return {@code true} if the values satisfy the comparison condition,
-     *         {@code false} otherwise
-     *
+     * {@code false} otherwise
      * @throws NullPointerException if the implementation does not support null values
      *                              and either parameter is null
      */

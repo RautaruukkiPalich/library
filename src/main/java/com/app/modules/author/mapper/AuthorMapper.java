@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @Component
 public class AuthorMapper {
     public static AuthorControllerDTO.Response toResponse(AuthorDTO a) {
-        Objects.requireNonNull(a, "author cant be null");
+        Objects.requireNonNull(a, "author must not be null");
 
         return AuthorControllerDTO.Response.builder()
                 .id(a.id())
@@ -25,13 +25,13 @@ public class AuthorMapper {
     }
 
     public static List<AuthorControllerDTO.Response> toResponse(List<AuthorDTO> authors) {
-        Objects.requireNonNull(authors, "authors cant be null");
+        Objects.requireNonNull(authors, "authors must not be null");
 
         return authors.stream().map(AuthorMapper::toResponse).collect(Collectors.toList());
     }
 
     public static AuthorDTO toDTO(AuthorControllerDTO.Create dto) {
-        Objects.requireNonNull(dto, "dto cant be null");
+        Objects.requireNonNull(dto, "dto must not be null");
 
         return AuthorDTO
                 .builder()
@@ -42,7 +42,7 @@ public class AuthorMapper {
     }
 
     public static AuthorDTO toDTO(Author a) {
-        Objects.requireNonNull(a, "author cant be null");
+        Objects.requireNonNull(a, "author must not be null");
 
         return AuthorDTO.builder()
                 .id(a.getId())
@@ -55,7 +55,7 @@ public class AuthorMapper {
     }
 
     public static List<AuthorDTO> toListDTO(List<Author> authors) {
-        Objects.requireNonNull(authors, "authors cant be null");
+        Objects.requireNonNull(authors, "authors must not be null");
 
         return authors.stream().map(AuthorMapper::toDTO).collect(Collectors.toList());
     }

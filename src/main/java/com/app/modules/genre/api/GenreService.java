@@ -2,17 +2,18 @@ package com.app.modules.genre.api;
 
 import com.app.modules.genre.dto.GenreDTO;
 import com.app.modules.genre.dto.GenreFilter;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
 public interface GenreService {
     List<GenreDTO> getAll();
 
-    List<GenreDTO> getAll(GenreFilter filter);
+    List<GenreDTO> getAll(@NonNull GenreFilter filter);
 
-    Long add(GenreDTO dto);
+    Long add(@NonNull GenreDTO dto);
 
-    GenreDTO getByID(Long id);
+    GenreDTO getByID(@NonNull Long id);
 
-    void delete(Long id);
+    void delete(@NonNull Long id);
 }

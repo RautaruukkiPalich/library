@@ -2,23 +2,22 @@ package com.app.modules.book.api;
 
 import com.app.modules.book.dto.BookDTO;
 import com.app.modules.book.dto.BookFilter;
-import com.app.modules.book.exception.BookNotFoundException;
-import jakarta.validation.ValidationException;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
 public interface BookService {
     List<BookDTO> getAll();
 
-    List<BookDTO> getAll(BookFilter filter);
+    List<BookDTO> getAll(@NonNull BookFilter filter);
 
-    BookDTO getByID(Long id) throws BookNotFoundException;
+    BookDTO getByID(@NonNull Long id);
 
-    void putByID(Long id, BookDTO book) throws BookNotFoundException;
+    void putByID(@NonNull Long id, @NonNull BookDTO book);
 
-    void patchByID(Long id, BookDTO book) throws BookNotFoundException;
+    void patchByID(@NonNull Long id, @NonNull BookDTO book);
 
-    Long add(BookDTO book) throws ValidationException;
+    Long add(@NonNull BookDTO book);
 
-    void delete(Long id) throws BookNotFoundException;
+    void delete(@NonNull Long id);
 }

@@ -3,17 +3,21 @@ package com.app.modules.author.repository;
 import com.app.modules.author.dto.AuthorFilter;
 import com.app.modules.author.exception.AuthorNotFoundException;
 import com.app.modules.author.model.Author;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface AuthorRepository {
-    List<Author> getAll();
+    List<Author> findAll();
 
-    List<Author> getAll(AuthorFilter filter);
+    List<Author> findAll(@NonNull AuthorFilter filter);
 
-    Author getByID(Long id) throws AuthorNotFoundException;
+    Optional<Author> findById(@NonNull Long id);
 
-    Author save(Author author);
+    Author getById(@NonNull Long id) throws AuthorNotFoundException;
 
-    void delete(Author author);
+    Author save(@NonNull Author author);
+
+    void delete(@NonNull Author author);
 }

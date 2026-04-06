@@ -7,6 +7,7 @@ import com.app.modules.genre.mapper.GenreMapper;
 import com.app.modules.genre.model.Genre;
 import com.app.modules.genre.repository.GenreRepository;
 import jakarta.transaction.Transactional;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -23,20 +24,17 @@ public class GenreServiceImpl implements GenreService {
         this.genreRepo = genreRepo;
     }
 
-    @Override
     public List<GenreDTO> getAll() {
-        return GenreMapper.toListDTO(this.genreRepo.getAll());
+        return GenreMapper.toListDTO(this.genreRepo.findAll());
     }
 
-    @Override
-    public List<GenreDTO> getAll(GenreFilter filter) {
+    public List<GenreDTO> getAll(@NonNull GenreFilter filter) {
         Objects.requireNonNull(filter, "filter must not be null");
 
-        return GenreMapper.toListDTO(this.genreRepo.getAll(filter));
+        return GenreMapper.toListDTO(this.genreRepo.findAll(filter));
     }
 
-    @Override
-    public Long add(GenreDTO dto) {
+    public Long add(@NonNull GenreDTO dto) {
         Objects.requireNonNull(dto, "dto must not be null");
 
         Genre genre = new Genre(dto);
@@ -48,21 +46,22 @@ public class GenreServiceImpl implements GenreService {
         return savedGenre.getId();
     }
 
-    @Override
-    public GenreDTO getByID(Long id) {
+    public GenreDTO getByID(@NonNull Long id) {
         Objects.requireNonNull(id, "id must not be null");
 
         return GenreMapper.toDTO(this.getByIDInternal(id));
     }
 
-    @Override
-    public void delete(Long id) {
+    public void delete(@NonNull Long id) {
+        Objects.requireNonNull(id, "id must not be null");
+
         Genre genre = this.getByIDInternal(id);
         this.genreRepo.delete(genre);
     }
 
     private Genre getByIDInternal(Long id) {
         Objects.requireNonNull(id, "id must not be null");
-        return this.genreRepo.getByID(id);
+
+        return this.genreRepo.getById(id);
     }
 }

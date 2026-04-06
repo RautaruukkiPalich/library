@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public class BookFilterMapper {
     public static BookFilter toFilter(BookQueryParamsDTO.TitleGenre dto) {
-        Objects.requireNonNull(dto, "dto cant be null");
+        Objects.requireNonNull(dto, "dto must not be null");
 
         return BookFilter.builder().title(dto.getTitle()).genre(dto.getGenre()).build();
     }
@@ -17,14 +17,14 @@ public class BookFilterMapper {
     }
 
     public static BookFilter year(Integer year) {
-        Objects.requireNonNull(year, "year cant be null");
+        Objects.requireNonNull(year, "year must not be null");
 
         return BookFilter.builder().pubYearTo(year).pubYearFrom(year).build();
     }
 
     public static BookFilter betweenYears(Integer from, Integer to) {
-        Objects.requireNonNull(from, "from cant be null");
-        Objects.requireNonNull(to, "to cant be null");
+        Objects.requireNonNull(from, "from must not be null");
+        Objects.requireNonNull(to, "to must not be null");
 
         return BookFilter.builder().pubYearFrom(from).pubYearTo(to).build();
     }

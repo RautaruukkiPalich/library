@@ -8,6 +8,4 @@ import lombok.Setter;
 @Setter
 @Builder
 public class AuthorFilter {
-    public AuthorFilter() {
-    }
 }

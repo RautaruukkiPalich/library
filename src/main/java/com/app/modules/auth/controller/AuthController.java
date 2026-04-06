@@ -74,7 +74,7 @@ public class AuthController {
     @ApiResponse(responseCode = "400", description = "validation error")
     public ResponseEntity<Void> resetPassword(
             @Valid @RequestBody AuthControllerDTO.Email body
-    ){
+    ) {
         authService.resetPassword(body.getEmail());
         return ResponseEntity.ok().build();
     }
@@ -84,7 +84,7 @@ public class AuthController {
     @ApiResponse(responseCode = "200", description = "success")
     public ResponseEntity<Void> revokeAllTokens(
             @AuthenticationPrincipal Long userId
-    ){
+    ) {
         authService.revokeAllRefreshTokens(userId);
         return ResponseEntity.ok().build();
     }

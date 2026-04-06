@@ -127,7 +127,7 @@ public class BookTests {
         var expectedErrors = Map.of(
                 "createdAt", "date is too late",
                 "updatedAt", "date is too late",
-                "id", "cant be less than 1"
+                "id", "must not be less than 1"
         );
 
         BookValidationException ex = assertThrows(
@@ -178,7 +178,7 @@ public class BookTests {
                 new ValidationTestCase(
                         "on null author id expect error",
                         new Book(validBookDTO, invalidAuthor, validGenre),
-                        Map.of(AUTHOR, "author id cant be null")
+                        Map.of(AUTHOR, "author id must not be null")
                 ),
                 new ValidationTestCase(
                         "on invalid author id expect error",
@@ -187,12 +187,12 @@ public class BookTests {
                                 authorInvalidID,
                                 validGenre
                         ),
-                        Map.of(AUTHOR, "author id cant be less than 1")
+                        Map.of(AUTHOR, "author id must not be less than 1")
                 ),
                 new ValidationTestCase(
                         "on null genre id expect error",
                         new Book(validBookDTO, validAuthor, invalidGenre),
-                        Map.of(GENRE, "genre id cant be null")
+                        Map.of(GENRE, "genre id must not be null")
                 ),
                 new ValidationTestCase(
                         "on invalid genre id expect error",
@@ -201,7 +201,7 @@ public class BookTests {
                                 validAuthor,
                                 genreInvalidID
                         ),
-                        Map.of(GENRE, "genre id cant be less than 1")
+                        Map.of(GENRE, "genre id must not be less than 1")
                 ),
                 new ValidationTestCase(
                         "on blank title expect error",
@@ -299,7 +299,7 @@ public class BookTests {
                                 true
 
                         ),
-                        Map.of(PUB_YEAR, "cant be less than 1900")
+                        Map.of(PUB_YEAR, "must not be less than 1900")
                 ),
                 new ValidationTestCase(
                         "on high pub year expect error",
@@ -313,7 +313,7 @@ public class BookTests {
                                 true
 
                         ),
-                        Map.of(PUB_YEAR, "cant be greater than 2040")
+                        Map.of(PUB_YEAR, "must not be greater than 2040")
                 ),
                 new ValidationTestCase(
                         "on low page count expect error",
@@ -327,7 +327,7 @@ public class BookTests {
                                 true
 
                         ),
-                        Map.of(PAGE_COUNT, "cant be less than 1")
+                        Map.of(PAGE_COUNT, "must not be less than 1")
                 ),
                 new ValidationTestCase(
                         "on high page count expect error",
@@ -341,7 +341,7 @@ public class BookTests {
                                 true
 
                         ),
-                        Map.of(PAGE_COUNT, "cant be greater than 20000")
+                        Map.of(PAGE_COUNT, "must not be greater than 20000")
                 )
         );
 

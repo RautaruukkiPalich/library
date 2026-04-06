@@ -4,8 +4,8 @@ package com.app.core.utils.validator;
 import java.util.Map;
 
 public class NumberValidator<T extends Number & Comparable<T>> extends Validator<T, NumberValidator<T>> {
-    public static final String ERROR_TOO_LOW = "cant be less than %s";
-    public static final String ERROR_TOO_HIGH = "cant be greater than %s";
+    public static final String ERROR_TOO_LOW = "must not be less than %s";
+    public static final String ERROR_TOO_HIGH = "must not be greater than %s";
 
 
     public NumberValidator(String key, T value) {

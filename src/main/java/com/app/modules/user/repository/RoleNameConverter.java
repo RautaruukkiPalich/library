@@ -1,4 +1,4 @@
-package com.app.modules.user.utils;
+package com.app.modules.user.repository;
 
 import com.app.core.security.rbac.Role;
 import jakarta.persistence.AttributeConverter;

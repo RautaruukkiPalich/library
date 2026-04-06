@@ -10,10 +10,12 @@ import com.app.modules.user.mapper.UserMapper;
 import com.app.modules.user.model.User;
 import com.app.modules.user.repository.UserGetterRepository;
 import lombok.AllArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Primary
@@ -24,21 +26,20 @@ public class UserServiceImpl implements UserService, UserAuthService {
 
     private final UserGetterRepository userGetterRepository;
     private final PasswordHasher passwordHasher;
-    private final UserOperations userOperations;
-
 
     @Override
     @Transactional(readOnly = true)
-    public UserDTO getByID(Long userId) {
-        User u = userOperations.getOrThrowNotFound(userId);
+    public UserDTO getByID(@NonNull Long userId) {
+        User u = userGetterRepository.getById(userId);
 
         u.validateStrict();
         return UserMapper.toDTO(u);
     }
 
     @Override
-    public Optional<UserAuthInfoDTO> checkCredentials(LoginUserDTO dto) {
-        return userGetterRepository.getByEmail(dto.email())
+    public Optional<UserAuthInfoDTO> checkCredentials(@NonNull LoginUserDTO dto) {
+        Objects.requireNonNull(dto, "dto must not be null");
+        return userGetterRepository.findByEmail(dto.email())
                 .filter(u -> u.comparePassword(dto.password(), passwordHasher))
                 .map(UserMapper::convertToAuthInfo);
     }

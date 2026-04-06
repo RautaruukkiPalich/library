@@ -1,16 +1,17 @@
 package com.app.modules.user.api;
 
 import com.app.modules.user.dto.ProfileDTO;
+import org.jspecify.annotations.NonNull;
 
 public interface UserProfileService {
 
-    void editPassword(ProfileDTO.EditPassword dto);
+    void editPassword(ProfileDTO.@NonNull EditPassword dto);
 
-    void editFirstname(ProfileDTO.EditFirstname dto);
+    void editFirstname(ProfileDTO.@NonNull EditFirstname dto);
 
-    void editSurname(ProfileDTO.EditSurname dto);
+    void editSurname(ProfileDTO.@NonNull EditSurname dto);
 
-    void editLastname(ProfileDTO.EditLastname dto);
+    void editLastname(ProfileDTO.@NonNull EditLastname dto);
 
-    void editEmail(ProfileDTO.EditEmail dto);
+    void editEmail(ProfileDTO.@NonNull EditEmail dto);
 }

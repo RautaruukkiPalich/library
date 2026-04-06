@@ -22,6 +22,7 @@ import com.app.modules.user.dto.RegisterUserDTO;
 import com.app.modules.user.dto.UserAuthInfoDTO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,7 +44,7 @@ public class AuthServiceImpl implements AuthService {
     private static final String ROLE_KEY = "role";
 
     @Override
-    public TokenPairDTO login(LoginDTO dto) {
+    public TokenPairDTO login(@NonNull LoginDTO dto) {
         Objects.requireNonNull(dto, "dto must not be null");
 
         String normalizedEmail = NormalizeSanitizer.normalize(dto.email());
@@ -52,10 +53,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         UserAuthInfoDTO user = userAuthService.checkCredentials(
-                        LoginUserDTO.builder()
-                                .email(normalizedEmail)
-                                .password(dto.password())
-                                .build()
+                        new LoginUserDTO(normalizedEmail, dto.password())
                 )
                 .orElseThrow(AuthenticateException::invalidCredentials);
 
@@ -66,14 +64,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void resetPassword(String email) {
+    public void resetPassword(@NonNull String email) {
         Objects.requireNonNull(email, "email must not be null");
 
         try {
             UserAuthInfoDTO dto = userAuthQueryService.getByEmail(email);
             userPasswordResetService.resetPassword(email);
             refreshTokenService.revokeAllUserTokens(dto.id());
-        } catch (NotFoundException |  AuthException e) {
+        } catch (NotFoundException | AuthException e) {
             log.error("failed reset password: {}", e.getMessage());
             log.debug("debug: failed reset password", e);
             throw AuthenticateException.invalidCredentials();
@@ -81,7 +79,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void register(RegisterDTO dto) {
+    public void register(@NonNull RegisterDTO dto) {
         Objects.requireNonNull(dto, "dto must not be null");
 
         userRegistrationService.register(
@@ -96,7 +94,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public TokenPairDTO refreshTokens(String token) {
+    public TokenPairDTO refreshTokens(@NonNull String token) {
         Objects.requireNonNull(token, "token must not be null");
 
         try {
@@ -114,8 +112,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void revokeAllRefreshTokens(Long userId) {
+    public void revokeAllRefreshTokens(@NonNull Long userId) {
         Objects.requireNonNull(userId, "userId must not be null");
+
         refreshTokenService.revokeAllUserTokens(userId);
     }
 

@@ -75,9 +75,9 @@ public class Book extends BaseModel {
 
     public Book(BookDTO dto, Author author, Genre genre) {
         super(BookValidationException::new);
-        Objects.requireNonNull(dto, "dto cant be null");
-        Objects.requireNonNull(author, "author cant be null");
-        Objects.requireNonNull(genre, "genre cant be null");
+        Objects.requireNonNull(dto, "dto must not be null");
+        Objects.requireNonNull(author, "author must not be null");
+        Objects.requireNonNull(genre, "genre must not be null");
 
         this.title = dto.title();
         this.author = author;

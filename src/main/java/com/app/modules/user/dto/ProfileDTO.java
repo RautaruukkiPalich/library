@@ -1,40 +1,42 @@
 package com.app.modules.user.dto;
 
 
+import org.jspecify.annotations.NonNull;
+
 public class ProfileDTO {
     public record EditPassword(
             Long initiatorId,
-            Long subjectId,
-            String oldPassword,
-            String newPassword
+            @NonNull Long subjectId,
+            @NonNull String oldPassword,
+            @NonNull String newPassword
     ) {
     }
 
     public record EditFirstname(
             Long initiatorId,
-            Long subjectId,
-            String firstname
+            @NonNull Long subjectId,
+            @NonNull String firstname
     ) {
     }
 
     public record EditLastname(
             Long initiatorId,
-            Long subjectId,
-            String lastname
+            @NonNull Long subjectId,
+            @NonNull String lastname
     ) {
     }
 
     public record EditSurname(
             Long initiatorId,
-            Long subjectId,
-            String surname
+            @NonNull Long subjectId,
+            @NonNull String surname
     ) {
     }
 
     public record EditEmail(
             Long initiatorId,
-            Long subjectId,
-            String email
+            @NonNull Long subjectId,
+            @NonNull String email
     ) {
     }
 }

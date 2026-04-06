@@ -7,6 +7,7 @@ import com.app.modules.user.api.UserRegistrationService;
 import com.app.modules.user.dto.RegisterUserDTO;
 import com.app.modules.user.model.User;
 import lombok.AllArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +21,7 @@ public class UserRegisterServiceImpl implements UserRegistrationService {
     private final PasswordHasher passwordHasher;
 
     @Override
-    public void register(RegisterUserDTO dto) {
+    public void register(@NonNull RegisterUserDTO dto) {
         Objects.requireNonNull(dto, "dto must not be null");
         String normalizedEmail = NormalizeSanitizer.normalize(dto.email());
 

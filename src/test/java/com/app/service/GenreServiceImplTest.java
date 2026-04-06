@@ -60,7 +60,7 @@ class GenreServiceImplTest {
     @Test
     void getAll_withoutFilters_shouldReturnAllGenres() {
         List<Genre> expectedGenres = Arrays.asList(genre1, genre2);
-        when(genreRepository.getAll()).thenReturn(expectedGenres);
+        when(genreRepository.findAll()).thenReturn(expectedGenres);
 
         List<GenreDTO> result = genreService.getAll();
 
@@ -72,13 +72,13 @@ class GenreServiceImplTest {
                         GenreMapper.toDTO(genre2)
                 );
 
-        verify(genreRepository, times(1)).getAll();
+        verify(genreRepository, times(1)).findAll();
         verifyNoMoreInteractions(genreRepository);
     }
 
     @Test
     void getByID_shouldReturnGenre() {
-        when(genreRepository.getByID(1L)).thenReturn(genre1);
+        when(genreRepository.getById(1L)).thenReturn(genre1);
 
         GenreDTO result = genreService.getByID(1L);
 
@@ -89,7 +89,7 @@ class GenreServiceImplTest {
                     assertThat(genre.name()).isEqualTo(genre1.getName());
                 });
 
-        verify(genreRepository, times(1)).getByID(1L);
+        verify(genreRepository, times(1)).getById(1L);
         verifyNoMoreInteractions(genreRepository);
     }
 
@@ -107,13 +107,13 @@ class GenreServiceImplTest {
         Long id = 999L;
         final String MESSAGE = "genre not found with id: " + id;
 
-        when(genreRepository.getByID(id)).thenThrow(new GenreNotFoundException(id));
+        when(genreRepository.getById(id)).thenThrow(new GenreNotFoundException(id));
 
         assertThatThrownBy(() -> genreService.getByID(id))
                 .isInstanceOf(GenreNotFoundException.class)
                 .hasMessageContaining(MESSAGE);
 
-        verify(genreRepository, times(1)).getByID(id);
+        verify(genreRepository, times(1)).getById(id);
     }
 
     @Test
@@ -164,11 +164,11 @@ class GenreServiceImplTest {
     @Test
     void delete_shouldDeleteGenre() {
         Long id = 1L;
-        when(genreRepository.getByID(id)).thenReturn(genre1);
+        when(genreRepository.getById(id)).thenReturn(genre1);
 
         genreService.delete(id);
 
-        verify(genreRepository, times(1)).getByID(id);
+        verify(genreRepository, times(1)).getById(id);
         verify(genreRepository, times(1)).delete(genre1);
         verifyNoMoreInteractions(genreRepository);
     }
@@ -187,13 +187,13 @@ class GenreServiceImplTest {
         Long id = 999L;
         final String MESSAGE = "genre not found with id: " + id;
 
-        when(genreRepository.getByID(id)).thenThrow(new GenreNotFoundException(id));
+        when(genreRepository.getById(id)).thenThrow(new GenreNotFoundException(id));
 
         assertThatThrownBy(() -> genreService.delete(id))
                 .isInstanceOf(GenreNotFoundException.class)
                 .hasMessageContaining(MESSAGE);
 
-        verify(genreRepository, times(1)).getByID(id);
+        verify(genreRepository, times(1)).getById(id);
         verify(genreRepository, never()).delete(any());
     }
 }

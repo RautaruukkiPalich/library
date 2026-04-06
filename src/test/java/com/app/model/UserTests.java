@@ -135,7 +135,7 @@ public class UserTests {
         var expectedErrors = Map.of(
                 "createdAt", "date is too late",
                 "updatedAt", "date is too late",
-                "id", "cant be less than 1"
+                "id", "must not be less than 1"
         );
 
         UserValidationException ex = assertThrows(
@@ -247,7 +247,6 @@ public class UserTests {
                 new ValidationTestCase(
                         "on null firstname expect error",
                         RegisterUserDTO.builder()
-                                .firstname(null)
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
                                 .email(VALID_EMAIL)
@@ -293,7 +292,6 @@ public class UserTests {
                         "on null surname expect error",
                         RegisterUserDTO.builder()
                                 .firstname(VALID_STRING)
-                                .surname(null)
                                 .lastname(VALID_STRING)
                                 .email(VALID_EMAIL)
                                 .password(VALID_PASSWORD)
@@ -317,7 +315,6 @@ public class UserTests {
                         RegisterUserDTO.builder()
                                 .firstname(VALID_STRING)
                                 .surname(VALID_STRING)
-                                .lastname(null)
                                 .email(VALID_EMAIL)
                                 .password(VALID_PASSWORD)
                                 .build(),
@@ -341,7 +338,6 @@ public class UserTests {
                                 .firstname(VALID_STRING)
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
-                                .email(null)
                                 .password(VALID_PASSWORD)
                                 .build(),
                         Map.of(EMAIL, ERR_NULL)
@@ -398,7 +394,6 @@ public class UserTests {
                                 .surname(VALID_STRING)
                                 .lastname(VALID_STRING)
                                 .email(VALID_EMAIL)
-                                .password(null)
                                 .build(),
                         Map.of(PASSWORD, ERR_NULL)
                 ),
@@ -463,7 +458,6 @@ public class UserTests {
                         RegisterUserDTO.builder()
                                 .firstname(SHORT_STRING)
                                 .surname(BLANK_STRING)
-                                .lastname(null)
                                 .email("invalid")
                                 .password("weak")
                                 .build(),

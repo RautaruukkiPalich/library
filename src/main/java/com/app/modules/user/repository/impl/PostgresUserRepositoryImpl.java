@@ -1,5 +1,6 @@
 package com.app.modules.user.repository.impl;
 
+import com.app.modules.user.exception.UserNotFoundException;
 import com.app.modules.user.model.User;
 import com.app.modules.user.repository.UserDeleterRepository;
 import com.app.modules.user.repository.UserGetterRepository;
@@ -7,8 +8,10 @@ import com.app.modules.user.repository.UserPersisterRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -17,13 +20,17 @@ public class PostgresUserRepositoryImpl implements UserGetterRepository, UserPer
     @PersistenceContext
     private EntityManager em;
 
-    @Override
-    public Optional<User> getByID(Long id) {
+    public Optional<User> findById(@NonNull Long id) {
+        Objects.requireNonNull(id, "id must not be null");
         return Optional.ofNullable(em.find(User.class, id));
     }
 
-    @Override
-    public Optional<User> getByEmail(String email) {
+    public User getById(@NonNull Long id) {
+        return findById(id).orElseThrow(() -> new UserNotFoundException(id));
+    }
+
+    public Optional<User> findByEmail(@NonNull String email) {
+        Objects.requireNonNull(email, "email must not be null");
         String jpql = "SELECT u FROM User u WHERE u.email = :email";
 
         try {
@@ -35,8 +42,12 @@ public class PostgresUserRepositoryImpl implements UserGetterRepository, UserPer
         }
     }
 
-    @Override
-    public boolean existsByEmail(String email) {
+    public User getByEmail(@NonNull String email) {
+        return findByEmail(email).orElseThrow(() -> new UserNotFoundException("email", email));
+    }
+
+    public boolean existsByEmail(@NonNull String email) {
+        Objects.requireNonNull(email, "email must not be null");
         String jpql = "SELECT COUNT(u) FROM User u WHERE u.email = :email";
         Long count = em.createQuery(jpql, Long.class)
                 .setParameter("email", email)
@@ -45,8 +56,8 @@ public class PostgresUserRepositoryImpl implements UserGetterRepository, UserPer
         return count > 0;
     }
 
-    @Override
-    public User save(User user) {
+    public User save(@NonNull User user) {
+        Objects.requireNonNull(user, "user must not be null");
         if (user.getId() == null) {
             em.persist(user);
             return user;
@@ -55,8 +66,8 @@ public class PostgresUserRepositoryImpl implements UserGetterRepository, UserPer
         }
     }
 
-    @Override
-    public void delete(User user) {
+    public void delete(@NonNull User user) {
+        Objects.requireNonNull(user, "user must not be null");
         em.remove(user);
     }
 }

@@ -68,7 +68,7 @@ class AuthorServiceTest {
     @Test
     void getAll_withoutFilters_shouldReturnAllAuthors() {
         List<Author> expectedAuthors = Arrays.asList(author1, author2);
-        when(authorRepository.getAll()).thenReturn(expectedAuthors);
+        when(authorRepository.findAll()).thenReturn(expectedAuthors);
 
         List<AuthorDTO> res = authorService.getAll();
 
@@ -77,14 +77,14 @@ class AuthorServiceTest {
                 .hasSize(2)
                 .containsExactly(AuthorMapper.toDTO(author1), AuthorMapper.toDTO(author2));
 
-        verify(authorRepository, times(1)).getAll();
+        verify(authorRepository, times(1)).findAll();
         verifyNoMoreInteractions(authorRepository);
     }
 
     @Test
     void getByID_shouldReturnAuthor() {
         Author expectedAuthor = author1;
-        when(authorRepository.getByID(1L)).thenReturn(expectedAuthor);
+        when(authorRepository.getById(1L)).thenReturn(expectedAuthor);
 
         AuthorDTO res = authorService.getByID(1L);
 
@@ -97,7 +97,7 @@ class AuthorServiceTest {
                     assertThat(author.surname()).isEqualTo(author1.getSurname());
                 });
 
-        verify(authorRepository, times(1)).getByID(1L);
+        verify(authorRepository, times(1)).getById(1L);
         verifyNoMoreInteractions(authorRepository);
     }
 
@@ -124,14 +124,14 @@ class AuthorServiceTest {
     void getByID_whenAuthorNotFound_shouldThrowAuthorNotFoundException() {
         Long id = 999L;
         AuthorNotFoundException expectedException = new AuthorNotFoundException(id);
-        when(authorRepository.getByID(id)).thenThrow(expectedException);
+        when(authorRepository.getById(id)).thenThrow(expectedException);
 
         assertThatThrownBy(() -> authorService.getByID(id))
                 .isInstanceOf(AuthorNotFoundException.class)
                 .hasMessageContaining("author not found with id: ")
                 .isSameAs(expectedException);
 
-        verify(authorRepository).getByID(id);
+        verify(authorRepository).getById(id);
     }
 
     @Test
@@ -182,11 +182,11 @@ class AuthorServiceTest {
     @Test
     void delete_shouldDeleteAuthor() {
         Long id = 1L;
-        when(authorRepository.getByID(id)).thenReturn(author1);
+        when(authorRepository.getById(id)).thenReturn(author1);
 
         authorService.delete(id);
 
-        verify(authorRepository, times(1)).getByID(id);
+        verify(authorRepository, times(1)).getById(id);
         verify(authorRepository, times(1)).delete(author1);
         verifyNoMoreInteractions(authorRepository);
     }
@@ -196,14 +196,14 @@ class AuthorServiceTest {
         Long id = 999L;
         AuthorNotFoundException expectedException = new AuthorNotFoundException(id);
 
-        when(authorRepository.getByID(id)).thenThrow(expectedException);
+        when(authorRepository.getById(id)).thenThrow(expectedException);
 
         assertThatThrownBy(() -> authorService.delete(id))
                 .isInstanceOf(AuthorNotFoundException.class)
                 .hasMessageContaining("author not found with id: ")
                 .isSameAs(expectedException);
 
-        verify(authorRepository, times(1)).getByID(id);
+        verify(authorRepository, times(1)).getById(id);
         verifyNoMoreInteractions(authorRepository);
     }
 
@@ -215,7 +215,7 @@ class AuthorServiceTest {
                 .satisfies(exception -> {
                     ValidationException ex = (ValidationException) exception;
                     assertThat(ex.getErrorsMap().containsKey("id"));
-                    assertThat(ex.getErrorsMap().containsValue("cant be less than 1"));
+                    assertThat(ex.getErrorsMap().containsValue("must not be less than 1"));
                 });
     }
 

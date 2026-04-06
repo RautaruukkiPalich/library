@@ -65,7 +65,7 @@ public class GenreTests {
         var expectedErrors = Map.of(
                 "createdAt", "date is too late",
                 "updatedAt", "date is too late",
-                "id", "cant be less than 1"
+                "id", "must not be less than 1"
         );
 
         GenreValidationException ex = assertThrows(

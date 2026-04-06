@@ -3,17 +3,21 @@ package com.app.modules.genre.repository;
 import com.app.modules.genre.dto.GenreFilter;
 import com.app.modules.genre.exception.GenreNotFoundException;
 import com.app.modules.genre.model.Genre;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface GenreRepository {
-    List<Genre> getAll();
+    List<Genre> findAll();
 
-    List<Genre> getAll(GenreFilter filter);
+    List<Genre> findAll(@NonNull GenreFilter filter);
 
-    Genre getByID(Long id) throws GenreNotFoundException;
+    Genre getById(@NonNull Long id) throws GenreNotFoundException;
 
-    Genre save(Genre genre);
+    Optional<Genre> findById(@NonNull Long id);
 
-    void delete(Genre genre);
+    Genre save(@NonNull Genre genre);
+
+    void delete(@NonNull Genre genre);
 }

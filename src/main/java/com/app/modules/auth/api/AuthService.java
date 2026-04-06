@@ -3,13 +3,16 @@ package com.app.modules.auth.api;
 import com.app.modules.auth.dto.LoginDTO;
 import com.app.modules.auth.dto.RegisterDTO;
 import com.app.modules.auth.dto.TokenPairDTO;
+import org.jspecify.annotations.NonNull;
 
 public interface AuthService {
-    void register(RegisterDTO dto);
-    TokenPairDTO login(LoginDTO dto);
+    void register(@NonNull RegisterDTO dto);
 
-    void resetPassword(String email);
+    TokenPairDTO login(@NonNull LoginDTO dto);
 
-    TokenPairDTO refreshTokens(String token);
-    void revokeAllRefreshTokens(Long userId);
+    void resetPassword(@NonNull String email);
+
+    TokenPairDTO refreshTokens(@NonNull String token);
+
+    void revokeAllRefreshTokens(@NonNull Long userId);
 }

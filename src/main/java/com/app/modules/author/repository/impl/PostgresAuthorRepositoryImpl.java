@@ -11,26 +11,31 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Repository
+@Slf4j
 public class PostgresAuthorRepositoryImpl implements AuthorRepository {
 
     @PersistenceContext
     private EntityManager em;
 
-    @Override
-    public List<Author> getAll() {
+    public List<Author> findAll() {
         String stmt = "SELECT a from Author a";
         return em.createQuery(stmt, Author.class).getResultList();
     }
 
-    @Override
-    public List<Author> getAll(AuthorFilter filter) {
+    public List<Author> findAll(@NonNull AuthorFilter filter) {
+        Objects.requireNonNull(filter, "filter must not be null");
+
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Author> cq = cb.createQuery(Author.class);
         List<Predicate> predicates = new ArrayList<>();
@@ -49,21 +54,21 @@ public class PostgresAuthorRepositoryImpl implements AuthorRepository {
         return query.getResultList();
     }
 
-    @Override
-    public Author getByID(Long id) throws AuthorNotFoundException {
-        Author author = em.find(Author.class, id);
+    public Author getById(@NonNull Long id) throws AuthorNotFoundException {
+        return findById(id).orElseThrow(() -> new AuthorNotFoundException(id));
+    }
 
-        if (author == null) {
-            throw new AuthorNotFoundException(id);
-        }
-
-        return author;
+    public Optional<Author> findById(@NonNull Long id) {
+        Objects.requireNonNull(id, "id must not be null");
+        return Optional.ofNullable(em.find(Author.class, id));
     }
 
 
     @Override
     @Transactional
-    public Author save(Author author) {
+    public Author save(@NonNull Author author) {
+        Objects.requireNonNull(author, "author must not be null");
+
         if (author.getId() == null) {
             em.persist(author);
             return author;
@@ -74,7 +79,8 @@ public class PostgresAuthorRepositoryImpl implements AuthorRepository {
 
     @Override
     @Transactional
-    public void delete(Author author) {
+    public void delete(@NonNull Author author) {
+        Objects.requireNonNull(author, "author must not be null");
         em.remove(author);
     }
 }

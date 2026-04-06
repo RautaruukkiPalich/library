@@ -11,6 +11,8 @@ import com.app.modules.book.model.Book;
 import com.app.modules.book.repository.BookRepository;
 import com.app.modules.genre.model.Genre;
 import com.app.modules.genre.repository.GenreRepository;
+import lombok.AllArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,51 +22,39 @@ import java.util.Objects;
 
 @Primary
 @Service
+@Transactional
+@AllArgsConstructor
 public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepo;
     private final AuthorRepository authorRepo;
     private final GenreRepository genreRepo;
 
-    public BookServiceImpl(
-            BookRepository bookRepo,
-            AuthorRepository authorRepo,
-            GenreRepository genreRepo
-    ) {
-        this.bookRepo = bookRepo;
-        this.authorRepo = authorRepo;
-        this.genreRepo = genreRepo;
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<BookDTO> getAll() {
-        return BookMapper.toListDTO(this.bookRepo.getAll());
+        return BookMapper.toListDTO(this.bookRepo.findAll());
     }
 
 
-    @Override
     @Transactional(readOnly = true)
-    public List<BookDTO> getAll(BookFilter filter) {
+    public List<BookDTO> getAll(@NonNull BookFilter filter) {
         Objects.requireNonNull(filter, "filter must not be null");
-        return BookMapper.toListDTO(this.bookRepo.getAll(filter));
+        return BookMapper.toListDTO(this.bookRepo.findAll(filter));
     }
 
-    @Override
     @Transactional(readOnly = true)
-    public BookDTO getByID(Long id) {
+    public BookDTO getByID(@NonNull Long id) {
+        Objects.requireNonNull(id, "id must not be null");
         return BookMapper.toDTO(this.getBookByIDInternal(id));
     }
 
-    @Override
-    @Transactional
-    public Long add(BookDTO dto) {
+    public Long add(@NonNull BookDTO dto) {
         Objects.requireNonNull(dto, "dto must not be null");
 
         this.preflightValidateDTO(dto);
 
-        Author author = this.authorRepo.getByID(dto.authorId());
-        Genre genre = this.genreRepo.getByID(dto.genreId());
+        Author author = this.authorRepo.getById(dto.authorId());
+        Genre genre = this.genreRepo.getById(dto.genreId());
 
         Book book = new Book(dto, author, genre);
         book.validate();
@@ -75,18 +65,15 @@ public class BookServiceImpl implements BookService {
         return savedBook.getId();
     }
 
-    @Override
-    @Transactional
-    public void delete(Long id) {
+    public void delete(@NonNull Long id) {
         Objects.requireNonNull(id, "id must not be null");
 
-        Book book = this.bookRepo.getByID(id);
+        Book book = this.bookRepo.getById(id);
         this.bookRepo.delete(book);
     }
 
-    @Override
-    @Transactional
-    public void putByID(Long id, BookDTO dto) {
+    public void putByID(@NonNull Long id, @NonNull BookDTO dto) {
+        Objects.requireNonNull(id, "id must not be null");
         Objects.requireNonNull(dto, "dto must not be null");
 
         this.preflightValidateDTO(dto);
@@ -108,8 +95,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    @Transactional
-    public void patchByID(Long id, BookDTO dto) {
+    public void patchByID(@NonNull Long id, @NonNull BookDTO dto) {
         Objects.requireNonNull(id, "id must not be null");
         Objects.requireNonNull(dto, "dto must not be null");
 
@@ -140,7 +126,7 @@ public class BookServiceImpl implements BookService {
         this.bookRepo.save(book);
     }
 
-    private void preflightValidateDTO(BookDTO dto) throws BookValidationException {
+    private void preflightValidateDTO(@NonNull BookDTO dto) throws BookValidationException {
         if (dto.authorId() == null) {
             throw new BookValidationException("authorId", "is required");
         }
@@ -149,18 +135,18 @@ public class BookServiceImpl implements BookService {
         }
     }
 
-    private Book getBookByIDInternal(Long id) {
+    private Book getBookByIDInternal(@NonNull Long id) {
         Objects.requireNonNull(id, "id must not be null");
-        return this.bookRepo.getByID(id);
+        return this.bookRepo.getById(id);
     }
 
-    private Genre getGenreByIDInternal(Long id) {
+    private Genre getGenreByIDInternal(@NonNull Long id) {
         Objects.requireNonNull(id, "id must not be null");
-        return this.genreRepo.getByID(id);
+        return this.genreRepo.getById(id);
     }
 
-    private Author getAuthorByIDInternal(Long id) {
+    private Author getAuthorByIDInternal(@NonNull Long id) {
         Objects.requireNonNull(id, "id must not be null");
-        return this.authorRepo.getByID(id);
+        return this.authorRepo.getById(id);
     }
 }

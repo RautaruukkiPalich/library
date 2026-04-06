@@ -1,13 +1,17 @@
 package com.app.modules.refresh_token.repository;
 
+import com.app.modules.refresh_token.exception.RefreshTokenNotFoundException;
 import com.app.modules.refresh_token.model.RefreshToken;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Optional;
 
 public interface RefreshTokenRepository {
-    Optional<RefreshToken> getByToken(String token);
+    Optional<RefreshToken> findByToken(@NonNull String token);
 
-    RefreshToken save(RefreshToken token);
+    RefreshToken getByToken(@NonNull String token) throws RefreshTokenNotFoundException;
 
-    void revokeAllUserTokens(Long userId);
+    RefreshToken save(@NonNull RefreshToken token);
+
+    void revokeAllUserTokens(@NonNull Long userId);
 }

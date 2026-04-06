@@ -44,7 +44,7 @@ public class SecurityConfig {
                         .anyRequest()
                         .access(
                                 (sup, ctx) -> {
-                                    Objects.requireNonNull(ctx, "context cant be null");
+                                    Objects.requireNonNull(ctx, "context must not be null");
                                     if (publicEndpointChecker.isPublic(ctx.getRequest())) {
                                         return new AuthorizationDecision(true);
                                     }

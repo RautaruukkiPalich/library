@@ -148,7 +148,7 @@ class BookServiceTest {
     @Test
     void getAll_withoutFilters_shouldReturnAllBooks() {
         List<Book> expectedBooks = Arrays.asList(book1, book2);
-        when(bookRepository.getAll()).thenReturn(expectedBooks);
+        when(bookRepository.findAll()).thenReturn(expectedBooks);
 
         List<BookDTO> result = bookService.getAll();
 
@@ -157,14 +157,14 @@ class BookServiceTest {
                 .hasSize(2)
                 .containsExactly(BookMapper.toDTO(book1), BookMapper.toDTO(book2));
 
-        verify(bookRepository, times(1)).getAll();
+        verify(bookRepository, times(1)).findAll();
         verifyNoMoreInteractions(bookRepository);
     }
 
     @Test
     void getAll_withFilter_shouldReturnFilteredBooks() {
         List<Book> expectedBooks = Collections.singletonList(book1);
-        when(bookRepository.getAll(bookFilter)).thenReturn(expectedBooks);
+        when(bookRepository.findAll(bookFilter)).thenReturn(expectedBooks);
 
         List<BookDTO> result = bookService.getAll(bookFilter);
 
@@ -173,7 +173,7 @@ class BookServiceTest {
                 .hasSize(1)
                 .containsExactly(BookMapper.toDTO(book1));
 
-        verify(bookRepository, times(1)).getAll(bookFilter);
+        verify(bookRepository, times(1)).findAll(bookFilter);
         verifyNoMoreInteractions(bookRepository);
     }
 
@@ -189,7 +189,7 @@ class BookServiceTest {
 
     @Test
     void getByID_shouldReturnBook() {
-        when(bookRepository.getByID(1L)).thenReturn(book1);
+        when(bookRepository.getById(1L)).thenReturn(book1);
 
         BookDTO result = bookService.getByID(1L);
 
@@ -200,7 +200,7 @@ class BookServiceTest {
                     assertThat(book.title()).isEqualTo(book1.getTitle());
                 });
 
-        verify(bookRepository, times(1)).getByID(1L);
+        verify(bookRepository, times(1)).getById(1L);
         verifyNoMoreInteractions(bookRepository);
     }
 
@@ -216,7 +216,7 @@ class BookServiceTest {
     @Test
     void getByID_whenBookNotFound_shouldThrowBookNotFoundException() {
         Long id = 999L;
-        when(bookRepository.getByID(id)).thenThrow(new BookNotFoundException(id));
+        when(bookRepository.getById(id)).thenThrow(new BookNotFoundException(id));
         final String EXPECT_MESSAGE = "book not found with id: " + id;
 
 
@@ -224,13 +224,13 @@ class BookServiceTest {
                 .isInstanceOf(BookNotFoundException.class)
                 .hasMessageContaining(EXPECT_MESSAGE);
 
-        verify(bookRepository, times(1)).getByID(id);
+        verify(bookRepository, times(1)).getById(id);
     }
 
     @Test
     void add_shouldSaveBookAndReturnId() {
-        when(authorRepository.getByID(1L)).thenReturn(author);
-        when(genreRepository.getByID(1L)).thenReturn(genre);
+        when(authorRepository.getById(1L)).thenReturn(author);
+        when(genreRepository.getById(1L)).thenReturn(genre);
 
         Book savedBook = new Book(bookDTO, author, genre);
         savedBook.setId(1L);
@@ -242,8 +242,8 @@ class BookServiceTest {
 
         assertThat(resultId).isEqualTo(1L);
 
-        verify(authorRepository, times(1)).getByID(1L);
-        verify(genreRepository, times(1)).getByID(1L);
+        verify(authorRepository, times(1)).getById(1L);
+        verify(genreRepository, times(1)).getById(1L);
 
         ArgumentCaptor<Book> bookCaptor = ArgumentCaptor.forClass(Book.class);
         verify(bookRepository, times(1)).save(bookCaptor.capture());
@@ -287,8 +287,8 @@ class BookServiceTest {
                     assertThat(ex.getErrorsMap()).containsKey("authorId");
                 });
 
-        verify(authorRepository, never()).getByID(any());
-        verify(genreRepository, never()).getByID(any());
+        verify(authorRepository, never()).getById(any());
+        verify(genreRepository, never()).getById(any());
         verify(bookRepository, never()).save(any());
     }
 
@@ -317,14 +317,14 @@ class BookServiceTest {
         final Long id = 999L;
         final String EXPECT_MESSAGE = "author not found with id: " + id;
 
-        when(authorRepository.getByID(id)).thenThrow(new AuthorNotFoundException(id));
+        when(authorRepository.getById(id)).thenThrow(new AuthorNotFoundException(id));
 
         assertThatThrownBy(() -> bookService.add(invalidBookDTO_invalidAuthorId))
                 .isInstanceOf(AuthorNotFoundException.class)
                 .hasMessageContaining(EXPECT_MESSAGE);
 
-        verify(authorRepository, times(1)).getByID(id);
-        verify(genreRepository, never()).getByID(any());
+        verify(authorRepository, times(1)).getById(id);
+        verify(genreRepository, never()).getById(any());
         verify(bookRepository, never()).save(any());
     }
 
@@ -333,15 +333,15 @@ class BookServiceTest {
         final Long id = 999L;
         final String EXPECT_MESSAGE = "genre not found with id: " + id;
 
-        when(authorRepository.getByID(1L)).thenReturn(author);
-        when(genreRepository.getByID(id)).thenThrow(new GenreNotFoundException(id));
+        when(authorRepository.getById(1L)).thenReturn(author);
+        when(genreRepository.getById(id)).thenThrow(new GenreNotFoundException(id));
 
         assertThatThrownBy(() -> bookService.add(invalidBookDTO_invalidGenreId))
                 .isInstanceOf(GenreNotFoundException.class)
                 .hasMessageContaining(EXPECT_MESSAGE);
 
-        verify(authorRepository, times(1)).getByID(1L);
-        verify(genreRepository, times(1)).getByID(999L);
+        verify(authorRepository, times(1)).getById(1L);
+        verify(genreRepository, times(1)).getById(999L);
         verify(bookRepository, never()).save(any());
     }
 
@@ -349,8 +349,8 @@ class BookServiceTest {
     void add_withInvalidDto_shouldThrowBookValidationException() {
         final Long id = 1L;
 
-        when(authorRepository.getByID(id)).thenReturn(author);
-        when(genreRepository.getByID(id)).thenReturn(genre);
+        when(authorRepository.getById(id)).thenReturn(author);
+        when(genreRepository.getById(id)).thenReturn(genre);
 
         assertThatThrownBy(() -> bookService.add(invalidBookDTO))
                 .isInstanceOf(BookValidationException.class)
@@ -360,19 +360,19 @@ class BookServiceTest {
                     assertThat(ex.getErrorsMap()).containsKey("title");
                 });
 
-        verify(authorRepository, times(1)).getByID(id);
-        verify(genreRepository, times(1)).getByID(id);
+        verify(authorRepository, times(1)).getById(id);
+        verify(genreRepository, times(1)).getById(id);
         verify(bookRepository, never()).save(any());
     }
 
     @Test
     void delete_shouldDeleteBook() {
         final Long id = 1L;
-        when(bookRepository.getByID(id)).thenReturn(book1);
+        when(bookRepository.getById(id)).thenReturn(book1);
 
         bookService.delete(id);
 
-        verify(bookRepository, times(1)).getByID(id);
+        verify(bookRepository, times(1)).getById(id);
         verify(bookRepository, times(1)).delete(book1);
         verifyNoMoreInteractions(bookRepository);
     }
@@ -390,13 +390,13 @@ class BookServiceTest {
     void delete_whenBookNotFound_shouldThrowBookNotFoundException() {
         final Long id = 999L;
         final String EXPECT_MESSAGE = "book not found with id: " + id;
-        when(bookRepository.getByID(id)).thenThrow(new BookNotFoundException(id));
+        when(bookRepository.getById(id)).thenThrow(new BookNotFoundException(id));
 
         assertThatThrownBy(() -> bookService.delete(id))
                 .isInstanceOf(BookNotFoundException.class)
                 .hasMessageContaining(EXPECT_MESSAGE);
 
-        verify(bookRepository, times(1)).getByID(id);
+        verify(bookRepository, times(1)).getById(id);
         verify(bookRepository, never()).delete(any());
     }
 
@@ -414,15 +414,15 @@ class BookServiceTest {
                 .isAvailable(false)
                 .build();
 
-        when(authorRepository.getByID(1L)).thenReturn(author);
-        when(genreRepository.getByID(1L)).thenReturn(genre);
-        when(bookRepository.getByID(1L)).thenReturn(book1);
+        when(authorRepository.getById(1L)).thenReturn(author);
+        when(genreRepository.getById(1L)).thenReturn(genre);
+        when(bookRepository.getById(1L)).thenReturn(book1);
 
         bookService.putByID(id, updateDTO);
 
-        verify(authorRepository, times(1)).getByID(1L);
-        verify(genreRepository, times(1)).getByID(1L);
-        verify(bookRepository, times(1)).getByID(1L);
+        verify(authorRepository, times(1)).getById(1L);
+        verify(genreRepository, times(1)).getById(1L);
+        verify(bookRepository, times(1)).getById(1L);
 
         ArgumentCaptor<Book> bookCaptor = ArgumentCaptor.forClass(Book.class);
         verify(bookRepository, times(1)).save(bookCaptor.capture());
@@ -458,7 +458,7 @@ class BookServiceTest {
     @Test
     void patchByID_shouldPartiallyUpdateBook() {
         Long id = 1L;
-        when(bookRepository.getByID(id)).thenReturn(book1);
+        when(bookRepository.getById(id)).thenReturn(book1);
 
         bookService.patchByID(id, patchDTO);
 
@@ -470,7 +470,7 @@ class BookServiceTest {
         assertThat(updatedBook.getPubYear()).isEqualTo(1999);
         assertThat(updatedBook.getIsbn()).isEqualTo("978-5-127-12345-7");
 
-        verify(bookRepository, times(1)).getByID(id);
+        verify(bookRepository, times(1)).getById(id);
     }
 
     @Test
@@ -483,8 +483,8 @@ class BookServiceTest {
                 .authorId(2L)
                 .build();
 
-        when(bookRepository.getByID(id)).thenReturn(book1);
-        when(authorRepository.getByID(2L)).thenReturn(newAuthor);
+        when(bookRepository.getById(id)).thenReturn(book1);
+        when(authorRepository.getById(2L)).thenReturn(newAuthor);
 
         bookService.patchByID(id, patchWithAuthor);
 
@@ -494,7 +494,7 @@ class BookServiceTest {
         Book updatedBook = bookCaptor.getValue();
         assertThat(updatedBook.getAuthor().getId()).isEqualTo(2L);
 
-        verify(authorRepository, times(1)).getByID(2L);
+        verify(authorRepository, times(1)).getById(2L);
     }
 
     @Test
@@ -519,7 +519,7 @@ class BookServiceTest {
     void patchByID_whenBookNotFound_shouldThrowBookNotFoundException() {
         Long id = 999L;
         final String EXPECT_MESSAGE = "book not found with id: " + id;
-        when(bookRepository.getByID(id)).thenThrow(new BookNotFoundException(id));
+        when(bookRepository.getById(id)).thenThrow(new BookNotFoundException(id));
 
         assertThatThrownBy(() -> bookService.patchByID(id, patchDTO))
                 .isInstanceOf(BookNotFoundException.class)

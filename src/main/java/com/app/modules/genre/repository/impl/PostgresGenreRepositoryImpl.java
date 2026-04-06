@@ -11,10 +11,13 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 public class PostgresGenreRepositoryImpl implements GenreRepository {
@@ -22,22 +25,17 @@ public class PostgresGenreRepositoryImpl implements GenreRepository {
     @PersistenceContext
     private EntityManager em;
 
-    @Override
-    public List<Genre> getAll() {
+    public List<Genre> findAll() {
         String stmt = "SELECT g from Genre g";
         return em.createQuery(stmt, Genre.class).getResultList();
     }
 
-    @Override
-    public List<Genre> getAll(GenreFilter filter) {
+    public List<Genre> findAll(@NonNull GenreFilter filter) {
+        Objects.requireNonNull(filter, "filter must not be null");
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Genre> cq = cb.createQuery(Genre.class);
         List<Predicate> predicates = new ArrayList<>();
         Root<Genre> genres = cq.from(Genre.class);
-
-//        if (filter != null){
-//
-//        };
 
         cq.where(predicates.toArray(new Predicate[0]));
         cq.distinct(true);
@@ -48,19 +46,18 @@ public class PostgresGenreRepositoryImpl implements GenreRepository {
         return query.getResultList();
     }
 
-    @Override
-    public Genre getByID(Long id) throws GenreNotFoundException {
-        Genre genre = em.find(Genre.class, id);
-
-        if (genre == null) {
-            throw new GenreNotFoundException(id);
-        }
-
-        return genre;
+    public Genre getById(@NonNull Long id) throws GenreNotFoundException {
+        return findById(id).orElseThrow(() -> new GenreNotFoundException(id));
     }
 
-    @Override
-    public Genre save(Genre genre) {
+    public Optional<Genre> findById(@NonNull Long id) {
+        Objects.requireNonNull(id, "id must not be null");
+        return Optional.ofNullable(em.find(Genre.class, id));
+    }
+
+    public Genre save(@NonNull Genre genre) {
+        Objects.requireNonNull(genre, "genre must not be null");
+
         if (genre.getId() == null) {
             em.persist(genre);
             return genre;
@@ -69,8 +66,8 @@ public class PostgresGenreRepositoryImpl implements GenreRepository {
         }
     }
 
-    @Override
-    public void delete(Genre genre) {
+    public void delete(@NonNull Genre genre) {
+        Objects.requireNonNull(genre, "genre must not be null");
         em.remove(genre);
     }
 }

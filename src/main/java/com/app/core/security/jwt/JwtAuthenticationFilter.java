@@ -59,7 +59,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (!isPublic) {
                 throw e;
             }
-        }catch (JwtException e) {
+        } catch (JwtException e) {
             log.error("jwt auth failed for: {} | cause: {}", token, e.getMessage());
             if (!isPublic) {
                 throw AuthorizationException.invalidToken();

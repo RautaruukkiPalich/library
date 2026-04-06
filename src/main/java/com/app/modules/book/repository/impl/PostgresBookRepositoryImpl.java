@@ -8,10 +8,13 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 public class PostgresBookRepositoryImpl implements BookRepository {
@@ -19,14 +22,14 @@ public class PostgresBookRepositoryImpl implements BookRepository {
     @PersistenceContext
     private EntityManager em;
 
-    @Override
-    public List<Book> getAll() {
+    public List<Book> findAll() {
         String jpql = "SELECT b FROM Book b JOIN FETCH b.author JOIN FETCH b.genre";
         return em.createQuery(jpql, Book.class).getResultList();
     }
 
-    @Override
-    public List<Book> getAll(BookFilter filter) {
+    public List<Book> findAll(@NonNull BookFilter filter) {
+        Objects.requireNonNull(filter, "filter must not be null");
+
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Book> cq = cb.createQuery(Book.class);
         List<Predicate> predicates = new ArrayList<>();
@@ -34,43 +37,42 @@ public class PostgresBookRepositoryImpl implements BookRepository {
         book.fetch("author", JoinType.LEFT);
         book.fetch("genre", JoinType.LEFT);
 
-        if (filter != null) {
-            if (filter.getTitle() != null && !filter.getTitle().trim().isEmpty()) {
-                predicates.add(
-                        cb.like(
-                                cb.lower(book.get("title")),
-                                "%" + filter.getTitle().toLowerCase() + "%"
-                        )
-                );
-            }
-
-            if (filter.getGenre() != null && !filter.getGenre().trim().isEmpty()) {
-                predicates.add(
-                        cb.like(
-                                cb.lower(book.get("genre").get("name")),
-                                "%" + filter.getGenre().toLowerCase() + "%"
-                        )
-                );
-            }
-
-            if (filter.getIsAvailable() != null) {
-                predicates.add(
-                        cb.equal(book.get("isAvailable"), filter.getIsAvailable())
-                );
-            }
-
-            if (filter.getPubYearFrom() != null) {
-                predicates.add(
-                        cb.greaterThanOrEqualTo(book.get("pubYear"), filter.getPubYearFrom())
-                );
-            }
-
-            if (filter.getPubYearTo() != null) {
-                predicates.add(
-                        cb.lessThanOrEqualTo(book.get("pubYear"), filter.getPubYearTo())
-                );
-            }
+        if (filter.getTitle() != null && !filter.getTitle().trim().isEmpty()) {
+            predicates.add(
+                    cb.like(
+                            cb.lower(book.get("title")),
+                            "%" + filter.getTitle().toLowerCase() + "%"
+                    )
+            );
         }
+
+        if (filter.getGenre() != null && !filter.getGenre().trim().isEmpty()) {
+            predicates.add(
+                    cb.like(
+                            cb.lower(book.get("genre").get("name")),
+                            "%" + filter.getGenre().toLowerCase() + "%"
+                    )
+            );
+        }
+
+        if (filter.getIsAvailable() != null) {
+            predicates.add(
+                    cb.equal(book.get("isAvailable"), filter.getIsAvailable())
+            );
+        }
+
+        if (filter.getPubYearFrom() != null) {
+            predicates.add(
+                    cb.greaterThanOrEqualTo(book.get("pubYear"), filter.getPubYearFrom())
+            );
+        }
+
+        if (filter.getPubYearTo() != null) {
+            predicates.add(
+                    cb.lessThanOrEqualTo(book.get("pubYear"), filter.getPubYearTo())
+            );
+        }
+
 
         if (!predicates.isEmpty()) {
             cq.where(predicates.toArray(new Predicate[0]));
@@ -82,8 +84,13 @@ public class PostgresBookRepositoryImpl implements BookRepository {
         return em.createQuery(cq).getResultList();
     }
 
-    @Override
-    public Book getByID(Long id) throws BookNotFoundException {
+    public Book getById(@NonNull Long id) {
+        return findById(id).orElseThrow(() -> new BookNotFoundException(id));
+    }
+
+    public Optional<Book> findById(@NonNull Long id) {
+        Objects.requireNonNull(id, "id must not be null");
+
         String jpql = """
                 SELECT b FROM Book b
                 JOIN FETCH b.author
@@ -91,17 +98,19 @@ public class PostgresBookRepositoryImpl implements BookRepository {
                 WHERE b.id = :id
                 """;
 
+
         try {
-            return em.createQuery(jpql, Book.class)
+            return Optional.of(em.createQuery(jpql, Book.class)
                     .setParameter("id", id)
-                    .getSingleResult();
+                    .getSingleResult());
         } catch (NoResultException e) {
-            throw new BookNotFoundException(id);
+            return Optional.empty();
         }
     }
 
-    @Override
-    public Book save(Book book) {
+    public Book save(@NonNull Book book) {
+        Objects.requireNonNull(book, "book must not be null");
+
         if (book.getId() == null) {
             em.persist(book);
             return book;
@@ -110,8 +119,9 @@ public class PostgresBookRepositoryImpl implements BookRepository {
         }
     }
 
-    @Override
-    public void delete(Book book) {
+    public void delete(@NonNull Book book) {
+        Objects.requireNonNull(book, "book must not be null");
+
         em.remove(book);
     }
 }

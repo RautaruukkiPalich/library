@@ -1,9 +1,9 @@
 package com.app.modules.user.dto;
 
-import lombok.Builder;
+import org.jspecify.annotations.NonNull;
 
-@Builder
-public record LoginUserDTO (
-    String email,
-    String password
-){}
+public record LoginUserDTO(
+        @NonNull String email,
+        @NonNull String password
+) {
+}
