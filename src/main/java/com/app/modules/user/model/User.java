@@ -173,7 +173,7 @@ public class User extends BaseModel {
                 .notBlank()
                 .minLength(2)
                 .maxLength(100)
-                .match(EMAIL_PATTERN)
+                .match(EMAIL_PATTERN, "invalid format. expect 'test@test.test'")
                 .validate();
     }
 

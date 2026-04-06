@@ -224,9 +224,7 @@ public class UserTests {
         final String ERR_SHORT_2 = String.format(StringValidator.ERROR_TOO_SHORT, 2);
         final String ERR_SHORT_8 = String.format(StringValidator.ERROR_TOO_SHORT, 8);
         final String ERR_LONG_100 = String.format(StringValidator.ERROR_TOO_LONG, 100);
-        final String ERR_INVALID_EMAIL_PATTERN = String.format(
-                "invalid pattern. expected '%s'",
-                "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9-]+\\.[a-zA-Z]+$");
+        final String ERR_INVALID_EMAIL_PATTERN = "invalid format. expect 'test@test.test'";
 
         final String FIRSTNAME = "firstname";
         final String LASTNAME = "lastname";

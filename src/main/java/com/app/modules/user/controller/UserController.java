@@ -3,6 +3,7 @@ package com.app.modules.user.controller;
 import com.app.core.annotation.public_endpoint.PublicEndpoint;
 import com.app.modules.user.api.UserProfileService;
 import com.app.modules.user.api.UserService;
+import com.app.modules.user.dto.ProfileDTO;
 import com.app.modules.user.dto.UserControllerDTO;
 import com.app.modules.user.dto.UserDTO;
 import com.app.modules.user.mapper.UserMapper;
@@ -31,9 +32,9 @@ public class UserController {
     @GetMapping("/{id:\\d+}")
     @PublicEndpoint
     @Operation(summary = "get user by id")
-    @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = UserControllerDTO.PublicResponse.class)))
+    @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = UserControllerDTO.Response.PublicProfile.class)))
     @ApiResponse(responseCode = "404", description = "not found")
-    public ResponseEntity<UserControllerDTO.PublicResponse> getByID(@PathVariable Long id) {
+    public ResponseEntity<UserControllerDTO.Response.PublicProfile> getByID(@PathVariable Long id) {
         UserDTO user = userService.getByID(id);
         return ResponseEntity.ok().body(UserMapper.toPublicResponse(user));
     }
@@ -41,25 +42,79 @@ public class UserController {
     @GetMapping("/me")
     @SecurityRequirement(name = BEARER_SECURITY_SCHEME_NAME)
     @Operation(summary = "get profile")
-    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = UserControllerDTO.Response.PrivateProfile.class)))
     @ApiResponse(responseCode = "401")
-    public ResponseEntity<UserControllerDTO.PrivateResponse> me(
+    public ResponseEntity<UserControllerDTO.Response.PublicProfile> me(
             @AuthenticationPrincipal Long userId
     ) {
         UserDTO user = userService.getByID(userId);
         return ResponseEntity.ok().body(UserMapper.toPrivateResponse(user));
     }
 
-    @PostMapping("/me/change-password")
+    @PutMapping("/me/password")
     @SecurityRequirement(name = BEARER_SECURITY_SCHEME_NAME)
-    @Operation(summary = "change password")
+    @Operation(summary = "edit password")
     @ApiResponse(responseCode = "200")
     @ApiResponse(responseCode = "401")
-    public ResponseEntity<Void> changePassword(
+    public ResponseEntity<Void> editPassword(
             @AuthenticationPrincipal Long userId,
-            @Valid @RequestBody UserControllerDTO.ChangePassword body
+            @Valid @RequestBody UserControllerDTO.Request.EditPassword body
     ) {
-        userProfileService.changePassword(userId, body.getOldPassword(), body.getPassword());
+        userProfileService.editPassword(new ProfileDTO.EditPassword(null, userId, body.getOldPassword(), body.getPassword()));
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/me/firstname")
+    @SecurityRequirement(name = BEARER_SECURITY_SCHEME_NAME)
+    @Operation(summary = "edit firstname")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "401")
+    public ResponseEntity<Void> editFirstname(
+            @AuthenticationPrincipal Long userId,
+            @Valid @RequestBody UserControllerDTO.Request.EditFirstname body
+    ) {
+        userProfileService.editFirstname(new ProfileDTO.EditFirstname(null, userId, body.getFirstname()));
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/me/lastname")
+    @SecurityRequirement(name = BEARER_SECURITY_SCHEME_NAME)
+    @Operation(summary = "edit lastname")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "401")
+    public ResponseEntity<Void> editLastname(
+            @AuthenticationPrincipal Long userId,
+            @Valid @RequestBody UserControllerDTO.Request.EditLastname body
+    ) {
+        userProfileService.editLastname(new ProfileDTO.EditLastname(null, userId, body.getLastname()));
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/me/surname")
+    @SecurityRequirement(name = BEARER_SECURITY_SCHEME_NAME)
+    @Operation(summary = "edit surname")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "401")
+    public ResponseEntity<Void> editSurname(
+            @AuthenticationPrincipal Long userId,
+            @Valid @RequestBody UserControllerDTO.Request.EditSurname body
+    ) {
+        userProfileService.editSurname(new ProfileDTO.EditSurname(null, userId, body.getSurname()));
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/me/email")
+    @SecurityRequirement(name = BEARER_SECURITY_SCHEME_NAME)
+    @Operation(summary = "edit email")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "401")
+    public ResponseEntity<Void> editEmail(
+            @AuthenticationPrincipal Long userId,
+            @Valid @RequestBody UserControllerDTO.Request.EditEmail body
+    ) {
+        userProfileService.editEmail(new ProfileDTO.EditEmail(null, userId, body.getEmail()));
+        return ResponseEntity.ok().build();
+    }
+
+
 }

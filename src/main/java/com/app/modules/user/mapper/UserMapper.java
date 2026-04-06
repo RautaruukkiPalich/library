@@ -1,7 +1,7 @@
 package com.app.modules.user.mapper;
 
-import com.app.modules.user.dto.UserControllerDTO;
 import com.app.modules.user.dto.UserAuthInfoDTO;
+import com.app.modules.user.dto.UserControllerDTO;
 import com.app.modules.user.dto.UserDTO;
 import com.app.modules.user.model.User;
 import org.springframework.stereotype.Component;
@@ -33,9 +33,9 @@ public class UserMapper {
                 .build();
     }
 
-    public static UserControllerDTO.PublicResponse toPublicResponse(UserDTO u) {
+    public static UserControllerDTO.Response.PublicProfile toPublicResponse(UserDTO u) {
         Objects.requireNonNull(u, "user cant be null");
-        return UserControllerDTO.PublicResponse
+        return UserControllerDTO.Response.PublicProfile
                 .builder()
                 .id(u.id())
                 .firstname(u.firstname())
@@ -46,9 +46,9 @@ public class UserMapper {
                 .build();
     }
 
-    public static UserControllerDTO.PrivateResponse toPrivateResponse(UserDTO u) {
+    public static UserControllerDTO.Response.PrivateProfile toPrivateResponse(UserDTO u) {
         Objects.requireNonNull(u, "user cant be null");
-        return UserControllerDTO.PrivateResponse
+        return UserControllerDTO.Response.PrivateProfile
                 .builder()
                 .id(u.id())
                 .firstname(u.firstname())

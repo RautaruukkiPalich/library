@@ -1,18 +1,16 @@
 package com.app.modules.user.api;
 
-import com.app.core.security.rbac.Role;
+import com.app.modules.user.dto.ProfileDTO;
 
 public interface UserProfileService {
 
-    void changePassword(Long userId, String oldPassword, String newPassword);
+    void editPassword(ProfileDTO.EditPassword dto);
 
-    void changeFirstname(Long userId, String firstname);
+    void editFirstname(ProfileDTO.EditFirstname dto);
 
-    void changeSurname(Long userId, String surname);
+    void editSurname(ProfileDTO.EditSurname dto);
 
-    void changeLastname(Long userId, String lastname);
+    void editLastname(ProfileDTO.EditLastname dto);
 
-    void changeEmail(Long userId, String email);
-
-    void changeRole(Long userId, Role role);
+    void editEmail(ProfileDTO.EditEmail dto);
 }

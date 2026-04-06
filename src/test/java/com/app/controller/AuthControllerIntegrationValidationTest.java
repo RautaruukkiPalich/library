@@ -74,7 +74,7 @@ public class AuthControllerIntegrationValidationTest {
                         .matchers(List.of(
                                 jsonPath("$.validation_errors.email").isNotEmpty(),
                                 jsonPath("$.validation_errors.email").isString(),
-                                jsonPath("$.validation_errors.email", CoreMatchers.containsString("must match \"^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9-]+\\.[a-zA-Z]+$\""))
+                                jsonPath("$.validation_errors.email", CoreMatchers.containsString("invalid format. expect 'test@test.test'"))
                         ))
                         .build(),
 
@@ -174,7 +174,7 @@ public class AuthControllerIntegrationValidationTest {
                         .matchers(List.of(
                                 jsonPath("$.validation_errors.email").isNotEmpty(),
                                 jsonPath("$.validation_errors.email").isString(),
-                                jsonPath("$.validation_errors.email", CoreMatchers.containsString("must match \"^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9-]+\\.[a-zA-Z]+$\""))
+                                jsonPath("$.validation_errors.email", CoreMatchers.containsString("invalid format. expect 'test@test.test'"))
                         ))
                         .build(),
 

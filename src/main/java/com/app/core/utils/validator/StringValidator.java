@@ -50,7 +50,7 @@ public class StringValidator extends Validator<String, StringValidator> {
     public StringValidator match(Pattern pattern, String desc) {
         addCheck(() ->
                 !pattern.matcher(value).matches() ?
-                        Map.of(key, String.format("invalid pattern. %s", desc)) :
+                        Map.of(key, desc) :
                         null
         );
         return this;
