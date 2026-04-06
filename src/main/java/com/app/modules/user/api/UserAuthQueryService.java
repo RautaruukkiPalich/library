@@ -2,7 +2,7 @@ package com.app.modules.user.api;
 
 import com.app.modules.user.dto.UserAuthInfoDTO;
 import com.app.modules.user.exception.UserNotFoundException;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 
 public interface UserAuthQueryService {
     UserAuthInfoDTO getById(@NonNull Long id) throws UserNotFoundException;

@@ -3,7 +3,7 @@ package com.app.modules.auth.api;
 import com.app.modules.auth.dto.LoginDTO;
 import com.app.modules.auth.dto.RegisterDTO;
 import com.app.modules.auth.dto.TokenPairDTO;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 
 public interface AuthService {
     void register(@NonNull RegisterDTO dto);

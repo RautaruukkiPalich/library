@@ -1,7 +1,7 @@
 package com.app.modules.user.api;
 
 import com.app.modules.user.dto.ProfileDTO;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 
 public interface UserProfileService {
 

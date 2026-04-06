@@ -1,7 +1,7 @@
 package com.app.modules.user.exception;
 
 import com.app.core.exception.ValidationException;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 
 import java.util.Map;
 

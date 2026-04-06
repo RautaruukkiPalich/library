@@ -1,6 +1,6 @@
 package com.app.modules.user.api;
 
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 
 public interface UserPasswordResetService {
 

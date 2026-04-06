@@ -8,12 +8,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -28,8 +27,6 @@ public class PostgresBookRepositoryImpl implements BookRepository {
     }
 
     public List<Book> findAll(@NonNull BookFilter filter) {
-        Objects.requireNonNull(filter, "filter must not be null");
-
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Book> cq = cb.createQuery(Book.class);
         List<Predicate> predicates = new ArrayList<>();
@@ -89,8 +86,6 @@ public class PostgresBookRepositoryImpl implements BookRepository {
     }
 
     public Optional<Book> findById(@NonNull Long id) {
-        Objects.requireNonNull(id, "id must not be null");
-
         String jpql = """
                 SELECT b FROM Book b
                 JOIN FETCH b.author
@@ -109,8 +104,6 @@ public class PostgresBookRepositoryImpl implements BookRepository {
     }
 
     public Book save(@NonNull Book book) {
-        Objects.requireNonNull(book, "book must not be null");
-
         if (book.getId() == null) {
             em.persist(book);
             return book;
@@ -120,8 +113,6 @@ public class PostgresBookRepositoryImpl implements BookRepository {
     }
 
     public void delete(@NonNull Book book) {
-        Objects.requireNonNull(book, "book must not be null");
-
         em.remove(book);
     }
 }

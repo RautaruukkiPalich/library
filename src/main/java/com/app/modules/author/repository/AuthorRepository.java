@@ -3,7 +3,7 @@ package com.app.modules.author.repository;
 import com.app.modules.author.dto.AuthorFilter;
 import com.app.modules.author.exception.AuthorNotFoundException;
 import com.app.modules.author.model.Author;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 
 import java.util.List;
 import java.util.Optional;

@@ -11,12 +11,11 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -31,7 +30,6 @@ public class PostgresGenreRepositoryImpl implements GenreRepository {
     }
 
     public List<Genre> findAll(@NonNull GenreFilter filter) {
-        Objects.requireNonNull(filter, "filter must not be null");
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Genre> cq = cb.createQuery(Genre.class);
         List<Predicate> predicates = new ArrayList<>();
@@ -51,13 +49,10 @@ public class PostgresGenreRepositoryImpl implements GenreRepository {
     }
 
     public Optional<Genre> findById(@NonNull Long id) {
-        Objects.requireNonNull(id, "id must not be null");
         return Optional.ofNullable(em.find(Genre.class, id));
     }
 
     public Genre save(@NonNull Genre genre) {
-        Objects.requireNonNull(genre, "genre must not be null");
-
         if (genre.getId() == null) {
             em.persist(genre);
             return genre;
@@ -67,7 +62,6 @@ public class PostgresGenreRepositoryImpl implements GenreRepository {
     }
 
     public void delete(@NonNull Genre genre) {
-        Objects.requireNonNull(genre, "genre must not be null");
         em.remove(genre);
     }
 }

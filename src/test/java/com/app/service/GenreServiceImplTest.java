@@ -95,7 +95,7 @@ class GenreServiceImplTest {
 
     @Test
     void getByID_withNullId_shouldThrowNullPointerException() {
-        final String MESSAGE = "id must not be null";
+        final String MESSAGE = "id is marked non-null but is null";
 
         assertThatThrownBy(() -> genreService.getByID(null))
                 .isInstanceOf(NullPointerException.class)
@@ -141,7 +141,7 @@ class GenreServiceImplTest {
 
     @Test
     void add_withNullDto_shouldThrowNullPointerException() {
-        final String MESSAGE = "dto must not be null";
+        final String MESSAGE = "dto is marked non-null but is null";
 
         assertThatThrownBy(() -> genreService.add(null))
                 .isInstanceOf(NullPointerException.class)
@@ -175,7 +175,7 @@ class GenreServiceImplTest {
 
     @Test
     void delete_withNullId_shouldThrowNullPointerException() {
-        final String MESSAGE = "id must not be null";
+        final String MESSAGE = "id is marked non-null but is null";
 
         assertThatThrownBy(() -> genreService.delete(null))
                 .isInstanceOf(NullPointerException.class)

@@ -3,7 +3,7 @@ package com.app.modules.genre.repository;
 import com.app.modules.genre.dto.GenreFilter;
 import com.app.modules.genre.exception.GenreNotFoundException;
 import com.app.modules.genre.model.Genre;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 
 import java.util.List;
 import java.util.Optional;

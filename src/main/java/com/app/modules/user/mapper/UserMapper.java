@@ -4,16 +4,13 @@ import com.app.modules.user.dto.UserAuthInfoDTO;
 import com.app.modules.user.dto.UserControllerDTO;
 import com.app.modules.user.dto.UserDTO;
 import com.app.modules.user.model.User;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 import org.springframework.stereotype.Component;
-
-import java.util.Objects;
 
 @Component
 public class UserMapper {
 
     public static UserAuthInfoDTO convertToAuthInfo(@NonNull User user) {
-        Objects.requireNonNull(user, "user must not be null");
         return UserAuthInfoDTO.builder()
                 .id(user.getId())
                 .role(user.getRole())
@@ -21,7 +18,6 @@ public class UserMapper {
     }
 
     public static UserDTO toDTO(@NonNull User user) {
-        Objects.requireNonNull(user, "user must not be null");
         return UserDTO.builder()
                 .id(user.getId())
                 .firstname(user.getFirstname())
@@ -34,29 +30,27 @@ public class UserMapper {
                 .build();
     }
 
-    public static UserControllerDTO.Response.PublicProfile toPublicResponse(@NonNull UserDTO u) {
-        Objects.requireNonNull(u, "user must not be null");
+    public static UserControllerDTO.Response.PublicProfile toPublicResponse(@NonNull UserDTO dto) {
         return UserControllerDTO.Response.PublicProfile
                 .builder()
-                .id(u.id())
-                .firstname(u.firstname())
-                .surname(u.surname())
-                .lastname(u.lastname())
-                .email(u.email())
-                .role(u.role())
+                .id(dto.id())
+                .firstname(dto.firstname())
+                .surname(dto.surname())
+                .lastname(dto.lastname())
+                .email(dto.email())
+                .role(dto.role())
                 .build();
     }
 
-    public static UserControllerDTO.Response.PrivateProfile toPrivateResponse(@NonNull UserDTO u) {
-        Objects.requireNonNull(u, "user must not be null");
+    public static UserControllerDTO.Response.PrivateProfile toPrivateResponse(@NonNull UserDTO dto) {
         return UserControllerDTO.Response.PrivateProfile
                 .builder()
-                .id(u.id())
-                .firstname(u.firstname())
-                .surname(u.surname())
-                .lastname(u.lastname())
-                .email(u.email())
-                .role(u.role())
+                .id(dto.id())
+                .firstname(dto.firstname())
+                .surname(dto.surname())
+                .lastname(dto.lastname())
+                .email(dto.email())
+                .role(dto.role())
                 .build();
     }
 }

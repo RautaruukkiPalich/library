@@ -1,5 +1,7 @@
 package com.app.core.utils.validator;
 
+import lombok.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,8 +16,8 @@ public abstract class Validator<T, V extends Validator<T, V>> {
 
     private final List<Supplier<Map<String, String>>> checkFuncs = new ArrayList<>();
 
-    public Validator(String key, T value) {
-        this.key = Objects.requireNonNull(key, "key must not be null");
+    public Validator(@NonNull String key, T value) {
+        this.key = key;
         this.value = value;
     }
 

@@ -3,7 +3,7 @@ package com.app.modules.book.repository;
 import com.app.modules.book.dto.BookFilter;
 import com.app.modules.book.exception.BookNotFoundException;
 import com.app.modules.book.model.Book;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 
 import java.util.List;
 import java.util.Optional;

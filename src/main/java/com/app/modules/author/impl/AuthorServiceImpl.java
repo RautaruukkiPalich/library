@@ -7,13 +7,12 @@ import com.app.modules.author.exception.AuthorValidationException;
 import com.app.modules.author.mapper.AuthorMapper;
 import com.app.modules.author.model.Author;
 import com.app.modules.author.repository.AuthorRepository;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 
 @Primary
 @Service
@@ -37,15 +36,11 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     @Transactional(readOnly = true)
     public List<AuthorDTO> getAll(@NonNull AuthorFilter filter) {
-        Objects.requireNonNull(filter, "filter must not be null");
-
         return AuthorMapper.toListDTO(this.authorRepo.findAll(filter));
     }
 
     @Override
     public Long add(@NonNull AuthorDTO dto) {
-        Objects.requireNonNull(dto, "dto must not be null");
-
         Author author = new Author(dto);
         author.validate();
 
@@ -56,16 +51,12 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public AuthorDTO getByID(@NonNull Long id) {
-        Objects.requireNonNull(id, "id must not be null");
-
         this.validateId(id);
         return AuthorMapper.toDTO(this.authorRepo.getById(id));
     }
 
     @Override
     public void delete(@NonNull Long id) {
-        Objects.requireNonNull(id, "id must not be null");
-
         this.validateId(id);
         Author author = this.authorRepo.getById(id);
         this.authorRepo.delete(author);

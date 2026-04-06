@@ -2,7 +2,7 @@ package com.app.modules.book.api;
 
 import com.app.modules.book.dto.BookDTO;
 import com.app.modules.book.dto.BookFilter;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 
 import java.util.List;
 

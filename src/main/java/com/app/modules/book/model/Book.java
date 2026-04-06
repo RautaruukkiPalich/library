@@ -10,12 +10,12 @@ import com.app.modules.book.exception.BookValidationException;
 import com.app.modules.genre.model.Genre;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 @Getter
@@ -73,11 +73,8 @@ public class Book extends BaseModel {
         this.pageCount = pageCount;
     }
 
-    public Book(BookDTO dto, Author author, Genre genre) {
+    public Book(@NonNull BookDTO dto, @NonNull Author author, @NonNull Genre genre) {
         super(BookValidationException::new);
-        Objects.requireNonNull(dto, "dto must not be null");
-        Objects.requireNonNull(author, "author must not be null");
-        Objects.requireNonNull(genre, "genre must not be null");
 
         this.title = dto.title();
         this.author = author;

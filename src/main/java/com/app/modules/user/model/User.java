@@ -11,13 +11,12 @@ import com.app.modules.user.exception.UserValidationException;
 import com.app.modules.user.repository.RoleNameConverter;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 @Getter
@@ -57,8 +56,6 @@ public class User extends BaseModel {
             @NonNull PasswordHasher hasher
     ) {
         super(UserValidationException::new);
-        Objects.requireNonNull(dto, "dto must not be null");
-        Objects.requireNonNull(hasher, "password hasher must not be null");
 
         this.firstname = NormalizeSanitizer.sanitize(dto.firstname());
         this.surname = NormalizeSanitizer.sanitize(dto.surname());
@@ -70,24 +67,16 @@ public class User extends BaseModel {
         this.setPassword(dto.password(), hasher);
     }
 
-    public void setPassword(@NonNull String rawPass, @NonNull PasswordHasher hasher) {
-        Objects.requireNonNull(hasher, "password hasher must not be null");
-
+    public void setPassword(String rawPass, @NonNull PasswordHasher hasher) {
         validateRawPassword(rawPass);
         this.hashedPassword = hashPassword(rawPass, hasher);
     }
 
     public boolean comparePassword(@NonNull String rawPass, @NonNull PasswordHasher hasher) {
-        Objects.requireNonNull(rawPass, "password must not be null");
-        Objects.requireNonNull(hasher, "password hasher must not be null");
-
         return hasher.matches(rawPass, this.hashedPassword);
     }
 
     private String hashPassword(@NonNull String rawPass, @NonNull PasswordHasher hasher) {
-        Objects.requireNonNull(rawPass, "password must not be null");
-        Objects.requireNonNull(hasher, "password hasher must not be null");
-
         return hasher.encode(rawPass);
     }
 
@@ -183,7 +172,7 @@ public class User extends BaseModel {
     private static final Pattern LOWERCASE_CONTAINS_PATTERN = Pattern.compile(".*[a-z].*");
     private static final Pattern DIGIT_CONTAINS_PATTERN = Pattern.compile(".*\\d.*");
 
-    private void validateRawPassword(@NonNull String pass) throws UserValidationException {
+    private void validateRawPassword(String pass) throws UserValidationException {
         super.checkErrorsAndThrow(
                 new StringValidator("password", pass)
                         .notNull()

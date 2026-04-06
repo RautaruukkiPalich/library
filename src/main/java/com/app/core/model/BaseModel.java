@@ -6,6 +6,7 @@ import com.app.core.utils.validator.OffsetDateTimeValidator;
 import com.app.core.utils.validator.ValidationExceptionFactory;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -15,7 +16,6 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.BinaryOperator;
 
 @Getter
@@ -46,9 +46,8 @@ public abstract class BaseModel {
     @Transient
     private final ValidationExceptionFactory exceptionFactory;
 
-    protected BaseModel(ValidationExceptionFactory exceptionFactory) {
-        this.exceptionFactory = Objects.requireNonNull(exceptionFactory,
-                "ValidationExceptionFactory must not be null");
+    protected BaseModel(@NonNull ValidationExceptionFactory exceptionFactory) {
+        this.exceptionFactory = exceptionFactory;
     }
 
     private static final String CREATED_AT_KEY = "createdAt";

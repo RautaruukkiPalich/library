@@ -2,7 +2,7 @@ package com.app.modules.author.api;
 
 import com.app.modules.author.dto.AuthorDTO;
 import com.app.modules.author.dto.AuthorFilter;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 
 import java.util.List;
 

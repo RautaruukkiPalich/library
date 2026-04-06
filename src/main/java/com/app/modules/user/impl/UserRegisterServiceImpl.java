@@ -7,11 +7,9 @@ import com.app.modules.user.api.UserRegistrationService;
 import com.app.modules.user.dto.RegisterUserDTO;
 import com.app.modules.user.model.User;
 import lombok.AllArgsConstructor;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Objects;
 
 @Service
 @Transactional
@@ -22,7 +20,6 @@ public class UserRegisterServiceImpl implements UserRegistrationService {
 
     @Override
     public void register(@NonNull RegisterUserDTO dto) {
-        Objects.requireNonNull(dto, "dto must not be null");
         String normalizedEmail = NormalizeSanitizer.normalize(dto.email());
 
         if (userOperations.existsByEmail(normalizedEmail)) {

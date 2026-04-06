@@ -8,12 +8,12 @@ import com.app.modules.author.exception.AuthorValidationException;
 import com.app.modules.book.model.Book;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @Getter
 @Setter
@@ -51,9 +51,8 @@ public class Author extends BaseModel {
         this.surname = surname;
     }
 
-    public Author(AuthorDTO dto) {
+    public Author(@NonNull AuthorDTO dto) {
         super(AuthorValidationException::new);
-        Objects.requireNonNull(dto, "dto must not be null");
 
         this.firstname = dto.firstname();
         this.lastname = dto.lastname();

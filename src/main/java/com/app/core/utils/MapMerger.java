@@ -1,5 +1,7 @@
 package com.app.core.utils;
 
+import lombok.NonNull;
+
 import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
@@ -10,8 +12,8 @@ public class MapMerger<K, V> {
     public MapMerger() {
     }
 
-    public MapMerger<K, V> withMergeFunc(BinaryOperator<V> func) {
-        this.mergeFunc = Objects.requireNonNull(func, "merge func must not be null");
+    public MapMerger<K, V> withMergeFunc(@NonNull BinaryOperator<V> func) {
+        this.mergeFunc = func;
         return this;
     }
 

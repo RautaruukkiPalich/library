@@ -104,11 +104,10 @@ public class GenreTests {
         final String BLANC_STRING = "";
         final String SHORT_STRING = "1";
         final String LONG_STRING = "1".repeat(260);
-        final String VALID_STRING = "132";
 
         List<ValidationTestCase> tcs = List.of(
                 new ValidationTestCase(
-                        new Genre((String) null),
+                        new Genre(),
                         Map.of(NAME, ERR_NULL)
                 ),
                 new ValidationTestCase(

@@ -8,12 +8,12 @@ import com.app.modules.genre.dto.GenreDTO;
 import com.app.modules.genre.exception.GenreValidationException;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @Getter
 @Setter
@@ -30,10 +30,8 @@ public class Genre extends BaseModel {
     @OneToMany(mappedBy = "genre")
     private List<Book> books;
 
-    public Genre(GenreDTO dto) {
+    public Genre(@NonNull GenreDTO dto) {
         super(GenreValidationException::new);
-        Objects.requireNonNull(dto, "dto must not be null");
-
         this.name = dto.name();
     }
 
@@ -41,7 +39,7 @@ public class Genre extends BaseModel {
         super(GenreValidationException::new);
     }
 
-    public Genre(String name) {
+    public Genre(@NonNull String name) {
         super(GenreValidationException::new);
         this.name = name;
     }

@@ -2,7 +2,7 @@ package com.app.modules.refresh_token.repository;
 
 import com.app.modules.refresh_token.exception.RefreshTokenNotFoundException;
 import com.app.modules.refresh_token.model.RefreshToken;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 
 import java.util.Optional;
 

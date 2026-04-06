@@ -105,7 +105,7 @@ class AuthorServiceTest {
     void getByID_withNullId_shouldThrowNullPointerException() {
         assertThatThrownBy(() -> authorService.getByID(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("must not be null");
+                .hasMessageContaining("is marked non-null but is null");
     }
 
     @Test
@@ -175,7 +175,7 @@ class AuthorServiceTest {
     void add_withNullDto_shouldThrowNullPointerException() {
         assertThatThrownBy(() -> authorService.add(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("must not be null")
+                .hasMessageContaining("is marked non-null but is null")
                 .satisfies();
     }
 
@@ -223,7 +223,7 @@ class AuthorServiceTest {
     void delete_serviceThrowsException_nullId() {
         assertThatThrownBy(() -> authorService.delete(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("must not be null")
+                .hasMessageContaining("is marked non-null but is null")
                 .satisfies();
     }
 }

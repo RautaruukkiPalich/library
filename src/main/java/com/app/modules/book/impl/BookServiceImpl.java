@@ -12,13 +12,12 @@ import com.app.modules.book.repository.BookRepository;
 import com.app.modules.genre.model.Genre;
 import com.app.modules.genre.repository.GenreRepository;
 import lombok.AllArgsConstructor;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 
 @Primary
 @Service
@@ -35,22 +34,17 @@ public class BookServiceImpl implements BookService {
         return BookMapper.toListDTO(this.bookRepo.findAll());
     }
 
-
     @Transactional(readOnly = true)
     public List<BookDTO> getAll(@NonNull BookFilter filter) {
-        Objects.requireNonNull(filter, "filter must not be null");
         return BookMapper.toListDTO(this.bookRepo.findAll(filter));
     }
 
     @Transactional(readOnly = true)
     public BookDTO getByID(@NonNull Long id) {
-        Objects.requireNonNull(id, "id must not be null");
         return BookMapper.toDTO(this.getBookByIDInternal(id));
     }
 
     public Long add(@NonNull BookDTO dto) {
-        Objects.requireNonNull(dto, "dto must not be null");
-
         this.preflightValidateDTO(dto);
 
         Author author = this.authorRepo.getById(dto.authorId());
@@ -66,16 +60,11 @@ public class BookServiceImpl implements BookService {
     }
 
     public void delete(@NonNull Long id) {
-        Objects.requireNonNull(id, "id must not be null");
-
         Book book = this.bookRepo.getById(id);
         this.bookRepo.delete(book);
     }
 
     public void putByID(@NonNull Long id, @NonNull BookDTO dto) {
-        Objects.requireNonNull(id, "id must not be null");
-        Objects.requireNonNull(dto, "dto must not be null");
-
         this.preflightValidateDTO(dto);
 
         Author author = this.getAuthorByIDInternal(dto.authorId());
@@ -96,8 +85,6 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public void patchByID(@NonNull Long id, @NonNull BookDTO dto) {
-        Objects.requireNonNull(id, "id must not be null");
-        Objects.requireNonNull(dto, "dto must not be null");
 
         Book book = this.getBookByIDInternal(id);
         if (dto.title() != null) {
@@ -136,17 +123,14 @@ public class BookServiceImpl implements BookService {
     }
 
     private Book getBookByIDInternal(@NonNull Long id) {
-        Objects.requireNonNull(id, "id must not be null");
         return this.bookRepo.getById(id);
     }
 
     private Genre getGenreByIDInternal(@NonNull Long id) {
-        Objects.requireNonNull(id, "id must not be null");
         return this.genreRepo.getById(id);
     }
 
     private Author getAuthorByIDInternal(@NonNull Long id) {
-        Objects.requireNonNull(id, "id must not be null");
         return this.authorRepo.getById(id);
     }
 }

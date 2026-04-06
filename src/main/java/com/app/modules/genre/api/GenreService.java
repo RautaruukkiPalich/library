@@ -2,7 +2,7 @@ package com.app.modules.genre.api;
 
 import com.app.modules.genre.dto.GenreDTO;
 import com.app.modules.genre.dto.GenreFilter;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 
 import java.util.List;
 

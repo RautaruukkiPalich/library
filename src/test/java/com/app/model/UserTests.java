@@ -68,14 +68,14 @@ public class UserTests {
     void NewUser_onNullDtoThrowsNPE() {
         assertThatThrownBy(() -> new User(null, mockHasher))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("dto must not be null");
+                .hasMessageContaining("is marked non-null but is null");
     }
 
     @Test
     void NewUser_onNullHasherThrowsNPE() {
         assertThatThrownBy(() -> new User(validUserRegisterDTO, null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("password hasher must not be null");
+                .hasMessageContaining("is marked non-null but is null");
     }
 
     @Test
@@ -103,7 +103,7 @@ public class UserTests {
 
         assertThatThrownBy(() -> user.comparePassword(null, mockHasher))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("password must not be null");
+                .hasMessageContaining("is marked non-null but is null");
     }
 
     @Test
@@ -112,7 +112,7 @@ public class UserTests {
 
         assertThatThrownBy(() -> user.comparePassword(VALID_PASSWORD, null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("password hasher must not be null");
+                .hasMessageContaining("is marked non-null but is null");
     }
 
     @Test

@@ -21,13 +21,12 @@ import com.app.modules.user.dto.LoginUserDTO;
 import com.app.modules.user.dto.RegisterUserDTO;
 import com.app.modules.user.dto.UserAuthInfoDTO;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
-import java.util.Objects;
 
 @Service
 @Slf4j
@@ -45,8 +44,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public TokenPairDTO login(@NonNull LoginDTO dto) {
-        Objects.requireNonNull(dto, "dto must not be null");
-
         String normalizedEmail = NormalizeSanitizer.normalize(dto.email());
         if (normalizedEmail == null) {
             throw AuthenticateException.invalidCredentials();
@@ -65,8 +62,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void resetPassword(@NonNull String email) {
-        Objects.requireNonNull(email, "email must not be null");
-
         try {
             UserAuthInfoDTO dto = userAuthQueryService.getByEmail(email);
             userPasswordResetService.resetPassword(email);
@@ -80,8 +75,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void register(@NonNull RegisterDTO dto) {
-        Objects.requireNonNull(dto, "dto must not be null");
-
         userRegistrationService.register(
                 RegisterUserDTO.builder()
                         .firstname(dto.firstname())
@@ -95,8 +88,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public TokenPairDTO refreshTokens(@NonNull String token) {
-        Objects.requireNonNull(token, "token must not be null");
-
         try {
             RefreshTokenInfoDTO rt = refreshTokenService.rotate(token);
             UserAuthInfoDTO user = userAuthQueryService.getById(rt.userId());
@@ -113,15 +104,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void revokeAllRefreshTokens(@NonNull Long userId) {
-        Objects.requireNonNull(userId, "userId must not be null");
-
         refreshTokenService.revokeAllUserTokens(userId);
     }
 
-    private String generateAccessToken(Long userId, Role role) {
-        Objects.requireNonNull(userId, "userId must not be null");
-        Objects.requireNonNull(role, "role must not be null");
-
+    private String generateAccessToken(@NonNull Long userId, @NonNull Role role) {
         return jwtGenerator.generateToken(
                 String.valueOf(userId),
                 Map.of(ROLE_KEY, role.getAuthority())

@@ -2,7 +2,7 @@ package com.app.modules.user.api;
 
 import com.app.modules.user.dto.LoginUserDTO;
 import com.app.modules.user.dto.UserAuthInfoDTO;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 
 import java.util.Optional;
 

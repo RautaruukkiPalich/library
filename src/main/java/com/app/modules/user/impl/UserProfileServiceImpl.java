@@ -9,11 +9,9 @@ import com.app.modules.user.exception.UserValidationException;
 import com.app.modules.user.model.User;
 import com.app.modules.user.repository.UserGetterRepository;
 import lombok.AllArgsConstructor;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Objects;
 
 @Service
 @Transactional
@@ -26,8 +24,6 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     @Override
     public void editPassword(ProfileDTO.@NonNull EditPassword dto) {
-        Objects.requireNonNull(dto, "dto must not be null");
-
         User u = userGetterRepository.getById(dto.subjectId());
         if (!u.comparePassword(dto.oldPassword(), passwordHasher)) {
             throw new UserValidationException("old password", "invalid");
@@ -38,8 +34,6 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     @Override
     public void editFirstname(ProfileDTO.@NonNull EditFirstname dto) {
-        Objects.requireNonNull(dto, "dto must not be null");
-
         User u = userGetterRepository.getById(dto.subjectId());
         u.setFirstname(NormalizeSanitizer.sanitize(dto.firstname()));
         userOperations.validateAndSave(u);
@@ -47,8 +41,6 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     @Override
     public void editSurname(ProfileDTO.@NonNull EditSurname dto) {
-        Objects.requireNonNull(dto, "dto must not be null");
-
         User u = userGetterRepository.getById(dto.subjectId());
         u.setSurname(NormalizeSanitizer.sanitize(dto.surname()));
         userOperations.validateAndSave(u);
@@ -56,8 +48,6 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     @Override
     public void editLastname(ProfileDTO.@NonNull EditLastname dto) {
-        Objects.requireNonNull(dto, "dto must not be null");
-
         User u = userGetterRepository.getById(dto.subjectId());
         u.setLastname(NormalizeSanitizer.sanitize(dto.lastname()));
         userOperations.validateAndSave(u);
@@ -65,8 +55,6 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     @Override
     public void editEmail(ProfileDTO.@NonNull EditEmail dto) {
-        Objects.requireNonNull(dto, "dto must not be null");
-
         if (userOperations.existsByEmail(dto.email())) {
             throw new DuplicateException("email is already exist");
         }

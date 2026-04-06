@@ -180,7 +180,7 @@ class BookServiceTest {
     @Test
     void getAll_withNullFilter_shouldThrowNullPointerException() {
 
-        final String EXPECT_MESSAGE = "filter must not be null";
+        final String EXPECT_MESSAGE = "filter is marked non-null but is null";
 
         assertThatThrownBy(() -> bookService.getAll(null))
                 .isInstanceOf(NullPointerException.class)
@@ -206,7 +206,7 @@ class BookServiceTest {
 
     @Test
     void getByID_withNullId_shouldThrowNullPointerException() {
-        final String EXPECT_MESSAGE = "id must not be null";
+        final String EXPECT_MESSAGE = "id is marked non-null but is null";
 
         assertThatThrownBy(() -> bookService.getByID(null))
                 .isInstanceOf(NullPointerException.class)
@@ -261,7 +261,7 @@ class BookServiceTest {
 
     @Test
     void add_withNullDto_shouldThrowNullPointerException() {
-        final String EXPECT_MESSAGE = "dto must not be null";
+        final String EXPECT_MESSAGE = "dto is marked non-null but is null";
 
         assertThatThrownBy(() -> bookService.add(null))
                 .isInstanceOf(NullPointerException.class)
@@ -379,7 +379,7 @@ class BookServiceTest {
 
     @Test
     void delete_withNullId_shouldThrowNullPointerException() {
-        final String EXPECT_MESSAGE = "id must not be null";
+        final String EXPECT_MESSAGE = "id is marked non-null but is null";
 
         assertThatThrownBy(() -> bookService.delete(null))
                 .isInstanceOf(NullPointerException.class)
@@ -439,7 +439,7 @@ class BookServiceTest {
 
     @Test
     void putByID_withNullId_shouldThrowNullPointerException() {
-        final String EXPECT_MESSAGE = "id must not be null";
+        final String EXPECT_MESSAGE = "id is marked non-null but is null";
 
         assertThatThrownBy(() -> bookService.putByID(null, bookDTO))
                 .isInstanceOf(NullPointerException.class)
@@ -448,7 +448,7 @@ class BookServiceTest {
 
     @Test
     void putByID_withNullDto_shouldThrowNullPointerException() {
-        final String EXPECT_MESSAGE = "dto must not be null";
+        final String EXPECT_MESSAGE = "dto is marked non-null but is null";
 
         assertThatThrownBy(() -> bookService.putByID(1L, null))
                 .isInstanceOf(NullPointerException.class)
@@ -499,7 +499,7 @@ class BookServiceTest {
 
     @Test
     void patchByID_withNullId_shouldThrowNullPointerException() {
-        final String EXPECT_MESSAGE = "id must not be null";
+        final String EXPECT_MESSAGE = "id is marked non-null but is null";
 
         assertThatThrownBy(() -> bookService.patchByID(null, patchDTO))
                 .isInstanceOf(NullPointerException.class)
@@ -508,7 +508,7 @@ class BookServiceTest {
 
     @Test
     void patchByID_withNullDto_shouldThrowNullPointerException() {
-        final String EXPECT_MESSAGE = "dto must not be null";
+        final String EXPECT_MESSAGE = "dto is marked non-null but is null";
 
         assertThatThrownBy(() -> bookService.patchByID(1L, null))
                 .isInstanceOf(NullPointerException.class)

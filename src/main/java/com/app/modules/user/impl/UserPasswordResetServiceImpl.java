@@ -9,12 +9,11 @@ import com.app.modules.user.api.UserPasswordResetService;
 import com.app.modules.user.model.User;
 import com.app.modules.user.repository.UserGetterRepository;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Objects;
 import java.util.Random;
 
 @Service
@@ -29,7 +28,6 @@ public class UserPasswordResetServiceImpl implements UserPasswordResetService {
 
     @Override
     public void resetPassword(@NonNull String email) {
-        Objects.requireNonNull(email, "email must not be null");
         String normalizedEmail = NormalizeSanitizer.normalize(email);
 
         User u = userGetterRepository.getByEmail(normalizedEmail);

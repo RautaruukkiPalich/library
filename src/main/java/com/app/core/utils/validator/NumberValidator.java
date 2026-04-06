@@ -1,6 +1,8 @@
 package com.app.core.utils.validator;
 
 
+import lombok.NonNull;
+
 import java.util.Map;
 
 public class NumberValidator<T extends Number & Comparable<T>> extends Validator<T, NumberValidator<T>> {
@@ -8,7 +10,7 @@ public class NumberValidator<T extends Number & Comparable<T>> extends Validator
     public static final String ERROR_TOO_HIGH = "must not be greater than %s";
 
 
-    public NumberValidator(String key, T value) {
+    public NumberValidator(@NonNull String key, T value) {
         super(key, value);
     }
 

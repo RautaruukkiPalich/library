@@ -1,7 +1,7 @@
 package com.app.modules.user.exception;
 
 import com.app.core.exception.NotFoundException;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 
 public class UserNotFoundException extends NotFoundException {
     public UserNotFoundException(String field, String value) {
