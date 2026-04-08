@@ -1,0 +1,126 @@
+package com.app.modules.media.dto;
+
+import com.app.modules.media.enums.MediaPurpose;
+import com.app.modules.media.enums.MediaSize;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
+
+import java.util.List;
+import java.util.UUID;
+
+public class MediaControllerDTO {
+    public static class Request {
+        @Setter
+        @Getter
+        @Builder
+        public static class ImageUpload {
+        }
+    }
+
+
+    public static class Response {
+        @Setter
+        @Getter
+        @Builder
+        @NoArgsConstructor
+        @AllArgsConstructor
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @Schema(name = "media upload task status", description = "status of media upload task")
+        public static class MediaUploadTaskStatus {
+
+            @JsonProperty("task_uuid")
+            @Schema(description = "task uuid", requiredMode = Schema.RequiredMode.REQUIRED)
+            private UUID taskUUID;
+
+            @JsonProperty("media_uuid")
+            @Schema(description = "task uuid")
+            private UUID mediaUUID;
+
+            @JsonProperty("status")
+            @Schema(description = "task status", requiredMode = Schema.RequiredMode.REQUIRED)
+            private String status;
+
+            @JsonProperty("status_check_url")
+            @Schema(description = "url to check task status")
+            private String statusCheckUrl;
+        }
+
+        @Setter
+        @Getter
+        @Builder
+        @NoArgsConstructor
+        @AllArgsConstructor
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @Schema(name = "media size info", description = "media size info")
+        public static class MediaSizeInfo{
+            @JsonProperty("media_size")
+            @Schema(description = "media size", requiredMode = Schema.RequiredMode.REQUIRED)
+            private MediaSize size;
+
+            @JsonProperty("width")
+            @Schema(description = "width in pixels")
+            private Integer width;
+
+            @JsonProperty("height")
+            @Schema(description = "height in pixels")
+            private Integer height;
+
+            @JsonProperty("file_size")
+            @Schema(description = "file size", requiredMode = Schema.RequiredMode.REQUIRED)
+            private Long fileSize;
+
+            @JsonProperty("download_url")
+            @Schema(description = "download url", requiredMode = Schema.RequiredMode.REQUIRED)
+            private String downloadUrl;
+        }
+
+        @Setter
+        @Getter
+        @Builder
+        @NoArgsConstructor
+        @AllArgsConstructor
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @Schema(name = "media item", description = "media item")
+        public static class MediaFileItem {
+            @JsonProperty("original_filename")
+            @Schema(description = "original filename")
+            private String originalFilename;
+
+            @JsonProperty("content_type")
+            @Schema(description = "content type", requiredMode = Schema.RequiredMode.REQUIRED)
+            private String contentType;
+
+            @JsonProperty("sizes")
+            @Schema(description = "available sizes and download url")
+            private List<MediaSizeInfo> sizes;
+        }
+
+        @Setter
+        @Getter
+        @Builder
+        @NoArgsConstructor
+        @AllArgsConstructor
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @Schema(name = "media items response")
+        public static class MediaItemsResponse {
+
+            @JsonProperty("media_uuid")
+            @Schema(description = "media uuid")
+            private UUID mediaUuid;
+
+            @JsonProperty("purpose")
+            @Schema(description = "media purpose (USER_AVATAR, etc.)")
+            private MediaPurpose purpose;
+
+            @JsonProperty("items")
+            @Schema(description = "media items")
+            private List<MediaFileItem> items;
+
+            @JsonProperty("total_count")
+            @Schema(description = "total count items")
+            private Integer totalCount = 0;
+        }
+    }
+}

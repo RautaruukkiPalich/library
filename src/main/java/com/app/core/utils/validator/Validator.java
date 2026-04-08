@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public abstract class Validator<T, V extends Validator<T, V>> {
@@ -29,6 +30,13 @@ public abstract class Validator<T, V extends Validator<T, V>> {
     public V notNull() {
         checkFuncs.add(() ->
                 value == null ? Map.of(key, ERROR_NULL) : null
+        );
+        return self();
+    }
+
+    public V custom(Predicate<T> predicate, String desc) {
+        checkFuncs.add(() ->
+                value != null && !predicate.test(value) ? Map.of(key, desc) : null
         );
         return self();
     }

@@ -1,7 +1,7 @@
 package com.app.utils;
 
+import com.app.BaseTest;
 import com.app.modules.auth.dto.AuthControllerDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,8 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @Builder
-public class RegisterLoginHelper {
-    private final ObjectMapper objectMapper = new ObjectMapper();
+public class RegisterLoginHelper extends BaseTest {
 
     @Getter
     @Setter
@@ -48,7 +47,7 @@ public class RegisterLoginHelper {
     }
 
     public void loginUser() throws Exception {
-        String respBody = mockMvc.perform(
+        String body = mockMvc.perform(
                         post(BASE_API_AUTH_PATH + "/login")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(loginJsonTmpl.formatted(email, password)))
@@ -57,11 +56,13 @@ public class RegisterLoginHelper {
                 .getResponse()
                 .getContentAsString();
 
-        AuthControllerDTO.TokenPairResponse deserialized = objectMapper
-                .readValue(respBody, AuthControllerDTO.TokenPairResponse.class);
+        var unmarshalled = unmarshall(body, AuthControllerDTO.TokenPairResponse.class);
+//
+//        AuthControllerDTO.TokenPairResponse deserialized = objectMapper
+//                .readValue(respBody, AuthControllerDTO.TokenPairResponse.class);
 
-        accessToken = deserialized.getAccessToken();
-        refreshToken = deserialized.getRefreshToken();
+        accessToken = unmarshalled.getAccessToken();
+        refreshToken = unmarshalled.getRefreshToken();
     }
 
     public void refreshTokens() throws Exception {
@@ -74,10 +75,12 @@ public class RegisterLoginHelper {
                 .getResponse()
                 .getContentAsString();
 
-        AuthControllerDTO.TokenPairResponse deserialized = objectMapper
-                .readValue(respBody, AuthControllerDTO.TokenPairResponse.class);
+        var unmarshalled = unmarshall(respBody, AuthControllerDTO.TokenPairResponse.class);
+//
+//        AuthControllerDTO.TokenPairResponse deserialized = objectMapper
+//                .readValue(respBody, AuthControllerDTO.TokenPairResponse.class);
 
-        accessToken = deserialized.getAccessToken();
-        refreshToken = deserialized.getRefreshToken();
+        accessToken = unmarshalled.getAccessToken();
+        refreshToken = unmarshalled.getRefreshToken();
     }
 }

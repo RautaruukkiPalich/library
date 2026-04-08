@@ -23,7 +23,7 @@ import javax.sql.DataSource;
 @Execution(ExecutionMode.SAME_THREAD)
 @AutoConfigureMockMvc
 @Testcontainers
-public abstract class BaseIntegrationTest {
+public abstract class BaseIntegrationTest extends BaseTest {
 
     @SuppressWarnings("resource")
     @Container

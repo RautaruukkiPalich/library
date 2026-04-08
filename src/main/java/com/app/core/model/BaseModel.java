@@ -38,6 +38,11 @@ public abstract class BaseModel {
         updatedAt = now;
     }
 
+    @PostPersist
+    protected void postPersist(){
+        validateStrict();
+    }
+
     @PreUpdate
     protected void onUpdate() {
         updatedAt = OffsetDateTime.now(ZoneOffset.UTC);

@@ -1,5 +1,6 @@
 package com.app.core.utils.validator;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -39,12 +40,7 @@ public class StringValidator extends Validator<String, StringValidator> {
     }
 
     public StringValidator match(Pattern pattern) {
-        addCheck(() ->
-                !pattern.matcher(value).matches() ?
-                        Map.of(key, String.format("invalid pattern. expected '%s'", pattern)) :
-                        null
-        );
-        return this;
+        return match(pattern, "invalid pattern. expected '%s'".formatted(pattern));
     }
 
     public StringValidator match(Pattern pattern, String desc) {
@@ -52,6 +48,67 @@ public class StringValidator extends Validator<String, StringValidator> {
                 !pattern.matcher(value).matches() ?
                         Map.of(key, desc) :
                         null
+        );
+        return this;
+    }
+
+    public StringValidator contains(String substring) {
+        return contains(substring, "must contains %s".formatted(substring));
+    }
+
+    public StringValidator contains(String substring, String desc) {
+        addCheck(() ->
+                !value.contains(substring) ?
+                        Map.of(key, desc) :
+                        null
+        );
+        return this;
+    }
+
+    public StringValidator in(String[] patterns) {
+        return in(patterns, "not contains in available patterns");
+    }
+
+    public StringValidator in(String[] patterns, String desc) {
+        addCheck(() ->
+                !Arrays.asList(patterns).contains(value) ?
+                        Map.of(key, desc) :
+                        null
+        );
+        return this;
+    }
+
+    public StringValidator notIn(String[] patterns) {
+        return notIn(patterns, "contains in not available patterns");
+    }
+
+    public StringValidator notIn(String[] patterns, String desc) {
+        addCheck(() ->
+                Arrays.asList(patterns).contains(value) ?
+                        Map.of(key, desc) :
+                        null
+        );
+        return this;
+    }
+
+    public StringValidator containsAny(String[] patterns) {
+        return containsAny(patterns, "contains not available elements");
+    }
+
+    public StringValidator containsAny(String[] patterns, String desc) {
+        addCheck(() ->
+                 Arrays.stream(patterns).noneMatch(value::contains) ? Map.of(key, desc) : null
+        );
+        return this;
+    }
+
+    public StringValidator notContainsAny(String[] patterns) {
+        return notContainsAny(patterns, "not contains available elements");
+    }
+
+    public StringValidator notContainsAny(String[] patterns, String desc) {
+        addCheck(() ->
+                Arrays.stream(patterns).anyMatch(value::contains) ? Map.of(key, desc) : null
         );
         return this;
     }
