@@ -5,6 +5,7 @@ import com.app.modules.media.enums.MediaSize;
 import com.app.modules.media.exceptions.MediaFileValidationException;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 
 import java.util.UUID;
@@ -27,8 +28,11 @@ public class MediaFile extends BaseModel {
     @Column(nullable = false)
     private String contentType;
 
+    @Column(name = "media_uuid", nullable = false)
+    private UUID mediaUuid;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "media_uuid", referencedColumnName = "uuid", nullable = false)
+    @JoinColumn(name = "media_uuid", referencedColumnName = "uuid", insertable = false, updatable = false)
     private Media media;
 
     @Enumerated(EnumType.STRING)
@@ -46,7 +50,7 @@ public class MediaFile extends BaseModel {
     }
 
     public MediaFile(UUID uuid, String filename, String extension, String contentType,
-                     MediaSize mediaSize, Long fileSize, String path) {
+                     MediaSize mediaSize, @NonNull Media media, Long fileSize, String path) {
         super(MediaFileValidationException::new);
         this.uuid = uuid;
         this.filename = filename;
@@ -55,5 +59,24 @@ public class MediaFile extends BaseModel {
         this.mediaSize = mediaSize;
         this.fileSize = fileSize;
         this.path = path;
+
+        setMedia(media);
+    }
+
+    public void setMedia(@NonNull Media m) {
+        this.media = m;
+        this.mediaUuid = m.getUuid();
+    }
+
+    public void setMediaUuid(@NonNull UUID mediaUuid) {
+        this.mediaUuid = mediaUuid;
+        this.media = null;
+    }
+
+    public UUID getMediaUuid() {
+        if (mediaUuid == null && media != null) {
+            return media.getUuid();
+        }
+        return mediaUuid;
     }
 }

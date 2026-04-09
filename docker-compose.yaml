@@ -14,6 +14,7 @@ services:
       - "28080:8080"
     volumes:
       - ./logs:/app/logs
+      - ./local_media_storage:/app/local_media_storage
     depends_on:
       postgres:
         condition: service_healthy

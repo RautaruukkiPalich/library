@@ -30,7 +30,7 @@ public class PostgresMediaRepository implements MediaPersistRepository, MediaGet
     public Optional<Media> findByUuid(@NonNull UUID uuid) {
         try {
             return Optional.of(em.createQuery(
-                            "SELECT m FROM Media m JOIN FETCH m.files WHERE m.uuid = :uuid",
+                            "SELECT m FROM Media m LEFT JOIN FETCH m.files WHERE m.uuid = :uuid",
                             Media.class
                     )
                     .setParameter("uuid", uuid)

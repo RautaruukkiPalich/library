@@ -1,4 +1,4 @@
-package com.app.modules.media.dto;
+package com.app.modules.media.controller;
 
 import com.app.modules.media.enums.MediaPurpose;
 import com.app.modules.media.enums.MediaSize;
@@ -12,13 +12,7 @@ import java.util.UUID;
 
 public class MediaControllerDTO {
     public static class Request {
-        @Setter
-        @Getter
-        @Builder
-        public static class ImageUpload {
-        }
     }
-
 
     public static class Response {
         @Setter
@@ -27,8 +21,8 @@ public class MediaControllerDTO {
         @NoArgsConstructor
         @AllArgsConstructor
         @JsonInclude(JsonInclude.Include.NON_NULL)
-        @Schema(name = "media upload task status", description = "status of media upload task")
-        public static class MediaUploadTaskStatus {
+        @Schema(name = "task status", description = "task task uploaded media")
+        public static class TaskStatus {
 
             @JsonProperty("task_uuid")
             @Schema(description = "task uuid", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -54,7 +48,12 @@ public class MediaControllerDTO {
         @AllArgsConstructor
         @JsonInclude(JsonInclude.Include.NON_NULL)
         @Schema(name = "media size info", description = "media size info")
-        public static class MediaSizeInfo{
+        public static class MediaSizeInfo {
+
+            @JsonProperty("content_type")
+            @Schema(description = "content type", requiredMode = Schema.RequiredMode.REQUIRED)
+            private String contentType;
+
             @JsonProperty("media_size")
             @Schema(description = "media size", requiredMode = Schema.RequiredMode.REQUIRED)
             private MediaSize size;
@@ -82,41 +81,28 @@ public class MediaControllerDTO {
         @NoArgsConstructor
         @AllArgsConstructor
         @JsonInclude(JsonInclude.Include.NON_NULL)
-        @Schema(name = "media item", description = "media item")
-        public static class MediaFileItem {
-            @JsonProperty("original_filename")
-            @Schema(description = "original filename")
-            private String originalFilename;
-
-            @JsonProperty("content_type")
-            @Schema(description = "content type", requiredMode = Schema.RequiredMode.REQUIRED)
-            private String contentType;
-
-            @JsonProperty("sizes")
-            @Schema(description = "available sizes and download url")
-            private List<MediaSizeInfo> sizes;
-        }
-
-        @Setter
-        @Getter
-        @Builder
-        @NoArgsConstructor
-        @AllArgsConstructor
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        @Schema(name = "media items response")
-        public static class MediaItemsResponse {
+        @Schema(name = "media item")
+        public static class MediaItem {
 
             @JsonProperty("media_uuid")
             @Schema(description = "media uuid")
             private UUID mediaUuid;
 
+            @JsonProperty("user_id")
+            @Schema(description = "owner user id")
+            private Long userId;
+
             @JsonProperty("purpose")
             @Schema(description = "media purpose (USER_AVATAR, etc.)")
             private MediaPurpose purpose;
 
-            @JsonProperty("items")
-            @Schema(description = "media items")
-            private List<MediaFileItem> items;
+            @JsonProperty("original_filename")
+            @Schema(description = "original filename")
+            private String originalFilename;
+
+            @JsonProperty("sizes")
+            @Schema(description = "available sizes and download url")
+            private List<MediaSizeInfo> sizes;
 
             @JsonProperty("total_count")
             @Schema(description = "total count items")

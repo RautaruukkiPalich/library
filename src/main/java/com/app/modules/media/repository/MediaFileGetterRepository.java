@@ -9,5 +9,6 @@ import java.util.UUID;
 
 public interface MediaFileGetterRepository {
     MediaFile getByUuid(@NonNull UUID uuid) throws MediaFileNotFoundException;
+
     Optional<MediaFile> findByUuid(@NonNull UUID uuid);
 }

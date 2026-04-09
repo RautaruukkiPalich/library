@@ -5,6 +5,7 @@ import com.app.modules.media.enums.UploadStatusType;
 import com.app.modules.media.exceptions.MediaTaskValidationException;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 
 import java.util.UUID;
@@ -21,8 +22,12 @@ public class MediaTask extends BaseModel {
     @Column(nullable = false)
     private Long userId;
 
+    @Column(name = "media_uuid", nullable = false)
+    private UUID mediaUuid;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "media_uuid", referencedColumnName = "uuid")
+    @JoinColumn(name = "media_uuid", referencedColumnName = "uuid",
+            insertable = false, updatable = false)
     private Media media;
 
     @Enumerated(EnumType.STRING)
@@ -31,5 +36,15 @@ public class MediaTask extends BaseModel {
 
     public MediaTask() {
         super(MediaTaskValidationException::new);
+    }
+
+    public void setMedia(@NonNull Media media) {
+        this.mediaUuid = media.getUuid();
+        this.media = media;
+    }
+
+    public void setMediaUuid(UUID uuid) {
+        this.mediaUuid = uuid;
+        this.media = null;
     }
 }

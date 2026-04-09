@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +37,7 @@ public class LocalStorageRepository implements FilePersistRepository, FileDelete
                 log.info("created storage directory: {}", rootLocation.toAbsolutePath());
             }
         } catch (IOException e) {
-            throw new RuntimeException("Could not initialize storage location", e);
+            throw new RuntimeException("could not initialize storage location", e);
         }
     }
 
@@ -77,25 +76,19 @@ public class LocalStorageRepository implements FilePersistRepository, FileDelete
     ) throws IOException {
         Path directoryPath = generatePathAndCreateDirectories(mediaUuid);
 
-        String filename = extension.isEmpty() ?
-                "%s".formatted(UUID.randomUUID().toString()) :
-                "%s.%s".formatted(UUID.randomUUID().toString(), extension);
+        String filename = extension.isBlank() ?
+                "%s".formatted(UUID.randomUUID()) :
+                "%s.%s".formatted(UUID.randomUUID(), extension);
 
         Path filePath = directoryPath.resolve(filename);
 
         Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
 
-        return rootLocation.relativize(filePath);
-    }
+        Path path = rootLocation.relativize(filePath);
 
-    @Override
-    public Path save(@NonNull MultipartFile file,
-                     @NonNull UUID mediaUuid) throws IOException {
-        String originalFilename = file.getOriginalFilename();
-        String extension = getFileExtension(originalFilename);
-        Path filePath = save(file.getInputStream(), mediaUuid, extension);
-        log.info("saved file: {} -> {}", originalFilename, filePath.toString());
-        return filePath;
+        log.info("file saved: {}", filePath);
+
+        return path;
     }
 
     private Path generatePathAndCreateDirectories(UUID mediaUuid) throws IOException {
@@ -113,11 +106,5 @@ public class LocalStorageRepository implements FilePersistRepository, FileDelete
                 .resolve(firstLevel)
                 .resolve(secondLevel)
                 .resolve(uuid);
-    }
-
-    private String getFileExtension(String filename) {
-        return filename != null && filename.contains(".") ?
-                filename.substring(filename.lastIndexOf(".") + 1) :
-                "";
     }
 }

@@ -28,7 +28,7 @@ public class PostgresMediaFileRepository implements MediaFilePersistRepository, 
 
     @Override
     public MediaFile getByUuid(@NonNull UUID uuid) throws MediaFileNotFoundException {
-        return findByUuid(uuid).orElseThrow(() -> new MediaFileNotFoundException(uuid));
+        return findByUuid(uuid).orElseThrow(() -> MediaFileNotFoundException.uuid(uuid));
     }
 
     @Override

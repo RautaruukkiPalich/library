@@ -14,7 +14,7 @@ public class MediaTaskNotFound extends NotFoundException {
         super(message, cause);
     }
 
-    public MediaTaskNotFound(@NonNull UUID uuid){
+    public MediaTaskNotFound(@NonNull UUID uuid) {
         super("task not found with uuid: %s".formatted(uuid));
     }
 }

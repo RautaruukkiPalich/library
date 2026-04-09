@@ -10,9 +10,9 @@ import java.util.Arrays;
 public enum UploadStatusType {
     PENDING(0),
     PROCESSING(1),
-    COMPLETED(2),
+    CANCELLED(2),
     FAILED(3),
-    CANCELLED(4);
+    COMPLETED(4);
 
     private final int code;
 
@@ -22,6 +22,10 @@ public enum UploadStatusType {
 
     public boolean isError() {
         return this == FAILED;
+    }
+
+    public boolean isSameOrHigher(UploadStatusType status) {
+        return this.code >= status.code;
     }
 
     public static UploadStatusType fromCode(int code) {

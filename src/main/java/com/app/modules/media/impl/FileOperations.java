@@ -8,7 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
 
 public class FileOperations {
     private final static String[] TRAVERSAL_CHARACTERS = new String[]{"\\", "/", ":", "*", "?", "\"", "<", ">", "|"};
@@ -55,13 +54,14 @@ public class FileOperations {
                                 .notContainsAny(TRAVERSAL_CHARACTERS,
                                         "filename contains path traversal characters")
                                 .custom(FileOperations::hasExtension, "file does not have extension")
-                                .custom(s-> {
+                                .custom(s -> {
                                     String ext = extractExtension(s);
                                     return Arrays.asList(IMAGE_EXTENSIONS).contains(ext);
                                 }, "invalid file extension")
-                                .custom(s-> {
+                                .custom(s -> {
                                     String ext = extractExtension(s);
-                                    return Objects.equals(EXTENSION_TO_CONTENT_TYPE.get(ext), file.getContentType().split(";")[0]);
+                                    String contentType = file.getContentType();
+                                    return contentType != null && contentType.toLowerCase().startsWith(EXTENSION_TO_CONTENT_TYPE.get(ext));
                                 }, "extension does not match contentType")
                 )
                 .validate();
@@ -71,19 +71,24 @@ public class FileOperations {
         }
     }
 
-    public static String extractFilename(@NonNull String filename) {
-        int lastDotIndex = lastDotIndex(filename);
-        if (lastDotIndex <= 0) {
+    public static String extractFilename(String filename) {
+        if (filename == null) {
+            return "";
+        }
+        if (!hasExtension(filename)) {
             return filename;
         }
+
+        int lastDotIndex = lastDotIndex(filename);
         return filename.substring(0, lastDotIndex);
     }
 
-    public static String extractExtension(@NonNull String filename) {
-        int lastDotIndex = lastDotIndex(filename);
-        if (lastDotIndex == -1 || lastDotIndex == filename.length() - 1) {
+    public static String extractExtension(String filename) {
+        if (filename == null || !hasExtension(filename)) {
             return "";
         }
+
+        int lastDotIndex = lastDotIndex(filename);
         return filename.substring(lastDotIndex + 1).toLowerCase();
     }
 

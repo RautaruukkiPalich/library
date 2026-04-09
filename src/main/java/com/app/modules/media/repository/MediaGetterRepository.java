@@ -8,5 +8,6 @@ import java.util.UUID;
 
 public interface MediaGetterRepository {
     Optional<Media> findByUuid(@NonNull UUID uuid);
+
     Media getByUuid(@NonNull UUID uuid);
 }

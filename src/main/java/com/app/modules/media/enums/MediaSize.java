@@ -23,8 +23,17 @@ public enum MediaSize {
 
     public static MediaSize fromCode(String code) {
         return Arrays.stream(values())
-                .filter(size -> size.getCode().equals(code))
+                .filter(size -> size.getCode().equals(preparedCode(code)))
                 .findFirst()
                 .orElse(ORIGINAL);
+    }
+
+    @Override
+    public String toString() {
+        return preparedCode(this.code);
+    }
+
+    private static String preparedCode(String code) {
+        return code.toLowerCase().strip();
     }
 }

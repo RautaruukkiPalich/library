@@ -1,7 +1,7 @@
 package com.app.controller;
 
 import com.app.BaseIntegrationTest;
-import com.app.modules.media.dto.MediaControllerDTO;
+import com.app.modules.media.controller.MediaControllerDTO;
 import com.app.utils.RegisterLoginHelper;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,7 +85,6 @@ public class MediaControllerIntegrationTest extends BaseIntegrationTest {
         String body = mockMvc.perform(
                         multipart(HttpMethod.POST, PATH)
                                 .header("Authorization", "Bearer %s".formatted(accessToken))
-                                .contentType(MediaType.IMAGE_JPEG)
                                 .file(testFile))
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.task_uuid").isNotEmpty())
@@ -95,7 +94,7 @@ public class MediaControllerIntegrationTest extends BaseIntegrationTest {
                 .andReturn()
                 .getResponse().getContentAsString();
 
-        var unmarshalled = unmarshall(body, MediaControllerDTO.Response.MediaUploadTaskStatus.class);
+        var unmarshalled = unmarshall(body, MediaControllerDTO.Response.TaskStatus.class);
 
         mockMvc.perform(get(unmarshalled.getStatusCheckUrl()).header("Authorization", "Bearer %s".formatted(accessToken)))
                 .andExpect(status().isOk())
