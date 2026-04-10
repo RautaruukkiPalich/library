@@ -5,6 +5,7 @@ import com.app.modules.media.model.MediaFile;
 import com.app.modules.media.repository.MediaFileGetterRepository;
 import com.app.modules.media.repository.MediaFilePersistRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -40,7 +41,7 @@ public class PostgresMediaFileRepository implements MediaFilePersistRepository, 
                     )
                     .setParameter("uuid", uuid)
                     .getSingleResult());
-        } catch (jakarta.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             return Optional.empty();
         }
     }

@@ -1,13 +1,12 @@
 package com.app.modules.media.repository.storage;
 
+import com.app.modules.media.dto.FileMetadata;
 import com.app.modules.media.exceptions.FileNotFoundException;
 import com.app.modules.media.repository.FileDeleteRepository;
 import com.app.modules.media.repository.FileGetterRepository;
 import com.app.modules.media.repository.FilePersistRepository;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
@@ -47,17 +46,21 @@ public class LocalStorageRepository implements FilePersistRepository, FileDelete
     }
 
     @Override
-    public Optional<Resource> findByRelativePath(@NonNull String path) {
+    public Optional<InputStream> findByRelativePath(@NonNull String path) {
         try {
             Path filePath = rootLocation.resolve(path);
-            Resource resource = new UrlResource(filePath.toUri());
 
-            if (resource.exists() && resource.isReadable()) {
-                return Optional.of(resource);
+            if (!filePath.startsWith(rootLocation)) {
+                log.warn("path traversal attempt: {}", path);
+                return Optional.empty();
             }
 
-            log.warn("file not found or not readable: {}", path);
-            return Optional.empty();
+            if (!Files.exists(filePath) || !Files.isReadable(filePath)) {
+                log.warn("file not found or not readable: {}", path);
+                return Optional.empty();
+            }
+
+            return Optional.of(Files.newInputStream(filePath));
         } catch (IOException e) {
             log.error("error accessing file: {}", path, e);
             return Optional.empty();
@@ -65,20 +68,33 @@ public class LocalStorageRepository implements FilePersistRepository, FileDelete
     }
 
     @Override
-    public Resource getByRelativePath(@NonNull String path) throws FileNotFoundException {
+    public InputStream getByRelativePath(@NonNull String path) throws FileNotFoundException {
         return findByRelativePath(path).orElseThrow(() -> new FileNotFoundException("file not found by path: %s".formatted(path)));
+    }
+
+    @Override
+    public Optional<Long> getSize(String path) {
+        try {
+            Path filePath = rootLocation.resolve(path).normalize();
+            if (Files.exists(filePath)) {
+                return Optional.of(Files.size(filePath));
+            }
+        } catch (IOException e) {
+            log.error("failed to get file size: {}", path, e);
+        }
+        return Optional.empty();
     }
 
     @Override
     public Path save(@NonNull InputStream inputStream,
                      @NonNull UUID mediaUuid,
-                     @NonNull String extension
+                     @NonNull FileMetadata md
     ) throws IOException {
         Path directoryPath = generatePathAndCreateDirectories(mediaUuid);
 
-        String filename = extension.isBlank() ?
+        String filename = md.extension().isBlank() ?
                 "%s".formatted(UUID.randomUUID()) :
-                "%s.%s".formatted(UUID.randomUUID(), extension);
+                "%s.%s".formatted(UUID.randomUUID(), md.extension());
 
         Path filePath = directoryPath.resolve(filename);
 

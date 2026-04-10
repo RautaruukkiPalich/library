@@ -2,12 +2,14 @@ package com.app.modules.media.repository;
 
 import com.app.modules.media.exceptions.FileNotFoundException;
 import lombok.NonNull;
-import org.springframework.core.io.Resource;
 
+import java.io.InputStream;
 import java.util.Optional;
 
 public interface FileGetterRepository {
-    Optional<Resource> findByRelativePath(@NonNull String path);
+    Optional<InputStream> findByRelativePath(@NonNull String path);
 
-    Resource getByRelativePath(@NonNull String path) throws FileNotFoundException;
+    InputStream getByRelativePath(@NonNull String path) throws FileNotFoundException;
+
+    Optional<Long> getSize(String path);
 }

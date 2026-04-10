@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -33,6 +34,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
@@ -163,7 +165,7 @@ public class MediaController {
         }
 
         MediaFileDTO mf = m.files().get(0);
-        Resource res = fileService.download(mf.path());
+        InputStream stream = fileService.download(mf.path());
 
         ContentDisposition contentDisposition = ContentDisposition
                 .builder(inline ? "inline" : "attachment")
@@ -175,6 +177,6 @@ public class MediaController {
                 .contentType(MediaType.parseMediaType(mf.contentType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
                 .contentLength(mf.fileSize())
-                .body(res);
+                .body(new InputStreamResource(stream));
     }
 }

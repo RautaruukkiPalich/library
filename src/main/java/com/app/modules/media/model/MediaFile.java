@@ -1,6 +1,7 @@
 package com.app.modules.media.model;
 
 import com.app.core.model.BaseModel;
+import com.app.modules.media.dto.FileMetadata;
 import com.app.modules.media.enums.MediaSize;
 import com.app.modules.media.exceptions.MediaFileValidationException;
 import jakarta.persistence.*;
@@ -78,5 +79,16 @@ public class MediaFile extends BaseModel {
             return media.getUuid();
         }
         return mediaUuid;
+    }
+
+    public FileMetadata getMetadata() {
+        return FileMetadata.builder()
+                .filename(this.filename)
+                .extension(this.extension)
+                .contentType(this.contentType)
+                .fileSize(this.fileSize)
+                .mediaSize(this.mediaSize)
+                .relativePath(this.path)
+                .build();
     }
 }

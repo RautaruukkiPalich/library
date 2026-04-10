@@ -1,5 +1,6 @@
 package com.app.modules.media.repository;
 
+import com.app.modules.media.dto.FileMetadata;
 import lombok.NonNull;
 
 import java.io.IOException;
@@ -10,5 +11,5 @@ import java.util.UUID;
 public interface FilePersistRepository {
     Path save(@NonNull InputStream inputStream,
               @NonNull UUID mediaUuid,
-              @NonNull String extension) throws IOException;
+              @NonNull FileMetadata metadata) throws IOException;
 }

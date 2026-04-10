@@ -1,13 +1,13 @@
 package com.app.modules.media.impl;
 
 import com.app.modules.media.api.FileService;
+import com.app.modules.media.dto.FileMetadata;
 import com.app.modules.media.repository.FileDeleteRepository;
 import com.app.modules.media.repository.FileGetterRepository;
 import com.app.modules.media.repository.FilePersistRepository;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,7 +27,7 @@ public class FileServiceImpl implements FileService {
     private final FileDeleteRepository fileDeleteRepository;
 
     @Override
-    public Resource download(@NonNull String relativePath) {
+    public InputStream download(@NonNull String relativePath) {
         return fileGetterRepository.getByRelativePath(relativePath);
     }
 
@@ -55,10 +55,13 @@ public class FileServiceImpl implements FileService {
                          @NonNull UUID mediaUuid,
                          @NonNull String extension) {
         try {
+            FileMetadata md = FileMetadata.builder()
+                    .extension(extension)
+                    .build();
             Path path = filePersistRepository.save(
                     stream,
                     mediaUuid,
-                    extension);
+                    md);
             log.debug("file saved for media={} saved to disk={}", mediaUuid, path);
             return path.toString();
         } catch (IOException e) {

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -32,6 +33,14 @@ public enum MediaSize {
     public String toString() {
         return preparedCode(this.code);
     }
+
+    public static final List<MediaSize> sizesToConvert = List.of(
+            ICON,
+            THUMBNAIL,
+            SMALL,
+            MEDIUM,
+            LARGE
+    );
 
     private static String preparedCode(String code) {
         return code.toLowerCase().strip();
