@@ -5,6 +5,7 @@ import com.app.modules.media.dto.FileMetadata;
 import com.app.modules.media.repository.FileDeleteRepository;
 import com.app.modules.media.repository.FileGetterRepository;
 import com.app.modules.media.repository.FilePersistRepository;
+import com.app.modules.media.utils.FileOperations;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -83,5 +84,10 @@ public class FileServiceImpl implements FileService {
                 log.error("failed to delete file={}", relativePath, ex);
             }
         }
+    }
+
+    @Override
+    public Long fileSize(@NonNull String relativePath) {
+        return fileGetterRepository.getSize(relativePath).orElse(0L);
     }
 }

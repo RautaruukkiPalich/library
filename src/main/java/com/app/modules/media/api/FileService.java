@@ -17,4 +17,6 @@ public interface FileService {
     InputStream download(@NonNull String relativePath);
 
     void delete(@NonNull String relativePath);
+
+    Long fileSize(@NonNull String relativePath);
 }

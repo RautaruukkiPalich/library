@@ -1,6 +1,5 @@
 package com.app.modules.media.processor;
 
-import com.app.modules.media.dto.ConvertResultDTO;
 import com.app.modules.media.enums.MediaContentType;
 import com.app.modules.media.enums.MediaSize;
 import lombok.NonNull;
@@ -8,34 +7,31 @@ import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
+import java.io.*;
+import java.util.Set;
 
 @Component
 @Slf4j
 public class ThumbnailImageProcessorImpl implements ImageProcessor {
     @Override
-    public ConvertResultDTO resize(@NonNull InputStream stream,
-                                   @NonNull MediaSize targetSize,
-                                   @NonNull String extension) throws IOException {
+    public ByteArrayInputStream resize(@NonNull InputStream source,
+                                       @NonNull MediaSize size,
+                                       @NonNull String extension) throws IOException {
+        ByteArrayOutputStream dst = new ByteArrayOutputStream();
+        resize(source, dst, size, extension);
+        return new ByteArrayInputStream(dst.toByteArray());
+    }
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-        Thumbnails.of(stream)
+    @Override
+    public void resize(@NonNull InputStream source,
+                       @NonNull OutputStream dst,
+                       @NonNull MediaSize targetSize,
+                       @NonNull String extension) throws IOException {
+        Thumbnails.of(source)
                 .size(targetSize.getWidth(), targetSize.getHeight())
                 .keepAspectRatio(targetSize.isKeepAspectRatio())
                 .outputFormat(extension)
-                .toOutputStream(outputStream);
-
-        return new ConvertResultDTO(
-                new ByteArrayInputStream(outputStream.toByteArray()),
-                (long) outputStream.size(),
-                targetSize.getWidth(),
-                targetSize.getHeight()
-        );
+                .toOutputStream(dst);
     }
 
     @Override
@@ -44,13 +40,13 @@ public class ThumbnailImageProcessorImpl implements ImageProcessor {
     }
 
     @Override
-    public List<String> getSupportedOutputFormats() {
-        return List.of("jpg", "jpeg", "png", "webp", "bmp");
+    public Set<String> getSupportedOutputFormats() {
+        return MediaContentType.IMAGE.getExtensions();
     }
 
     @Override
     public boolean canProcess(String contentType, String extension) {
         return contentType != null && contentType.startsWith("image/") ||
-                extension != null && List.of("jpg", "jpeg", "png", "gif", "bmp", "webp").contains(extension.toLowerCase());
+                extension != null && MediaContentType.IMAGE.getExtensions().contains(extension.toLowerCase());
     }
 }

@@ -1,11 +1,11 @@
 package com.app.modules.media.dto;
 
-import java.io.InputStream;
+import lombok.Builder;
 
+@Builder
 public record ConvertResultDTO(
-        InputStream stream,
-        Long size,
-        Integer width,
-        Integer height
+        String path,
+        String extension,
+        Long size
 ) {
 }

@@ -15,6 +15,6 @@ public class MediaTaskNotFoundException extends NotFoundException {
     }
 
     public static MediaTaskNotFoundException uuid(@NonNull UUID uuid) {
-        return new MediaTaskNotFoundException("task not found with uuid: %s".formatted(uuid));
+        return new MediaTaskNotFoundException("task with uuid %s not found".formatted(uuid));
     }
 }

@@ -7,14 +7,15 @@ import com.app.modules.media.api.UploadService;
 import com.app.modules.media.dto.MediaDTO;
 import com.app.modules.media.dto.TaskStatusDTO;
 import com.app.modules.media.dto.UploadMediaDTO;
+import com.app.modules.media.enums.MediaContentType;
 import com.app.modules.media.enums.MediaSize;
+import com.app.modules.media.utils.FileOperations;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Objects;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Slf4j
@@ -29,23 +30,24 @@ public class UploadServiceImpl implements UploadService {
     @Override
     public TaskStatusDTO upload(@NonNull UploadMediaDTO dto) {
         String filePath = "";
+        MediaContentType type = dto.type();
+        MultipartFile file = dto.file();
 
         try {
-            FileOperations.validateFile(dto.file());
-            String originalFilename = dto.file().getOriginalFilename();
-            Objects.requireNonNull(originalFilename, "must not be null");
+            type.validate(file);
 
+            String contentType = file.getContentType();
+            String originalFilename = file.getOriginalFilename();
             String filename = FileOperations.extractFilename(originalFilename);
             String extension = FileOperations.extractExtension(originalFilename);
-            String contentType = dto.file().getContentType();
 
             MediaDTO m = mediaService.createMedia(
                     dto.userId(),
                     originalFilename,
-                    dto.type(),
+                    type,
                     dto.purpose());
 
-            filePath = fileService.upload(dto.file(), m.uuid());
+            filePath = fileService.upload(file, m.uuid());
 
             mediaService.createMediaFile(
                     m.uuid(),
@@ -53,7 +55,7 @@ public class UploadServiceImpl implements UploadService {
                     filename,
                     extension,
                     filePath,
-                    dto.file().getSize(),
+                    file.getSize(),
                     MediaSize.ORIGINAL);
 
             TaskStatusDTO task = taskService.create(dto.userId(), m.uuid());

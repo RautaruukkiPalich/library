@@ -3,6 +3,7 @@ package com.app.modules.media.impl;
 import com.app.modules.media.api.FileService;
 import com.app.modules.media.api.MediaProcessingService;
 import com.app.modules.media.converter.MediaConverter;
+import com.app.modules.media.dto.ConvertResultDTO;
 import com.app.modules.media.enums.MediaSize;
 import com.app.modules.media.enums.UploadStatusType;
 import com.app.modules.media.model.MediaFile;
@@ -58,7 +59,22 @@ public class MediaProcessingServiceImpl implements MediaProcessingService {
 
         try {
             for (MediaSize size : sizesToConvert) {
-                converted.add(mediaConverter.convert(original, size));
+                var t = task.getMedia().getMediaType();
+                ConvertResultDTO res = mediaConverter.convert(
+                        original.getMediaUuid(), original.getPath(),
+                        size, t.getTargetExt());
+
+                MediaFile mf = new MediaFile();
+                mf.setUuid(UUID.randomUUID());
+                mf.setFilename(original.getFilename());
+                mf.setExtension(res.extension());
+                mf.setContentType(t.getTargetContentType());
+                mf.setMediaUuid(original.getMediaUuid());
+                mf.setMediaSize(size);
+                mf.setFileSize(res.size());
+                mf.setPath(res.path());
+
+                converted.add(mf);
             }
 
             converted.forEach(mediaFilePersistRepository::save);
