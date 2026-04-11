@@ -3,12 +3,11 @@ package com.app.modules.media.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public enum MediaSize {
+public enum MediaSize implements CodeBasedEnum {
     ORIGINAL("original", 0, 0, true, false),
     LARGE("large", 1920, 1080, true, false),
     MEDIUM("medium", 800, 600, true, false),
@@ -23,15 +22,11 @@ public enum MediaSize {
     private final boolean cropToSquare;
 
     public static MediaSize fromCode(String code) {
-        return Arrays.stream(values())
-                .filter(size -> size.getCode().equals(preparedCode(code)))
-                .findFirst()
-                .orElse(ORIGINAL);
+        return CodeBasedEnum.fromCode(MediaSize.class, code);
     }
 
-    @Override
-    public String toString() {
-        return preparedCode(this.code);
+    public static MediaSize fromCodeOrDefault(String code) {
+        return CodeBasedEnum.fromCode(MediaSize.class, code, MediaSize.ORIGINAL);
     }
 
     public static final List<MediaSize> sizesToConvert = List.of(
@@ -42,7 +37,8 @@ public enum MediaSize {
             LARGE
     );
 
-    private static String preparedCode(String code) {
-        return code.toLowerCase().strip();
+    @Override
+    public String toString() {
+        return getPreparedCode();
     }
 }

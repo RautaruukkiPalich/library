@@ -7,7 +7,7 @@ public class MediaNotFoundException extends RuntimeException {
         super(message);
     }
 
-    public MediaNotFoundException(UUID uuid) {
-        super("media with uuid %s not found".formatted(uuid));
+    static public MediaNotFoundException uuid(UUID uuid) {
+        return new MediaNotFoundException("media with uuid %s not found".formatted(uuid));
     }
 }

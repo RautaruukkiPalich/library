@@ -5,8 +5,10 @@ import com.app.modules.media.exceptions.FileNotFoundException;
 import com.app.modules.media.repository.FileDeleteRepository;
 import com.app.modules.media.repository.FileGetterRepository;
 import com.app.modules.media.repository.FilePersistRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
@@ -21,15 +23,16 @@ import java.util.UUID;
 @Repository
 @Slf4j
 public class LocalStorageRepository implements FilePersistRepository, FileDeleteRepository, FileGetterRepository {
-    private static final String LOCAL_STORAGE_PATH = "local_media_storage";
     private final Path rootLocation;
 
-    public LocalStorageRepository() {
-        this.rootLocation = Paths.get(LOCAL_STORAGE_PATH);
-        init();
+    public LocalStorageRepository(
+            @Value("${storage.local.path:local_media_storage}") String localStoragePath
+    ) {
+        this.rootLocation = Paths.get(localStoragePath);
     }
 
-    private void init() {
+    @PostConstruct
+    public void init() {
         try {
             if (!Files.exists(rootLocation)) {
                 Files.createDirectories(rootLocation);
@@ -41,14 +44,20 @@ public class LocalStorageRepository implements FilePersistRepository, FileDelete
     }
 
     @Override
-    public void delete(@NonNull String path) throws FileNotFoundException {
+    public void delete(@NonNull String path) throws FileNotFoundException, IOException {
+        Path filePath = rootLocation.resolve(path).normalize();
 
+        if (!Files.exists(filePath) || !Files.isReadable(filePath)) {
+            throw new FileNotFoundException("file=%s not found or not readable".formatted(filePath));
+        }
+
+        Files.delete(filePath);
     }
 
     @Override
     public Optional<InputStream> findByRelativePath(@NonNull String path) {
         try {
-            Path filePath = rootLocation.resolve(path);
+            Path filePath = rootLocation.resolve(path).normalize();
 
             if (!filePath.startsWith(rootLocation)) {
                 log.warn("path traversal attempt: {}", path);

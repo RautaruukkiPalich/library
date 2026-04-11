@@ -21,4 +21,12 @@ public interface CodeBasedEnum {
                 .orElseThrow(() -> new IllegalArgumentException(
                         "no enum constant with code " + code));
     }
+
+    static <T extends Enum<T> & CodeBasedEnum> T fromCode(Class<T> enumClass, String code, T defaultValue) {
+        String prepared = preparedCode(code);
+        return Arrays.stream(enumClass.getEnumConstants())
+                .filter(e -> e.getPreparedCode().equals(prepared))
+                .findFirst()
+                .orElse(defaultValue);
+    }
 }

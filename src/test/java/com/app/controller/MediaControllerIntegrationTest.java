@@ -4,6 +4,7 @@ import com.app.BaseIntegrationTest;
 import com.app.modules.media.controller.MediaControllerDTO;
 import com.app.utils.RegisterLoginHelper;
 import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +18,9 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import java.io.IOException;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -49,6 +51,15 @@ public class MediaControllerIntegrationTest extends BaseIntegrationTest {
 
     private final static String MEDIA_API_PATH = "/api/media";
 
+    @AfterEach
+    void afterEach() {
+        try {
+            cleanupMediaStorage();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @BeforeEach
     void setUp() throws Exception {
         cleanupDatabase();
@@ -73,7 +84,7 @@ public class MediaControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testUploadFile() throws Exception {
-        final String PATH = MEDIA_API_PATH + "/users/avatar";
+        final String PATH = MEDIA_API_PATH + "/upload";
 
         MockMultipartFile testFile = new MockMultipartFile(
                 "file",
@@ -82,7 +93,7 @@ public class MediaControllerIntegrationTest extends BaseIntegrationTest {
                 "test image content".getBytes()
         );
 
-        String body = mockMvc.perform(
+        String uploadBody = mockMvc.perform(
                         multipart(HttpMethod.POST, PATH)
                                 .header("Authorization", "Bearer %s".formatted(accessToken))
                                 .file(testFile))
@@ -94,11 +105,21 @@ public class MediaControllerIntegrationTest extends BaseIntegrationTest {
                 .andReturn()
                 .getResponse().getContentAsString();
 
-        var unmarshalled = unmarshall(body, MediaControllerDTO.Response.TaskStatus.class);
+        var uploadTaskStatus = unmarshall(uploadBody, MediaControllerDTO.Response.TaskStatus.class);
 
-        mockMvc.perform(get(unmarshalled.getStatusCheckUrl()).header("Authorization", "Bearer %s".formatted(accessToken)))
+        String taskStatusBody = mockMvc.perform(get(uploadTaskStatus.getStatusCheckUrl())
+                        .header("Authorization", "Bearer %s".formatted(accessToken)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.task_uuid").isNotEmpty())
-                .andExpect(jsonPath("$.status").isNotEmpty());
+                .andExpect(jsonPath("$.status").isNotEmpty())
+                .andExpect(jsonPath("$.media_uuid").isNotEmpty())
+                .andReturn()
+                .getResponse().getContentAsString();
+
+        var taskStatus = unmarshall(taskStatusBody, MediaControllerDTO.Response.TaskStatus.class);
+
+        mockMvc.perform(delete("%s/%s".formatted(MEDIA_API_PATH, taskStatus.getMediaUUID()))
+                        .header("Authorization", "Bearer %s".formatted(accessToken)))
+                .andExpect(status().isNoContent());
     }
 }

@@ -1,6 +1,6 @@
 package com.app.modules.media.processor;
 
-import com.app.modules.media.enums.MediaContentType;
+import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.enums.MediaSize;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -35,18 +35,18 @@ public class ThumbnailImageProcessorImpl implements ImageProcessor {
     }
 
     @Override
-    public MediaContentType getSupportedContentType() {
-        return MediaContentType.IMAGE;
+    public MediaContent getSupportedContentType() {
+        return MediaContent.IMAGE;
     }
 
     @Override
     public Set<String> getSupportedOutputFormats() {
-        return MediaContentType.IMAGE.getExtensions();
+        return MediaContent.IMAGE.getExtensions();
     }
 
     @Override
     public boolean canProcess(String contentType, String extension) {
         return contentType != null && contentType.startsWith("image/") ||
-                extension != null && MediaContentType.IMAGE.getExtensions().contains(extension.toLowerCase());
+                extension != null && MediaContent.IMAGE.getExtensions().contains(extension.toLowerCase());
     }
 }

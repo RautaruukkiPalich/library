@@ -7,7 +7,7 @@ import com.app.modules.media.api.UploadService;
 import com.app.modules.media.dto.MediaDTO;
 import com.app.modules.media.dto.TaskStatusDTO;
 import com.app.modules.media.dto.UploadMediaDTO;
-import com.app.modules.media.enums.MediaContentType;
+import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.enums.MediaSize;
 import com.app.modules.media.utils.FileOperations;
 import lombok.AllArgsConstructor;
@@ -16,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -29,23 +31,29 @@ public class UploadServiceImpl implements UploadService {
 
     @Override
     public TaskStatusDTO upload(@NonNull UploadMediaDTO dto) {
-        String filePath = "";
-        MediaContentType type = dto.type();
-        MultipartFile file = dto.file();
+        return upload(dto.file(), dto.userId());
+    }
+
+    @Override
+    public TaskStatusDTO upload(@NonNull MultipartFile file,
+                                @NonNull Long userId) {
+        String filePath = null;
+
+        String contentType = file.getContentType();
+        MediaContent type = MediaContent.fromContentType(contentType);
+        Objects.requireNonNull(type, "must not be null");
 
         try {
             type.validate(file);
 
-            String contentType = file.getContentType();
             String originalFilename = file.getOriginalFilename();
             String filename = FileOperations.extractFilename(originalFilename);
             String extension = FileOperations.extractExtension(originalFilename);
 
             MediaDTO m = mediaService.createMedia(
-                    dto.userId(),
+                    userId,
                     originalFilename,
-                    type,
-                    dto.purpose());
+                    type);
 
             filePath = fileService.upload(file, m.uuid());
 
@@ -58,7 +66,7 @@ public class UploadServiceImpl implements UploadService {
                     file.getSize(),
                     MediaSize.ORIGINAL);
 
-            TaskStatusDTO task = taskService.create(dto.userId(), m.uuid());
+            TaskStatusDTO task = taskService.create(userId, m.uuid());
 
             log.info("upload completed: mediaId={}, taskId={}, filepath={}",
                     task.mediaUUID(), task.taskUUID(), filePath);
@@ -66,7 +74,9 @@ public class UploadServiceImpl implements UploadService {
             return task;
         } catch (Exception e) {
             log.error("upload failed: {}", e.getMessage(), e);
-            fileService.delete(filePath);
+            if (filePath != null && !filePath.isBlank()) {
+                fileService.delete(filePath);
+            }
             throw e;
         }
     }

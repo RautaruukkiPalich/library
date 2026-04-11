@@ -1,8 +1,9 @@
 package com.app.modules.media.repository.postgres;
 
-import com.app.modules.media.enums.UploadStatusType;
+import com.app.modules.media.enums.UploadStatus;
 import com.app.modules.media.exceptions.MediaTaskNotFoundException;
 import com.app.modules.media.model.MediaTask;
+import com.app.modules.media.repository.TaskDeleterRepository;
 import com.app.modules.media.repository.TaskGetterRepository;
 import com.app.modules.media.repository.TaskPersistRepository;
 import jakarta.persistence.EntityManager;
@@ -20,7 +21,7 @@ import java.util.UUID;
 
 @Repository
 @AllArgsConstructor
-public class PostgresTaskRepository implements TaskGetterRepository, TaskPersistRepository {
+public class PostgresTaskRepository implements TaskGetterRepository, TaskPersistRepository, TaskDeleterRepository {
 
     @PersistenceContext
     private EntityManager em;
@@ -58,7 +59,7 @@ public class PostgresTaskRepository implements TaskGetterRepository, TaskPersist
     }
 
     @Override
-    public List<MediaTask> findByStatus(@NonNull UploadStatusType status, @NonNull Integer limit) {
+    public List<MediaTask> findByStatus(@NonNull UploadStatus status, @NonNull Integer limit) {
         Pageable page = PageRequest.of(0, limit);
         List<UUID> ids = findOldestUuidsByStatus(status, page);
 
@@ -67,7 +68,29 @@ public class PostgresTaskRepository implements TaskGetterRepository, TaskPersist
                 findTasksWithMedia(ids);
     }
 
-    List<UUID> findOldestUuidsByStatus(@NonNull UploadStatusType status, @NonNull Pageable pageable) {
+    @Override
+    public Optional<MediaTask> findByMediaUuid(@NonNull UUID mediaUuid) {
+        try {
+            return Optional.of(
+                    em.createQuery(
+                                    "SELECT DISTINCT t FROM MediaTask t " +
+                                            "LEFT JOIN FETCH t.media " +
+                                            "WHERE t.mediaUuid = :media_uuid", MediaTask.class)
+                            .setParameter("media_uuid", mediaUuid)
+                            .getSingleResult()
+            );
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public MediaTask getByMediaUuid(@NonNull UUID mediaUuid) throws MediaTaskNotFoundException {
+        return findByMediaUuid(mediaUuid).orElseThrow(
+                () -> new MediaTaskNotFoundException("task with media_uuid %s not found".formatted(mediaUuid)));
+    }
+
+    List<UUID> findOldestUuidsByStatus(@NonNull UploadStatus status, @NonNull Pageable pageable) {
         return em.createQuery(
                         "SELECT t.uuid FROM MediaTask t " +
                                 "WHERE t.status = :status " +
@@ -90,5 +113,15 @@ public class PostgresTaskRepository implements TaskGetterRepository, TaskPersist
                         )
                         .setParameter("uuids", uuids)
                         .getResultList();
+    }
+
+    @Override
+    public void delete(@NonNull UUID taskUuid) {
+        em.remove(getByUUID(taskUuid));
+    }
+
+    @Override
+    public void delete(@NonNull MediaTask task) {
+        em.remove(task);
     }
 }

@@ -4,8 +4,9 @@ import com.app.modules.media.api.FileService;
 import com.app.modules.media.api.MediaProcessingService;
 import com.app.modules.media.converter.MediaConverter;
 import com.app.modules.media.dto.ConvertResultDTO;
+import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.enums.MediaSize;
-import com.app.modules.media.enums.UploadStatusType;
+import com.app.modules.media.enums.UploadStatus;
 import com.app.modules.media.model.MediaFile;
 import com.app.modules.media.model.MediaTask;
 import com.app.modules.media.repository.MediaFilePersistRepository;
@@ -41,17 +42,17 @@ public class MediaProcessingServiceImpl implements MediaProcessingService {
         long startTime = System.currentTimeMillis();
 
         MediaTask task = taskGetterRepository.getByUUID(taskUuid);
-        if (task.getStatus() != UploadStatusType.PENDING) {
+        if (task.getStatus() != UploadStatus.PENDING) {
             log.warn("task={} already processing or completed, skipping", taskUuid);
             return;
         }
 
-        updateTaskStatus(task, UploadStatusType.PROCESSING);
+        updateTaskStatus(task, UploadStatus.PROCESSING);
 
         MediaFile original = task.getMedia().getOriginal();
         if (original == null) {
             log.error("original file not found for task={}", taskUuid);
-            updateTaskStatus(task, UploadStatusType.FAILED);
+            updateTaskStatus(task, UploadStatus.FAILED);
             return;
         }
 
@@ -59,16 +60,16 @@ public class MediaProcessingServiceImpl implements MediaProcessingService {
 
         try {
             for (MediaSize size : sizesToConvert) {
-                var t = task.getMedia().getMediaType();
+                MediaContent content = task.getMedia().getMediaContent();
                 ConvertResultDTO res = mediaConverter.convert(
                         original.getMediaUuid(), original.getPath(),
-                        size, t.getTargetExt());
+                        size, content.getTargetExt());
 
                 MediaFile mf = new MediaFile();
                 mf.setUuid(UUID.randomUUID());
                 mf.setFilename(original.getFilename());
                 mf.setExtension(res.extension());
-                mf.setContentType(t.getTargetContentType());
+                mf.setContentType(content.getTargetContentType());
                 mf.setMediaUuid(original.getMediaUuid());
                 mf.setMediaSize(size);
                 mf.setFileSize(res.size());
@@ -79,7 +80,7 @@ public class MediaProcessingServiceImpl implements MediaProcessingService {
 
             converted.forEach(mediaFilePersistRepository::save);
 
-            updateTaskStatus(task, UploadStatusType.COMPLETED);
+            updateTaskStatus(task, UploadStatus.COMPLETED);
 
             long duration = System.currentTimeMillis() - startTime;
             log.info("task={} completed in {} ms, converted {} files", taskUuid, duration, converted.size());
@@ -87,14 +88,14 @@ public class MediaProcessingServiceImpl implements MediaProcessingService {
         } catch (Exception e) {
             log.error("failed to process task={}", taskUuid, e);
             rollbackConvertedFiles(converted);
-            updateTaskStatus(task, UploadStatusType.FAILED);
+            updateTaskStatus(task, UploadStatus.FAILED);
 
             long duration = System.currentTimeMillis() - startTime;
             log.info("task={} failed in {} ms", taskUuid, duration);
         }
     }
 
-    private void updateTaskStatus(MediaTask task, UploadStatusType status) {
+    private void updateTaskStatus(MediaTask task, UploadStatus status) {
         task.setStatus(status);
         taskPersistRepository.save(task);
         log.debug("task={} status updated to: {}", task.getUuid(), status);

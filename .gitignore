@@ -3,6 +3,7 @@
 .vscode/
 .devcontainer/
 /local_media_storage/
+/test_local_media_storage/
 
 *.env
 *.env*
@@ -13,4 +14,3 @@ logs/
 
 .DS_Store
 Thumbs.db
-

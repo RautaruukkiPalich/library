@@ -13,7 +13,6 @@ public class MediaControllerMapper {
                 .builder()
                 .mediaUuid(dto.uuid())
                 .userId(dto.userId())
-                .purpose(dto.purpose())
                 .originalFilename(dto.originalFilename())
                 .sizes(dto.files().stream().map(MediaControllerMapper::convert).toList())
                 .totalCount(dto.files().size())

@@ -2,9 +2,10 @@ package com.app.modules.media.impl;
 
 import com.app.modules.media.api.TaskService;
 import com.app.modules.media.dto.TaskStatusDTO;
-import com.app.modules.media.enums.UploadStatusType;
+import com.app.modules.media.enums.UploadStatus;
 import com.app.modules.media.mapper.TaskMapper;
 import com.app.modules.media.model.MediaTask;
+import com.app.modules.media.repository.TaskDeleterRepository;
 import com.app.modules.media.repository.TaskGetterRepository;
 import com.app.modules.media.repository.TaskPersistRepository;
 import lombok.AllArgsConstructor;
@@ -22,13 +23,14 @@ import java.util.UUID;
 public class TaskServiceImpl implements TaskService {
     private final TaskGetterRepository taskGetterRepository;
     private final TaskPersistRepository taskPersistRepository;
+    private final TaskDeleterRepository taskDeleterRepository;
 
     @Override
     public TaskStatusDTO create(@NonNull Long userId, @NonNull UUID mediaUuid) {
         MediaTask task = new MediaTask();
         task.setUuid(UUID.randomUUID());
         task.setUserId(userId);
-        task.setStatus(UploadStatusType.PENDING);
+        task.setStatus(UploadStatus.PENDING);
         task.setMediaUuid(mediaUuid);
         task.validate();
 
@@ -46,7 +48,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void update(@NonNull UUID taskUUID,
-                       @NonNull UploadStatusType newStatus) {
+                       @NonNull UploadStatus newStatus) {
         MediaTask task = taskGetterRepository.getByUUID(taskUUID);
         if (task.getStatus().isFinal() || task.getStatus().isSameOrHigher(newStatus)) {
             return;
@@ -54,5 +56,16 @@ public class TaskServiceImpl implements TaskService {
 
         task.setStatus(newStatus);
         taskPersistRepository.save(task);
+    }
+
+    @Override
+    public void delete(@NonNull UUID taskUUID) {
+        taskDeleterRepository.delete(taskUUID);
+    }
+
+    @Override
+    public void deleteByMediaUuid(@NonNull UUID mediaUuid) {
+        taskGetterRepository.findByMediaUuid(mediaUuid)
+                .ifPresent(taskDeleterRepository::delete);
     }
 }

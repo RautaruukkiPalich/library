@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 @Getter
 @AllArgsConstructor
-public enum UploadStatusType {
+public enum UploadStatus {
     PENDING(0),
     PROCESSING(1),
     CANCELLED(2),
@@ -24,11 +24,11 @@ public enum UploadStatusType {
         return this == FAILED;
     }
 
-    public boolean isSameOrHigher(UploadStatusType status) {
+    public boolean isSameOrHigher(UploadStatus status) {
         return this.code >= status.code;
     }
 
-    public static UploadStatusType fromCode(int code) {
+    public static UploadStatus fromCode(int code) {
         return Arrays.stream(values())
                 .filter(status -> status.getCode() == code)
                 .findFirst()

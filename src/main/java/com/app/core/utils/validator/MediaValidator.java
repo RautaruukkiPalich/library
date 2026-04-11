@@ -22,7 +22,7 @@ public class MediaValidator<T extends MultipartFile> extends Validator<T, MediaV
     public MediaValidator<T> contentType(String[] allowedMediaTypes) {
         String contentType = value.getContentType();
         if (contentType == null) {
-            addCheck(()-> Map.of(key, "null content type"));
+            addCheck(() -> Map.of(key, "null content type"));
             return this;
         }
 

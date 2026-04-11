@@ -39,7 +39,7 @@ public abstract class BaseModel {
     }
 
     @PostPersist
-    protected void postPersist(){
+    protected void postPersist() {
         validateStrict();
     }
 

@@ -10,15 +10,7 @@ import java.util.function.Predicate;
 
 public class MediaMapper {
     public static MediaDTO convert(@NonNull Media m) {
-        return MediaDTO.builder()
-                .uuid(m.getUuid())
-                .userId(m.getUserId())
-                .originalFilename(m.getOriginalFilename())
-                .isPublic(m.getIsPublic())
-                .mediaType(m.getMediaType())
-                .purpose(m.getPurpose())
-                .createdAt(m.getCreatedAt())
-                .updatedAt(m.getUpdatedAt())
+        return builder(m)
                 .files(
                         m.getFiles().stream()
                                 .map(MediaMapper::convert)
@@ -28,15 +20,7 @@ public class MediaMapper {
     }
 
     public static MediaDTO convert(@NonNull Media m, Predicate<MediaFile> filter) {
-        return MediaDTO.builder()
-                .uuid(m.getUuid())
-                .userId(m.getUserId())
-                .originalFilename(m.getOriginalFilename())
-                .isPublic(m.getIsPublic())
-                .mediaType(m.getMediaType())
-                .purpose(m.getPurpose())
-                .createdAt(m.getCreatedAt())
-                .updatedAt(m.getUpdatedAt())
+        return builder(m)
                 .files(
                         m.getFiles().stream()
                                 .filter(filter)
@@ -44,6 +28,17 @@ public class MediaMapper {
                                 .toList()
                 )
                 .build();
+    }
+
+    private static MediaDTO.MediaDTOBuilder builder(@NonNull Media m) {
+        return MediaDTO.builder()
+                .uuid(m.getUuid())
+                .userId(m.getUserId())
+                .originalFilename(m.getOriginalFilename())
+                .isPublic(m.getIsPublic())
+                .mediaContent(m.getMediaContent())
+                .createdAt(m.getCreatedAt())
+                .updatedAt(m.getUpdatedAt());
     }
 
     public static MediaFileDTO convert(@NonNull MediaFile mf) {

@@ -1,6 +1,5 @@
 package com.app.modules.media.controller;
 
-import com.app.modules.media.enums.MediaPurpose;
 import com.app.modules.media.enums.MediaSize;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -91,10 +90,6 @@ public class MediaControllerDTO {
             @JsonProperty("user_id")
             @Schema(description = "owner user id")
             private Long userId;
-
-            @JsonProperty("purpose")
-            @Schema(description = "media purpose (USER_AVATAR, etc.)")
-            private MediaPurpose purpose;
 
             @JsonProperty("original_filename")
             @Schema(description = "original filename")

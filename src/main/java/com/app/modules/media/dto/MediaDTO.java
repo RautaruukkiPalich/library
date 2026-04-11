@@ -1,7 +1,6 @@
 package com.app.modules.media.dto;
 
-import com.app.modules.media.enums.MediaContentType;
-import com.app.modules.media.enums.MediaPurpose;
+import com.app.modules.media.enums.MediaContent;
 import lombok.Builder;
 
 import java.time.OffsetDateTime;
@@ -14,8 +13,7 @@ public record MediaDTO(
         Long userId,
         String originalFilename,
         Boolean isPublic,
-        MediaContentType mediaType,
-        MediaPurpose purpose,
+        MediaContent mediaContent,
         List<MediaFileDTO> files,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt

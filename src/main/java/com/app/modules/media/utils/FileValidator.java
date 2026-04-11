@@ -2,7 +2,7 @@ package com.app.modules.media.utils;
 
 import com.app.core.exception.ValidationException;
 import com.app.core.utils.validator.ObjectValidator;
-import com.app.modules.media.enums.MediaContentType;
+import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.exceptions.FileValidationException;
 import lombok.NonNull;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,7 +43,7 @@ public class FileValidator {
     }
 
     public static void validateImageFile(@NonNull MultipartFile file,
-                                         @NonNull MediaContentType type) throws ValidationException {
+                                         @NonNull MediaContent type) throws ValidationException {
         Map<String, String> validateErrors = new ObjectValidator<>("file", file)
                 .validateString(
                         MultipartFile::getOriginalFilename,

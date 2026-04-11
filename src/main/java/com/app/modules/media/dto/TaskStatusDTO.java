@@ -1,6 +1,6 @@
 package com.app.modules.media.dto;
 
-import com.app.modules.media.enums.UploadStatusType;
+import com.app.modules.media.enums.UploadStatus;
 import lombok.Builder;
 
 import java.util.UUID;
@@ -10,6 +10,6 @@ public record TaskStatusDTO(
         UUID taskUUID,
         UUID mediaUUID,
         Long userId,
-        UploadStatusType status
+        UploadStatus status
 ) {
 }

@@ -1,8 +1,7 @@
 package com.app.modules.media.model;
 
 import com.app.core.model.BaseModel;
-import com.app.modules.media.enums.MediaContentType;
-import com.app.modules.media.enums.MediaPurpose;
+import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.enums.MediaSize;
 import com.app.modules.media.exceptions.MediaTaskValidationException;
 import jakarta.persistence.*;
@@ -33,11 +32,7 @@ public class Media extends BaseModel {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MediaContentType mediaType;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private MediaPurpose purpose;
+    private MediaContent mediaContent;
 
     @OneToMany(mappedBy = "media", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<MediaFile> files = new ArrayList<>();
@@ -75,16 +70,13 @@ public class Media extends BaseModel {
             Long userId,
             String originalFilename,
             Boolean isPublic,
-            MediaContentType mediaType,
-            MediaPurpose purpose
+            MediaContent mediaType
     ) {
         super(MediaTaskValidationException::new);
         this.uuid = uuid;
         this.userId = userId;
         this.originalFilename = originalFilename;
         this.isPublic = isPublic;
-        this.mediaType = mediaType;
-        this.purpose = purpose;
-
+        this.mediaContent = mediaType;
     }
 }

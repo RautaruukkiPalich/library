@@ -1,6 +1,6 @@
 package com.app.modules.media.processor;
 
-import com.app.modules.media.enums.MediaContentType;
+import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.enums.MediaSize;
 import lombok.NonNull;
 
@@ -20,7 +20,7 @@ public interface MediaProcessor {
                 @NonNull MediaSize targetSize,
                 @NonNull String extension) throws IOException;
 
-    MediaContentType getSupportedContentType();
+    MediaContent getSupportedContentType();
 
     Set<String> getSupportedOutputFormats();
 

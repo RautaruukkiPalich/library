@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Getter
-public enum MediaContentType implements CodeBasedEnum {
+public enum MediaContent implements CodeBasedEnum {
     IMAGE(
             "image",
             1L,
@@ -55,8 +55,8 @@ public enum MediaContentType implements CodeBasedEnum {
     private final String targetExt;
     private final String targetContentType;
 
-    MediaContentType(String code, Long minSize, Long maxSize, Map<String, String> extensionMap,
-                     String targetConvertExtension, String targetConvertContentType) {
+    MediaContent(String code, Long minSize, Long maxSize, Map<String, String> extensionMap,
+                 String targetConvertExtension, String targetConvertContentType) {
         this.code = code;
         this.minSize = minSize;
         this.maxSize = maxSize;
@@ -67,8 +67,15 @@ public enum MediaContentType implements CodeBasedEnum {
         this.targetContentType = targetConvertContentType;
     }
 
-    public static MediaContentType fromCode(String code) throws IllegalArgumentException {
-        return CodeBasedEnum.fromCode(MediaContentType.class, code);
+    public static MediaContent fromCode(String code) throws IllegalArgumentException {
+        return CodeBasedEnum.fromCode(MediaContent.class, code);
+    }
+
+    public static MediaContent fromContentType(String contentType) throws IllegalArgumentException {
+        if (contentType == null) return null;
+        if (contentType.startsWith("image/")) return IMAGE;
+        if (contentType.startsWith("video/")) return VIDEO;
+        throw new IllegalArgumentException("unsupported content type: " + contentType);
     }
 
     @Override

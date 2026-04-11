@@ -2,6 +2,7 @@ package com.app.modules.media.repository.postgres;
 
 import com.app.modules.media.exceptions.MediaNotFoundException;
 import com.app.modules.media.model.Media;
+import com.app.modules.media.repository.MediaDeleterRepository;
 import com.app.modules.media.repository.MediaGetterRepository;
 import com.app.modules.media.repository.MediaPersistRepository;
 import jakarta.persistence.EntityManager;
@@ -15,15 +16,18 @@ import java.util.UUID;
 
 @Repository
 @AllArgsConstructor
-public class PostgresMediaRepository implements MediaPersistRepository, MediaGetterRepository {
+public class PostgresMediaRepository implements MediaPersistRepository, MediaGetterRepository, MediaDeleterRepository {
 
     @PersistenceContext
     private EntityManager em;
 
     @Override
     public Media save(@NonNull Media media) {
-        em.persist(media);
-        return media;
+        if (media.getCreatedAt() == null) {
+            em.persist(media);
+            return media;
+        }
+        return em.merge(media);
     }
 
     @Override
@@ -42,6 +46,26 @@ public class PostgresMediaRepository implements MediaPersistRepository, MediaGet
 
     @Override
     public Media getByUuid(@NonNull UUID uuid) {
-        return findByUuid(uuid).orElseThrow(() -> new MediaNotFoundException(uuid));
+        return findByUuid(uuid).orElseThrow(() -> MediaNotFoundException.uuid(uuid));
+    }
+
+    @Override
+    public boolean exist(@NonNull UUID uuid) {
+        Long count = em.createQuery(
+                        "SELECT COUNT(m) FROM Media m WHERE m.uuid = :uuid",
+                        Long.class)
+                .setParameter("uuid", uuid)
+                .getSingleResult();
+        return count > 0;
+    }
+
+    @Override
+    public void delete(@NonNull Media media) {
+        em.remove(media);
+    }
+
+    @Override
+    public void delete(@NonNull UUID uuid) {
+        findByUuid(uuid).ifPresent(this::delete);
     }
 }

@@ -2,8 +2,7 @@ package com.app.modules.media.api;
 
 import com.app.modules.media.dto.MediaDTO;
 import com.app.modules.media.dto.MediaFileDTO;
-import com.app.modules.media.enums.MediaContentType;
-import com.app.modules.media.enums.MediaPurpose;
+import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.enums.MediaSize;
 import lombok.NonNull;
 
@@ -20,11 +19,12 @@ public interface MediaService {
 
     MediaDTO createMedia(Long userId,
                          String originalFilename,
-                         MediaContentType type,
-                         MediaPurpose purpose);
+                         MediaContent type);
 
     MediaDTO getMediaByUuid(@NonNull UUID mediaUuid);
 
     MediaDTO getMediaByUuid(@NonNull UUID mediaUuid,
                             @NonNull MediaSize size);
+
+    void delete(@NonNull UUID mediaUuid);
 }
