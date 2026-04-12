@@ -1,13 +1,13 @@
 package com.app.modules.media.api;
 
+import com.app.modules.media.source.MediaSource;
 import lombok.NonNull;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.UUID;
 
 public interface FileService {
-    String upload(@NonNull MultipartFile file,
+    String upload(@NonNull MediaSource mediaSource,
                   @NonNull UUID mediaUuid);
 
     String upload(@NonNull InputStream stream,

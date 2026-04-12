@@ -14,6 +14,7 @@ import com.app.modules.media.dto.TaskStatusDTO;
 import com.app.modules.media.dto.UploadMediaDTO;
 import com.app.modules.media.enums.MediaSize;
 import com.app.modules.media.exceptions.MediaFileNotFoundException;
+import com.app.modules.media.source.MultipartFileMediaSource;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -69,7 +70,7 @@ public class MediaController {
         UUID mediaUuid = uploadService.upload(UploadMediaDTO
                 .builder()
                 .userId(initiatorId)
-                .file(file)
+                .mediaSource(new MultipartFileMediaSource(file))
                 .build()
         );
 

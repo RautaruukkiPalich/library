@@ -4,8 +4,8 @@ import com.app.core.exception.ValidationException;
 import com.app.core.utils.validator.ObjectValidator;
 import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.exceptions.FileValidationException;
+import com.app.modules.media.source.MediaSource;
 import lombok.NonNull;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 import java.util.Set;
@@ -16,57 +16,49 @@ public class FileValidator {
 
     private final static Set<String> TRAVERSAL_CHARACTERS = Set.of("\\", "/", ":", "*", "?", "\"", "<", ">", "|");
 
-    public static void baseValidation(@NonNull MultipartFile file) throws ValidationException {
-        Map<String, String> validateErrors = new ObjectValidator<>("file", file)
+    public static void baseValidation(@NonNull MediaSource mediaSource) throws ValidationException {
+        Map<String, String> validateErrors = new ObjectValidator<>("file", mediaSource)
                 .notNull()
-                .validateNumber(
-                        MultipartFile::getSize,
-                        "size",
+                .validateNumber(MediaSource::getSize, "size",
                         v -> v.notNull().min(1L))
-                .validateString(
-                        MultipartFile::getContentType,
-                        "content_type",
+                .validateString(MediaSource::getContentType, "content_type",
                         v -> v.notNull().notBlank())
-                .validateString(
-                        MultipartFile::getOriginalFilename,
-                        "original_filename",
+                .validateString(MediaSource::getOriginalFilename, "original_filename",
                         v -> v.notNull().notBlank()
-                                .contains(".", "file must contain extension")
+                                .custom(FileOperations::hasExtension, "file does not have extension")
                                 .custom(f -> 1 == f.chars().filter(ch -> ch == '.').count()
                                         , "multiple extensions detected")
                                 .notContainsAny(TRAVERSAL_CHARACTERS,
-                                        "filename contains path traversal characters")
-                                .custom(FileOperations::hasExtension, "file does not have extension"))
+                                        "filename contains path traversal characters"))
                 .validate();
 
         checkAndThrowValidateException(validateErrors);
     }
 
-    public static void validateImageFile(@NonNull MultipartFile file,
+    public static void validateImageFile(@NonNull MediaSource mediaSource,
                                          @NonNull MediaContent type) throws ValidationException {
-        Map<String, String> validateErrors = new ObjectValidator<>("file", file)
-                .validateString(
-                        MultipartFile::getOriginalFilename,
-                        "original_filename",
+
+        String contentType = mediaSource.getSanitizedContentType();
+
+        Map<String, String> validateErrors = new ObjectValidator<>("file", mediaSource)
+                .validateString((s) -> contentType, "content_type",
+                        v -> v.in(type.getContentTypes(), "is not allowed"))
+                .validateString(MediaSource::getOriginalFilename, "original_filename",
                         v -> v
                                 .custom(s -> {
                                     String ext = extractExtension(s);
-                                    return type.getExtensions().contains(ext);
-                                }, "invalid file extension")
-                                .custom(s -> {
-                                    String ext = extractExtension(s);
-                                    String expectedType = type.getExtensionMap().getOrDefault(ext, "");
-                                    String actualType = file.getContentType();
-                                    return actualType != null && actualType.toLowerCase().startsWith(expectedType);
-                                }, "extension does not match content type"))
-                .validateNumber(
-                        MultipartFile::getSize,
-                        "size",
+                                    if (!type.getExtensions().contains(ext)) {
+                                        return false;
+                                    }
+
+                                    String expectedType = type.getExtensionMap().get(ext);
+                                    if (expectedType == null) {
+                                        return false;
+                                    }
+                                    return contentType.equalsIgnoreCase(expectedType);
+                                }, "invalid extension or does not match content type"))
+                .validateNumber(MediaSource::getSize, "size",
                         v -> v.min(type.getMinSize()).max(type.getMaxSize()))
-                .validateString(
-                        MultipartFile::getContentType,
-                        "content_type",
-                        v -> v.in(type.getContentTypes(), "file type is not allowed"))
                 .validate();
 
         checkAndThrowValidateException(validateErrors);

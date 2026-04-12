@@ -1,9 +1,9 @@
 package com.app.modules.media.enums;
 
+import com.app.modules.media.source.MediaSource;
 import com.app.modules.media.utils.FileValidator;
 import lombok.Getter;
 import lombok.NonNull;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 import java.util.Set;
@@ -23,9 +23,9 @@ public enum MediaContent implements CodeBasedEnum {
             "webp", "image/webp"
     ) {
         @Override
-        public void validate(@NonNull MultipartFile file) {
-            FileValidator.baseValidation(file);
-            FileValidator.validateImageFile(file, this);
+        public void validate(@NonNull MediaSource mediaSource) {
+            FileValidator.baseValidation(mediaSource);
+            FileValidator.validateImageFile(mediaSource, this);
         }
     },
     VIDEO(
@@ -41,8 +41,8 @@ public enum MediaContent implements CodeBasedEnum {
             "mp4", "video/mp4"
     ) {
         @Override
-        public void validate(@NonNull MultipartFile file) {
-            FileValidator.baseValidation(file);
+        public void validate(@NonNull MediaSource mediaSource) {
+            FileValidator.baseValidation(mediaSource);
         }
     };
 
@@ -71,8 +71,7 @@ public enum MediaContent implements CodeBasedEnum {
         return CodeBasedEnum.fromCode(MediaContent.class, code);
     }
 
-    public static MediaContent fromContentType(String contentType) throws IllegalArgumentException {
-        if (contentType == null) return null;
+    public static MediaContent fromContentType(@NonNull String contentType) throws IllegalArgumentException {
         if (contentType.startsWith("image/")) return IMAGE;
         if (contentType.startsWith("video/")) return VIDEO;
         throw new IllegalArgumentException("unsupported content type: " + contentType);
@@ -83,5 +82,5 @@ public enum MediaContent implements CodeBasedEnum {
         return getPreparedCode();
     }
 
-    public abstract void validate(@NonNull MultipartFile file);
+    public abstract void validate(@NonNull MediaSource mediaSource);
 }

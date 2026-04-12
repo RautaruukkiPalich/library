@@ -2,21 +2,19 @@ package com.app.modules.media.impl;
 
 import com.app.modules.media.api.FileService;
 import com.app.modules.media.api.MediaService;
-import com.app.modules.media.api.TaskService;
 import com.app.modules.media.api.UploadService;
 import com.app.modules.media.dto.MediaDTO;
 import com.app.modules.media.dto.UploadMediaDTO;
 import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.enums.MediaSize;
+import com.app.modules.media.source.MediaSource;
 import com.app.modules.media.utils.FileOperations;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -29,22 +27,21 @@ public class UploadServiceImpl implements UploadService {
 
     @Override
     public UUID upload(@NonNull UploadMediaDTO dto) {
-        return upload(dto.file(), dto.userId());
+        return upload(dto.mediaSource(), dto.userId());
     }
 
     @Override
-    public UUID upload(@NonNull MultipartFile file,
+    public UUID upload(@NonNull MediaSource mediaSource,
                        @NonNull Long userId) {
         String filePath = null;
 
-        String contentType = file.getContentType();
-        MediaContent type = MediaContent.fromContentType(contentType);
-        Objects.requireNonNull(type, "must not be null");
-
         try {
-            type.validate(file);
+            String contentType = mediaSource.getSanitizedContentType();
+            MediaContent type = MediaContent.fromContentType(contentType);
 
-            String originalFilename = file.getOriginalFilename();
+            type.validate(mediaSource);
+
+            String originalFilename = mediaSource.getOriginalFilename();
             String filename = FileOperations.extractFilename(originalFilename);
             String extension = FileOperations.extractExtension(originalFilename);
 
@@ -53,7 +50,7 @@ public class UploadServiceImpl implements UploadService {
                     originalFilename,
                     type);
 
-            filePath = fileService.upload(file, m.uuid());
+            filePath = fileService.upload(mediaSource, m.uuid());
 
             mediaService.createMediaFile(
                     m.uuid(),
@@ -61,7 +58,7 @@ public class UploadServiceImpl implements UploadService {
                     filename,
                     extension,
                     filePath,
-                    file.getSize(),
+                    mediaSource.getSize(),
                     MediaSize.ORIGINAL);
 
             log.info("upload completed: mediaUuid={}, filepath={}",
@@ -71,6 +68,7 @@ public class UploadServiceImpl implements UploadService {
         } catch (Exception e) {
             log.error("upload failed: {}", e.getMessage(), e);
             if (filePath != null && !filePath.isBlank()) {
+                log.info("try delete uploaded file={}", filePath);
                 fileService.delete(filePath);
             }
             throw e;

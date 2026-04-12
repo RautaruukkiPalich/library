@@ -5,13 +5,13 @@ import com.app.modules.media.dto.FileMetadata;
 import com.app.modules.media.repository.FileDeleteRepository;
 import com.app.modules.media.repository.FileGetterRepository;
 import com.app.modules.media.repository.FilePersistRepository;
+import com.app.modules.media.source.MediaSource;
 import com.app.modules.media.utils.FileOperations;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,21 +34,21 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public String upload(
-            @NonNull MultipartFile file,
+            @NonNull MediaSource mediaSource,
             @NonNull UUID mediaUuid) {
+        var originalFilename = mediaSource.getOriginalFilename();
+
         try {
             return upload(
-                    file.getInputStream(),
+                    mediaSource.getInputStream(),
                     mediaUuid,
-                    FileOperations.extractExtension(file.getOriginalFilename())
+                    FileOperations.extractExtension(originalFilename)
             );
         } catch (IOException e) {
-            log.error("failed to get input stream multipart file={} for media={}",
-                    file.getOriginalFilename(), mediaUuid);
+            log.error("failed to get input stream file={} for media={}",
+                    originalFilename, mediaUuid);
             throw new RuntimeException(
-                    "failed to get input stream from multipart file %s".formatted(
-                            file.getOriginalFilename()
-                    ), e);
+                    "failed to get input stream from file %s".formatted(originalFilename), e);
         }
     }
 
