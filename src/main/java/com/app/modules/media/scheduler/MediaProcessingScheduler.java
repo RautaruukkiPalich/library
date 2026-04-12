@@ -1,7 +1,7 @@
 package com.app.modules.media.scheduler;
 
 import com.app.modules.media.api.MediaProcessingService;
-import com.app.modules.media.enums.UploadStatus;
+import com.app.modules.media.enums.TaskStatus;
 import com.app.modules.media.model.MediaTask;
 import com.app.modules.media.repository.TaskGetterRepository;
 import lombok.AllArgsConstructor;
@@ -27,7 +27,7 @@ public class MediaProcessingScheduler {
     }
 
     private void loadPendingTasks() {
-        List<MediaTask> tasks = taskGetterRepository.findByStatus(UploadStatus.PENDING, 5);
+        List<MediaTask> tasks = taskGetterRepository.findByStatus(TaskStatus.PENDING, 5);
 
         for (MediaTask task : tasks) {
             runProcessTaskAsync(task.getUuid());

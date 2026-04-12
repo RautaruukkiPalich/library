@@ -2,6 +2,7 @@ package com.app.modules.media.controller;
 
 import com.app.modules.media.dto.MediaDTO;
 import com.app.modules.media.dto.MediaFileDTO;
+import com.app.modules.media.dto.TaskStatusDTO;
 import lombok.NonNull;
 
 public class MediaControllerMapper {
@@ -27,6 +28,18 @@ public class MediaControllerMapper {
                 .fileSize(dto.fileSize())
                 .size(dto.mediaSize())
                 .downloadUrl(DOWNLOAD_URL_TMPL.formatted(dto.mediaUuid(), dto.mediaSize()))
+                .build();
+    }
+
+
+    private final static String STATUS_TASK_PATH = "/api/media/tasks/";
+
+    public static MediaControllerDTO.Response.TaskStatus toResponse(TaskStatusDTO task) {
+        return MediaControllerDTO.Response.TaskStatus.builder()
+                .taskUuid(task.taskUUID())
+                .mediaUuid(task.mediaUUID())
+                .statusCheckUrl(STATUS_TASK_PATH + task.taskUUID())
+                .status(task.status().toString())
                 .build();
     }
 }

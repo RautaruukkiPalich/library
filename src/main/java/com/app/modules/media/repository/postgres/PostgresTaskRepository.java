@@ -1,6 +1,6 @@
 package com.app.modules.media.repository.postgres;
 
-import com.app.modules.media.enums.UploadStatus;
+import com.app.modules.media.enums.TaskStatus;
 import com.app.modules.media.exceptions.MediaTaskNotFoundException;
 import com.app.modules.media.model.MediaTask;
 import com.app.modules.media.repository.TaskDeleterRepository;
@@ -59,7 +59,7 @@ public class PostgresTaskRepository implements TaskGetterRepository, TaskPersist
     }
 
     @Override
-    public List<MediaTask> findByStatus(@NonNull UploadStatus status, @NonNull Integer limit) {
+    public List<MediaTask> findByStatus(@NonNull TaskStatus status, @NonNull Integer limit) {
         Pageable page = PageRequest.of(0, limit);
         List<UUID> ids = findOldestUuidsByStatus(status, page);
 
@@ -90,7 +90,17 @@ public class PostgresTaskRepository implements TaskGetterRepository, TaskPersist
                 () -> new MediaTaskNotFoundException("task with media_uuid %s not found".formatted(mediaUuid)));
     }
 
-    List<UUID> findOldestUuidsByStatus(@NonNull UploadStatus status, @NonNull Pageable pageable) {
+    @Override
+    public List<MediaTask> findByUserId(@NonNull Long userId) {
+        return em.createQuery(
+                        "SELECT DISTINCT t FROM MediaTask t " +
+                                "LEFT JOIN FETCH t.media " +
+                                "WHERE t.userId = :userId", MediaTask.class)
+                .setParameter("userId", userId)
+                .getResultList();
+    }
+
+    List<UUID> findOldestUuidsByStatus(@NonNull TaskStatus status, @NonNull Pageable pageable) {
         return em.createQuery(
                         "SELECT t.uuid FROM MediaTask t " +
                                 "WHERE t.status = :status " +
@@ -101,6 +111,7 @@ public class PostgresTaskRepository implements TaskGetterRepository, TaskPersist
                 .getResultList();
     }
 
+    //TODO: add pagination
     List<MediaTask> findTasksWithMedia(@NonNull List<UUID> uuids) {
         return uuids.isEmpty() ?
                 List.of() :

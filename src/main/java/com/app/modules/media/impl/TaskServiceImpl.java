@@ -2,7 +2,7 @@ package com.app.modules.media.impl;
 
 import com.app.modules.media.api.TaskService;
 import com.app.modules.media.dto.TaskStatusDTO;
-import com.app.modules.media.enums.UploadStatus;
+import com.app.modules.media.enums.TaskStatus;
 import com.app.modules.media.mapper.TaskMapper;
 import com.app.modules.media.model.MediaTask;
 import com.app.modules.media.repository.TaskDeleterRepository;
@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -30,7 +31,7 @@ public class TaskServiceImpl implements TaskService {
         MediaTask task = new MediaTask();
         task.setUuid(UUID.randomUUID());
         task.setUserId(userId);
-        task.setStatus(UploadStatus.PENDING);
+        task.setStatus(TaskStatus.PENDING);
         task.setMediaUuid(mediaUuid);
         task.validate();
 
@@ -47,8 +48,14 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public List<TaskStatusDTO> getUserTasks(@NonNull Long userId) {
+        List<MediaTask> tasks = taskGetterRepository.findByUserId(userId);
+        return tasks.stream().map(TaskMapper::convert).toList();
+    }
+
+    @Override
     public void update(@NonNull UUID taskUUID,
-                       @NonNull UploadStatus newStatus) {
+                       @NonNull TaskStatus newStatus) {
         MediaTask task = taskGetterRepository.getByUUID(taskUUID);
         if (task.getStatus().isFinal() || task.getStatus().isSameOrHigher(newStatus)) {
             return;

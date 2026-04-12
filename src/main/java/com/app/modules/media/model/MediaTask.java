@@ -1,7 +1,7 @@
 package com.app.modules.media.model;
 
 import com.app.core.model.BaseModel;
-import com.app.modules.media.enums.UploadStatus;
+import com.app.modules.media.enums.TaskStatus;
 import com.app.modules.media.exceptions.MediaTaskValidationException;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -32,7 +32,7 @@ public class MediaTask extends BaseModel {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UploadStatus status;
+    private TaskStatus status;
 
     public MediaTask() {
         super(MediaTaskValidationException::new);

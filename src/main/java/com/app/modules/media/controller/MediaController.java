@@ -35,6 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.UUID;
 
 import static com.app.core.config.OpenAPIConfig.BEARER_SECURITY_SCHEME_NAME;
@@ -52,22 +53,20 @@ public class MediaController {
     private final FileService fileService;
     private final MediaService mediaService;
 
-    private final static String CHECK_UPLOAD_STATUS_TASK_PATH = "/api/media/tasks/";
-
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "upload media file")
     @RequireRole(value = Role.USER)
     @ApiResponse(responseCode = "202", description = "accepted",
-            content = @Content(schema = @Schema(implementation = MediaControllerDTO.Response.TaskStatus.class)))
+            content = @Content(schema = @Schema(implementation = MediaControllerDTO.Response.MediaUUID.class)))
     @ApiResponse(responseCode = "401", description = "unauthorized")
     @ApiResponse(responseCode = "403", description = "forbidden")
     @ApiResponse(responseCode = "404", description = "not found")
     @ApiResponse(responseCode = "415", description = "unsupported media type")
-    public ResponseEntity<MediaControllerDTO.Response.TaskStatus> uploadMedia(
+    public ResponseEntity<MediaControllerDTO.Response.MediaUUID> uploadMedia(
             @AuthenticationPrincipal Long initiatorId,
             @RequestPart("file") MultipartFile file
     ) {
-        TaskStatusDTO taskStatus = uploadService.upload(UploadMediaDTO
+        UUID mediaUuid = uploadService.upload(UploadMediaDTO
                 .builder()
                 .userId(initiatorId)
                 .file(file)
@@ -75,19 +74,31 @@ public class MediaController {
         );
 
         return ResponseEntity.accepted().body(
-                MediaControllerDTO.Response.TaskStatus
+                MediaControllerDTO.Response.MediaUUID
                         .builder()
-                        .taskUUID(taskStatus.taskUUID())
-                        .mediaUUID(taskStatus.mediaUUID())
-                        .status(taskStatus.status().toString())
-                        .statusCheckUrl(CHECK_UPLOAD_STATUS_TASK_PATH + taskStatus.taskUUID())
+                        .mediaUuid(mediaUuid)
                         .build()
         );
     }
 
+    @GetMapping("/tasks")
+    @RequireRole(Role.USER)
+    @Operation(summary = "all user tasks info")
+    @ApiResponse(responseCode = "200", description = "success",
+            content = @Content(schema = @Schema(implementation = MediaControllerDTO.Response.TaskStatus.class)))
+    @ApiResponse(responseCode = "401", description = "unauthorized")
+    @ApiResponse(responseCode = "403", description = "forbidden")
+    @ApiResponse(responseCode = "404", description = "not found")
+    public ResponseEntity<List<MediaControllerDTO.Response.TaskStatus>> listTaskInfo(
+            @AuthenticationPrincipal Long userId
+    ) {
+        List<TaskStatusDTO> tasks = taskService.getUserTasks(userId);
+
+        return ResponseEntity.ok().body(tasks.stream().map(MediaControllerMapper::toResponse).toList());
+    }
 
     @GetMapping("/tasks/{taskUuid}")
-    @PublicEndpoint
+    @RequireRole(Role.USER)
     @Operation(summary = "upload task info")
     @ApiResponse(responseCode = "200", description = "success",
             content = @Content(schema = @Schema(implementation = MediaControllerDTO.Response.TaskStatus.class)))
@@ -95,22 +106,16 @@ public class MediaController {
     @ApiResponse(responseCode = "403", description = "forbidden")
     @ApiResponse(responseCode = "404", description = "not found")
     public ResponseEntity<MediaControllerDTO.Response.TaskStatus> taskInfo(
-            @AuthenticationPrincipal Long initiatorId,
+            @AuthenticationPrincipal Long userId,
             @PathVariable("taskUuid") UUID taskUUID
     ) {
         TaskStatusDTO taskStatus = taskService.status(taskUUID);
 
-        if (!taskStatus.userId().equals(initiatorId)) {
+        if (!taskStatus.userId().equals(userId)) {
             throw ForbiddenException.insufficientPermissions();
         }
 
-        return ResponseEntity.ok().body(
-                MediaControllerDTO.Response.TaskStatus.builder()
-                        .taskUUID(taskStatus.taskUUID())
-                        .mediaUUID(taskStatus.mediaUUID())
-                        .status(taskStatus.status().toString())
-                        .build()
-        );
+        return ResponseEntity.ok().body(MediaControllerMapper.toResponse(taskStatus));
     }
 
     @GetMapping("/{mediaUuid}")
@@ -147,6 +152,30 @@ public class MediaController {
         mediaService.delete(mediaUuid);
         return ResponseEntity.noContent().build();
     }
+
+
+    //TODO: edit to "/{mediaUuid}/convert" + body "{sizes: [THUMBNAIL, ICON, ...]}"
+    @PostMapping("/{mediaUuid}/task")
+    @RequireRole(Role.USER)
+    @Operation(summary = "create task")
+    @ApiResponse(responseCode = "202", description = "accepted",
+            content = @Content(schema = @Schema(implementation = MediaControllerDTO.Response.TaskStatus.class)))
+    @ApiResponse(responseCode = "401", description = "unauthorized")
+    @ApiResponse(responseCode = "403", description = "forbidden")
+    @ApiResponse(responseCode = "404", description = "not found")
+    public ResponseEntity<MediaControllerDTO.Response.TaskStatus> newTask(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable UUID mediaUuid
+//            @RequestBody MediaControllerDTO.Request.CreateTask body
+    ) {
+        MediaDTO m = mediaService.getMediaByUuid(mediaUuid);
+        checkPermissions(m, userId);
+
+        TaskStatusDTO taskStatus = taskService.create(userId, m.uuid());
+
+        return ResponseEntity.accepted().body(MediaControllerMapper.toResponse(taskStatus));
+    }
+
 
     @GetMapping("/{mediaUuid}/download")
     @PublicEndpoint

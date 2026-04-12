@@ -1,9 +1,10 @@
 package com.app.modules.media.api;
 
 import com.app.modules.media.dto.TaskStatusDTO;
-import com.app.modules.media.enums.UploadStatus;
+import com.app.modules.media.enums.TaskStatus;
 import lombok.NonNull;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface TaskService {
@@ -11,8 +12,10 @@ public interface TaskService {
 
     TaskStatusDTO status(@NonNull UUID uuid);
 
+    List<TaskStatusDTO> getUserTasks(@NonNull Long userId);
+
     void update(@NonNull UUID taskUUID,
-                @NonNull UploadStatus newStatus);
+                @NonNull TaskStatus newStatus);
 
     void delete(@NonNull UUID taskUUID);
 

@@ -6,7 +6,7 @@ import com.app.modules.media.converter.MediaConverter;
 import com.app.modules.media.dto.ConvertResultDTO;
 import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.enums.MediaSize;
-import com.app.modules.media.enums.UploadStatus;
+import com.app.modules.media.enums.TaskStatus;
 import com.app.modules.media.model.MediaFile;
 import com.app.modules.media.model.MediaTask;
 import com.app.modules.media.repository.MediaFilePersistRepository;
@@ -42,17 +42,17 @@ public class MediaProcessingServiceImpl implements MediaProcessingService {
         long startTime = System.currentTimeMillis();
 
         MediaTask task = taskGetterRepository.getByUUID(taskUuid);
-        if (task.getStatus() != UploadStatus.PENDING) {
+        if (task.getStatus() != TaskStatus.PENDING) {
             log.warn("task={} already processing or completed, skipping", taskUuid);
             return;
         }
 
-        updateTaskStatus(task, UploadStatus.PROCESSING);
+        updateTaskStatus(task, TaskStatus.PROCESSING);
 
         MediaFile original = task.getMedia().getOriginal();
         if (original == null) {
             log.error("original file not found for task={}", taskUuid);
-            updateTaskStatus(task, UploadStatus.FAILED);
+            updateTaskStatus(task, TaskStatus.FAILED);
             return;
         }
 
@@ -80,7 +80,7 @@ public class MediaProcessingServiceImpl implements MediaProcessingService {
 
             converted.forEach(mediaFilePersistRepository::save);
 
-            updateTaskStatus(task, UploadStatus.COMPLETED);
+            updateTaskStatus(task, TaskStatus.COMPLETED);
 
             long duration = System.currentTimeMillis() - startTime;
             log.info("task={} completed in {} ms, converted {} files", taskUuid, duration, converted.size());
@@ -88,14 +88,14 @@ public class MediaProcessingServiceImpl implements MediaProcessingService {
         } catch (Exception e) {
             log.error("failed to process task={}", taskUuid, e);
             rollbackConvertedFiles(converted);
-            updateTaskStatus(task, UploadStatus.FAILED);
+            updateTaskStatus(task, TaskStatus.FAILED);
 
             long duration = System.currentTimeMillis() - startTime;
             log.info("task={} failed in {} ms", taskUuid, duration);
         }
     }
 
-    private void updateTaskStatus(MediaTask task, UploadStatus status) {
+    private void updateTaskStatus(MediaTask task, TaskStatus status) {
         task.setStatus(status);
         taskPersistRepository.save(task);
         log.debug("task={} status updated to: {}", task.getUuid(), status);

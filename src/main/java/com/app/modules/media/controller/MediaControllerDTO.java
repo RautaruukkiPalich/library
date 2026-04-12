@@ -11,9 +11,32 @@ import java.util.UUID;
 
 public class MediaControllerDTO {
     public static class Request {
+//        @Setter
+//        @Getter
+//        @Builder
+//        @NoArgsConstructor
+//        @AllArgsConstructor
+//        @JsonInclude(JsonInclude.Include.NON_NULL)
+//        @Schema(name = "new task", description = "create new task for media")
+//        public static class CreateTask {
+//        }
+
     }
 
     public static class Response {
+        @Setter
+        @Getter
+        @Builder
+        @NoArgsConstructor
+        @AllArgsConstructor
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @Schema(name = "media uuid", description = "uploaded media")
+        public static class MediaUUID {
+            @JsonProperty("media_uuid")
+            @Schema(description = "media uuid")
+            private UUID mediaUuid;
+        }
+
         @Setter
         @Getter
         @Builder
@@ -25,11 +48,11 @@ public class MediaControllerDTO {
 
             @JsonProperty("task_uuid")
             @Schema(description = "task uuid", requiredMode = Schema.RequiredMode.REQUIRED)
-            private UUID taskUUID;
+            private UUID taskUuid;
 
             @JsonProperty("media_uuid")
-            @Schema(description = "task uuid")
-            private UUID mediaUUID;
+            @Schema(description = "media uuid")
+            private UUID mediaUuid;
 
             @JsonProperty("status")
             @Schema(description = "task status", requiredMode = Schema.RequiredMode.REQUIRED)

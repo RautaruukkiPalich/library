@@ -5,7 +5,6 @@ import com.app.modules.media.api.MediaService;
 import com.app.modules.media.api.TaskService;
 import com.app.modules.media.api.UploadService;
 import com.app.modules.media.dto.MediaDTO;
-import com.app.modules.media.dto.TaskStatusDTO;
 import com.app.modules.media.dto.UploadMediaDTO;
 import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.enums.MediaSize;
@@ -18,25 +17,24 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @Slf4j
 @Transactional
 @AllArgsConstructor
 public class UploadServiceImpl implements UploadService {
-
-    private final TaskService taskService;
     private final MediaService mediaService;
     private final FileService fileService;
 
     @Override
-    public TaskStatusDTO upload(@NonNull UploadMediaDTO dto) {
+    public UUID upload(@NonNull UploadMediaDTO dto) {
         return upload(dto.file(), dto.userId());
     }
 
     @Override
-    public TaskStatusDTO upload(@NonNull MultipartFile file,
-                                @NonNull Long userId) {
+    public UUID upload(@NonNull MultipartFile file,
+                       @NonNull Long userId) {
         String filePath = null;
 
         String contentType = file.getContentType();
@@ -66,12 +64,10 @@ public class UploadServiceImpl implements UploadService {
                     file.getSize(),
                     MediaSize.ORIGINAL);
 
-            TaskStatusDTO task = taskService.create(userId, m.uuid());
+            log.info("upload completed: mediaUuid={}, filepath={}",
+                    m.uuid(), filePath);
 
-            log.info("upload completed: mediaId={}, taskId={}, filepath={}",
-                    task.mediaUUID(), task.taskUUID(), filePath);
-
-            return task;
+            return m.uuid();
         } catch (Exception e) {
             log.error("upload failed: {}", e.getMessage(), e);
             if (filePath != null && !filePath.isBlank()) {

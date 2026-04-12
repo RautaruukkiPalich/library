@@ -1,6 +1,6 @@
 package com.app.modules.media.repository;
 
-import com.app.modules.media.enums.UploadStatus;
+import com.app.modules.media.enums.TaskStatus;
 import com.app.modules.media.exceptions.MediaTaskNotFoundException;
 import com.app.modules.media.model.MediaTask;
 import lombok.NonNull;
@@ -14,10 +14,12 @@ public interface TaskGetterRepository {
 
     MediaTask getByUUID(@NonNull UUID uuid) throws MediaTaskNotFoundException;
 
-    List<MediaTask> findByStatus(@NonNull UploadStatus status,
+    List<MediaTask> findByStatus(@NonNull TaskStatus status,
                                  @NonNull Integer limit);
 
     Optional<MediaTask> findByMediaUuid(@NonNull UUID uuid);
 
     MediaTask getByMediaUuid(@NonNull UUID uuid) throws MediaTaskNotFoundException;
+
+    List<MediaTask> findByUserId(@NonNull Long userId);
 }
