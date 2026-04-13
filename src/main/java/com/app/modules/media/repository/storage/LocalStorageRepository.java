@@ -82,16 +82,16 @@ public class LocalStorageRepository implements FilePersistRepository, FileDelete
     }
 
     @Override
-    public Optional<Long> getSize(String path) {
+    public Long getSize(String path) {
         try {
             Path filePath = rootLocation.resolve(path).normalize();
             if (Files.exists(filePath)) {
-                return Optional.of(Files.size(filePath));
+                return Files.size(filePath);
             }
         } catch (IOException e) {
             log.error("failed to get file size: {}", path, e);
         }
-        return Optional.empty();
+        return 0L;
     }
 
     @Override

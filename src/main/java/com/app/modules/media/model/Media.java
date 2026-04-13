@@ -79,4 +79,17 @@ public class Media extends BaseModel {
         this.isPublic = isPublic;
         this.mediaContent = mediaType;
     }
+
+    public static Media create(
+            Long userId,
+            String originalFilename,
+            MediaContent mediaType
+    ) {
+        return new Media(
+                UUID.randomUUID(),
+                userId,
+                originalFilename,
+                false,
+                mediaType);
+    }
 }

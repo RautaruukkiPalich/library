@@ -88,6 +88,6 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public Long fileSize(@NonNull String relativePath) {
-        return fileGetterRepository.getSize(relativePath).orElse(0L);
+        return fileGetterRepository.getSize(relativePath);
     }
 }

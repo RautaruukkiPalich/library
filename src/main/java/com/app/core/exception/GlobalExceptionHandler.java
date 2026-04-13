@@ -2,6 +2,8 @@ package com.app.core.exception;
 
 import com.app.core.response.ErrorResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -80,6 +82,32 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.info("Validation: {}", ex.getMessage());
 
         return buildResponseWithDetails(HttpStatus.BAD_REQUEST, ex.getMessage(), request, ex.getErrorsMap());
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(
+            ConstraintViolationException ex,
+            WebRequest request) {
+
+        Map<String, String> errors = ex.getConstraintViolations().stream()
+                .collect(Collectors.toMap(
+                        violation -> {
+                            String path = violation.getPropertyPath().toString();
+                            return path.substring(path.lastIndexOf('.') + 1);
+                        },
+                        ConstraintViolation::getMessage,
+                        (v1, v2) -> v1 + "; " + v2
+                ));
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "validation error",
+                "Invalid input parameters",
+                getPath(request),
+                errors
+        );
+
+        return ResponseEntity.badRequest().body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)

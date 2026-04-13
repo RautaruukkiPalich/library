@@ -9,12 +9,17 @@ import com.app.modules.media.repository.TaskPersistRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -135,4 +140,47 @@ public class PostgresTaskRepository implements TaskGetterRepository, TaskPersist
     public void delete(@NonNull MediaTask task) {
         em.remove(task);
     }
+
+
+    @Override
+    public List<MediaTask> find(@NonNull Long userId, @NonNull Pageable pageable, TaskStatus status) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<MediaTask> cq = cb.createQuery(MediaTask.class);
+        Root<MediaTask> root = cq.from(MediaTask.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(cb.equal(root.get("userId"), userId));
+
+        if (status != null) {
+            predicates.add(cb.equal(root.get("status"), status));
+        }
+
+        cq.where(predicates.toArray(new Predicate[0]));
+        cq.orderBy(cb.asc(root.get("createdAt")));
+
+        return em.createQuery(cq)
+                .setFirstResult((int) pageable.getOffset())
+                .setMaxResults(pageable.getPageSize())
+                .getResultList();
+    }
+
+    @Override
+    public Long count(@NonNull Long userId, TaskStatus status) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<MediaTask> root = countQuery.from(MediaTask.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(cb.equal(root.get("userId"), userId));
+
+        if (status != null) {
+            predicates.add(cb.equal(root.get("status"), status));
+        }
+
+        countQuery.where(predicates.toArray(new Predicate[0]));
+        countQuery.select(cb.countDistinct(root));
+
+        return em.createQuery(countQuery).getSingleResult();
+    }
+
 }

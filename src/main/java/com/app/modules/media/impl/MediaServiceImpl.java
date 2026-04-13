@@ -101,24 +101,18 @@ public class MediaServiceImpl implements MediaService {
 
     @Override
     public void delete(@NonNull UUID mediaUuid) {
-        Media m = mediaGetterRepository.getByUuid(mediaUuid);
-        List<String> filePaths = m.getFiles().stream()
+        Media media = mediaGetterRepository.getByUuid(mediaUuid);
+        delete(media);
+    }
+
+    @Override
+    public void delete(@NonNull Media media) {
+        List<String> filePaths = media.getFiles().stream()
                 .map(MediaFile::getPath)
                 .toList();
 
-        ts.deleteByMediaUuid(mediaUuid);
-        mediaDeleterRepository.delete(m);
-
-//        CompletableFuture.runAsync(() -> {
-//            for (String path : filePaths) {
-//                try {
-//                    fs.delete(path);
-//                    log.debug("deleted file: {}", path);
-//                } catch (Exception e) {
-//                    log.error("failed to delete file: {}, manual cleanup required", path, e);
-//                }
-//            }
-//        });
+        ts.deleteByMediaUuid(media.getUuid());
+        mediaDeleterRepository.delete(media);
 
         for (String path : filePaths) {
             try {
@@ -130,4 +124,16 @@ public class MediaServiceImpl implements MediaService {
         }
 
     }
+
+
+//        CompletableFuture.runAsync(() -> {
+//            for (String path : filePaths) {
+//                try {
+//                    fs.delete(path);
+//                    log.debug("deleted file: {}", path);
+//                } catch (Exception e) {
+//                    log.error("failed to delete file: {}, manual cleanup required", path, e);
+//                }
+//            }
+//        });
 }

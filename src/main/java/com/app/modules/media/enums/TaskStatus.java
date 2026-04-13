@@ -8,13 +8,14 @@ import java.util.Arrays;
 @Getter
 @AllArgsConstructor
 public enum TaskStatus {
-    PENDING(0),
-    PROCESSING(1),
-    CANCELLED(2),
-    FAILED(3),
-    COMPLETED(4);
+    PENDING(0, "pending"),
+    PROCESSING(1, "processing"),
+    CANCELLED(2, "cancelled"),
+    FAILED(3, "failed"),
+    COMPLETED(4, "completed");
 
     private final int code;
+    private final String value;
 
     public boolean isFinal() {
         return this == COMPLETED || this == FAILED || this == CANCELLED;
@@ -33,5 +34,18 @@ public enum TaskStatus {
                 .filter(status -> status.getCode() == code)
                 .findFirst()
                 .orElse(PENDING);
+    }
+
+    public static TaskStatus fromValue(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        String finalValue = value.toLowerCase().trim();
+
+        return Arrays.stream(values())
+                .filter(status -> status.getValue().equalsIgnoreCase(finalValue))
+                .findFirst()
+                .orElse(null);
     }
 }

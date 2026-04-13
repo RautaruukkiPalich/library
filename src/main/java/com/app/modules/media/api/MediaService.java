@@ -4,6 +4,7 @@ import com.app.modules.media.dto.MediaDTO;
 import com.app.modules.media.dto.MediaFileDTO;
 import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.enums.MediaSize;
+import com.app.modules.media.model.Media;
 import lombok.NonNull;
 
 import java.util.UUID;
@@ -27,4 +28,6 @@ public interface MediaService {
                             @NonNull MediaSize size);
 
     void delete(@NonNull UUID mediaUuid);
+
+    void delete(@NonNull Media media);
 }

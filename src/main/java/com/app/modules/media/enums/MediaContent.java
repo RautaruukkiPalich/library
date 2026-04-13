@@ -1,79 +1,28 @@
 package com.app.modules.media.enums;
 
-import com.app.modules.media.source.MediaSource;
-import com.app.modules.media.utils.FileValidator;
+import com.app.modules.media.properties.MediaTypeProperties;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.util.Map;
-import java.util.Set;
-
 @Getter
+@AllArgsConstructor
 public enum MediaContent implements CodeBasedEnum {
-    IMAGE(
-            "image",
-            1L,
-            10 * 1024 * 1024L,
-            Map.of(
-                    "jpeg", "image/jpeg",
-                    "jpg", "image/jpeg",
-                    "png", "image/png",
-                    "gif", "image/gif",
-                    "webp", "image/webp"),
-            "webp", "image/webp"
-    ) {
-        @Override
-        public void validate(@NonNull MediaSource mediaSource) {
-            FileValidator.baseValidation(mediaSource);
-            FileValidator.validateImageFile(mediaSource, this);
-        }
-    },
-    VIDEO(
-            "video",
-            1L,
-            20 * 1024 * 1024L,
-            Map.of(
-                    "mp4", "video/mp4",
-                    "avi", "video/x-msvideo",
-                    "mov", "video/quicktime",
-                    "mkv", "video/x-matroska"
-            ),
-            "mp4", "video/mp4"
-    ) {
-        @Override
-        public void validate(@NonNull MediaSource mediaSource) {
-            FileValidator.baseValidation(mediaSource);
-        }
-    };
+    IMAGE("image", MediaTypeProperties.IMAGE),
+    VIDEO("video", MediaTypeProperties.VIDEO);
 
     private final String code;
-    private final Long minSize;
-    private final Long maxSize;
-    private final Map<String, String> extensionMap;
-    private final Set<String> extensions;
-    private final Set<String> contentTypes;
-    private final String targetExt;
-    private final String targetContentType;
-
-    MediaContent(String code, Long minSize, Long maxSize, Map<String, String> extensionMap,
-                 String targetConvertExtension, String targetConvertContentType) {
-        this.code = code;
-        this.minSize = minSize;
-        this.maxSize = maxSize;
-        this.extensionMap = extensionMap;
-        this.extensions = Set.copyOf(extensionMap.keySet());
-        this.contentTypes = Set.copyOf(extensionMap.values());
-        this.targetExt = targetConvertExtension;
-        this.targetContentType = targetConvertContentType;
-    }
+    private final MediaTypeProperties props;
 
     public static MediaContent fromCode(String code) throws IllegalArgumentException {
         return CodeBasedEnum.fromCode(MediaContent.class, code);
     }
 
     public static MediaContent fromContentType(@NonNull String contentType) throws IllegalArgumentException {
-        if (contentType.startsWith("image/")) return IMAGE;
-        if (contentType.startsWith("video/")) return VIDEO;
+        String normalizedContentType = contentType.toLowerCase().strip();
+
+        if (normalizedContentType.startsWith("image/")) return IMAGE;
+        if (normalizedContentType.startsWith("video/")) return VIDEO;
         throw new IllegalArgumentException("unsupported content type: " + contentType);
     }
 
@@ -82,5 +31,8 @@ public enum MediaContent implements CodeBasedEnum {
         return getPreparedCode();
     }
 
-    public abstract void validate(@NonNull MediaSource mediaSource);
+    @Override
+    public String getCode() {
+        return code;
+    }
 }

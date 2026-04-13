@@ -11,5 +11,5 @@ public interface FileGetterRepository {
 
     InputStream getByRelativePath(@NonNull String path) throws FileNotFoundException;
 
-    Optional<Long> getSize(String path);
+    Long getSize(String path);
 }

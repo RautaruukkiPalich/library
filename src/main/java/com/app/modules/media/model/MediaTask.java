@@ -38,6 +38,29 @@ public class MediaTask extends BaseModel {
         super(MediaTaskValidationException::new);
     }
 
+    public MediaTask(UUID uuid,
+                     Long userId,
+                     Media media,
+                     TaskStatus taskStatus) {
+        super(MediaTaskValidationException::new);
+        this.uuid = uuid;
+        this.userId = userId;
+        this.media = media;
+        this.status = taskStatus;
+    }
+
+    public static MediaTask create(
+            Long userId,
+            Media media
+    ) {
+        return new MediaTask(
+                UUID.randomUUID(),
+                userId,
+                media,
+                TaskStatus.PENDING
+        );
+    }
+
     public void setMedia(@NonNull Media media) {
         this.mediaUuid = media.getUuid();
         this.media = media;

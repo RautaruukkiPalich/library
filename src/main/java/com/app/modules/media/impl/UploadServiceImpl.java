@@ -39,7 +39,7 @@ public class UploadServiceImpl implements UploadService {
             String contentType = mediaSource.getSanitizedContentType();
             MediaContent type = MediaContent.fromContentType(contentType);
 
-            type.validate(mediaSource);
+//            type.validate(mediaSource);
 
             String originalFilename = mediaSource.getOriginalFilename();
             String filename = FileOperations.extractFilename(originalFilename);

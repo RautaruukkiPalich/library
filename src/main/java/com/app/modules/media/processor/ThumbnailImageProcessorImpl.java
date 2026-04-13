@@ -41,12 +41,14 @@ public class ThumbnailImageProcessorImpl implements ImageProcessor {
 
     @Override
     public Set<String> getSupportedOutputFormats() {
-        return MediaContent.IMAGE.getExtensions();
+        return MediaContent.IMAGE.getProps().extensions();
     }
 
     @Override
     public boolean canProcess(String contentType, String extension) {
-        return contentType != null && contentType.startsWith("image/") ||
-                extension != null && MediaContent.IMAGE.getExtensions().contains(extension.toLowerCase());
+        return contentType != null &&
+                contentType.startsWith("image/") &&
+                extension != null &&
+                MediaContent.IMAGE.getProps().extensions().contains(extension.toLowerCase());
     }
 }

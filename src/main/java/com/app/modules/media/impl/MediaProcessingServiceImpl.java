@@ -63,13 +63,13 @@ public class MediaProcessingServiceImpl implements MediaProcessingService {
                 MediaContent content = task.getMedia().getMediaContent();
                 ConvertResultDTO res = mediaConverter.convert(
                         original.getMediaUuid(), original.getPath(),
-                        size, content.getTargetExt());
+                        size, content.getProps().targetExtension());
 
                 MediaFile mf = new MediaFile();
                 mf.setUuid(UUID.randomUUID());
                 mf.setFilename(original.getFilename());
                 mf.setExtension(res.extension());
-                mf.setContentType(content.getTargetContentType());
+                mf.setContentType(content.getProps().targetContentType());
                 mf.setMediaUuid(original.getMediaUuid());
                 mf.setMediaSize(size);
                 mf.setFileSize(res.size());

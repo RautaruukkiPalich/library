@@ -64,6 +64,27 @@ public class MediaFile extends BaseModel {
         setMedia(media);
     }
 
+    public static MediaFile create(
+            String filename,
+            String extension,
+            String contentType,
+            MediaSize mediaSize,
+            @NonNull Media media,
+            Long fileSize,
+            String path
+    ) {
+        return new MediaFile(
+                UUID.randomUUID(),
+                filename,
+                extension,
+                contentType,
+                mediaSize,
+                media,
+                fileSize,
+                path
+        );
+    }
+
     public void setMedia(@NonNull Media m) {
         this.media = m;
         this.mediaUuid = m.getUuid();
