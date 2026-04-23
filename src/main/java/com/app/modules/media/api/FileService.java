@@ -4,6 +4,7 @@ import com.app.modules.media.source.MediaSource;
 import lombok.NonNull;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.UUID;
 
 public interface FileService {
@@ -17,6 +18,10 @@ public interface FileService {
     InputStream download(@NonNull String relativePath);
 
     void delete(@NonNull String relativePath);
+
+    void deleteFilesAsync(@NonNull List<String> paths, @NonNull UUID mediaUuid);
+
+    void deleteFiles(@NonNull List<String> paths, @NonNull UUID mediaUuid);
 
     Long fileSize(@NonNull String relativePath);
 }

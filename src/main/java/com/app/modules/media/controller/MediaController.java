@@ -9,6 +9,7 @@ import com.app.modules.media.dto.MediaFileDTO;
 import com.app.modules.media.dto.TaskStatusDTO;
 import com.app.modules.media.enums.MediaSize;
 import com.app.modules.media.enums.TaskStatus;
+import com.app.modules.media.properties.task.ImageConvertProperties;
 import com.app.modules.media.source.MultipartFileMediaSource;
 import com.app.modules.media.usecase.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,7 +33,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Function;
 
 import static com.app.core.config.OpenAPIConfig.BEARER_SECURITY_SCHEME_NAME;
 
@@ -172,7 +172,7 @@ public class MediaController {
     }
 
 
-    //TODO: edit to "/{mediaUuid}/convert" + body "{sizes: [THUMBNAIL, ICON, ...]}"
+    //TODO: edit to "/{mediaUuid}/convert" + body "{sizes: [THUMBNAIL, ICON, ..., CUSTOM], (if CUSTOM)  metadata{"width":..}}"
     @PostMapping("/{mediaUuid}/task")
     @RequireRole(Role.USER)
     @Operation(summary = "create task")
@@ -186,8 +186,11 @@ public class MediaController {
             @PathVariable UUID mediaUuid
 //            @RequestBody MediaControllerDTO.Request.CreateTask body
     ) {
+        //TODO: edit hardcoded convert properties
+        ImageConvertProperties props = ImageConvertProperties.fromMediaSize(MediaSize.MEDIUM);
+
         TaskStatusDTO taskStatus = postMediaTaskUseCase.execute(
-                new PostMediaTaskUseCase.Input(userId, mediaUuid));
+                new PostMediaTaskUseCase.Input(userId, mediaUuid, props));
 
         return ResponseEntity.accepted().body(MediaControllerMapper.toResponse(taskStatus));
     }
@@ -226,9 +229,5 @@ public class MediaController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
                 .contentLength(mf.fileSize())
                 .body(new InputStreamResource(dto.stream()));
-    }
-
-    private <T, R> ResponseEntity<List<R>> okList(List<T> items, Function<T, R> mapper) {
-        return ResponseEntity.ok(items.stream().map(mapper).toList());
     }
 }

@@ -46,9 +46,9 @@ public class PostgresTaskRepository implements TaskGetterRepository, TaskPersist
         try {
             return Optional.of(
                     em.createQuery(
-                                    "SELECT DISTINCT t FROM MediaTask t " +
-                                            "LEFT JOIN FETCH t.media " +
-                                            "WHERE t.uuid = :uuid", MediaTask.class)
+                                    """
+                                            SELECT DISTINCT t FROM MediaTask t
+                                            WHERE t.uuid = :uuid""", MediaTask.class)
                             .setParameter("uuid", uuid)
                             .getSingleResult()
             );
@@ -78,9 +78,9 @@ public class PostgresTaskRepository implements TaskGetterRepository, TaskPersist
         try {
             return Optional.of(
                     em.createQuery(
-                                    "SELECT DISTINCT t FROM MediaTask t " +
-                                            "LEFT JOIN FETCH t.media " +
-                                            "WHERE t.mediaUuid = :media_uuid", MediaTask.class)
+                                    """
+                                            SELECT DISTINCT t FROM MediaTask t
+                                            WHERE t.mediaUuid = :media_uuid""", MediaTask.class)
                             .setParameter("media_uuid", mediaUuid)
                             .getSingleResult()
             );
@@ -98,18 +98,19 @@ public class PostgresTaskRepository implements TaskGetterRepository, TaskPersist
     @Override
     public List<MediaTask> findByUserId(@NonNull Long userId) {
         return em.createQuery(
-                        "SELECT DISTINCT t FROM MediaTask t " +
-                                "LEFT JOIN FETCH t.media " +
-                                "WHERE t.userId = :userId", MediaTask.class)
+                        """
+                                SELECT DISTINCT t FROM MediaTask t
+                                WHERE t.userId = :userId""", MediaTask.class)
                 .setParameter("userId", userId)
                 .getResultList();
     }
 
     List<UUID> findOldestUuidsByStatus(@NonNull TaskStatus status, @NonNull Pageable pageable) {
         return em.createQuery(
-                        "SELECT t.uuid FROM MediaTask t " +
-                                "WHERE t.status = :status " +
-                                "ORDER BY t.createdAt ASC", UUID.class)
+                        """
+                                SELECT t.uuid FROM MediaTask t
+                                WHERE t.status = :status
+                                ORDER BY t.createdAt ASC""", UUID.class)
                 .setParameter("status", status)
                 .setFirstResult((int) pageable.getOffset())
                 .setMaxResults(pageable.getPageSize())
@@ -117,13 +118,13 @@ public class PostgresTaskRepository implements TaskGetterRepository, TaskPersist
     }
 
     //TODO: add pagination
+    //                                        LEFT JOIN FETCH t.media
     List<MediaTask> findTasksWithMedia(@NonNull List<UUID> uuids) {
         return uuids.isEmpty() ?
                 List.of() :
                 em.createQuery(
                                 """
                                         SELECT DISTINCT t FROM MediaTask t
-                                        LEFT JOIN FETCH t.media
                                         WHERE t.uuid IN :uuids
                                         """, MediaTask.class
                         )

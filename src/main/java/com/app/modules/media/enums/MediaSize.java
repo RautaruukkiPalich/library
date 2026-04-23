@@ -13,7 +13,8 @@ public enum MediaSize implements CodeBasedEnum {
     MEDIUM("medium", 800, 600, true, false),
     SMALL("small", 400, 300, true, false),
     THUMBNAIL("thumbnail", 150, 150, false, true),
-    ICON("icon", 50, 50, false, true);
+    ICON("icon", 50, 50, false, true),
+    CUSTOM("custom", 0, 0, true, false);
 
     private final String code;
     private final int width;

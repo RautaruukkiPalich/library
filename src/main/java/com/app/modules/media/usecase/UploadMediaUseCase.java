@@ -53,8 +53,14 @@ public class UploadMediaUseCase extends BaseCommandUseCase<UploadMediaUseCase.In
             String filename = FileOperations.extractFilename(originalFilename);
             String extension = FileOperations.extractExtension(originalFilename);
 
-            MediaFile mf = MediaFile.create(filename, extension, contentType, MediaSize.ORIGINAL,
-                    m, mediaSource.getSize(), filePath);
+            MediaFile mf = MediaFile.create(
+                    filename,
+                    extension,
+                    contentType,
+                    MediaSize.ORIGINAL,
+                    m,
+                    mediaSource.getSize(),
+                    filePath);
             mediaFilePersistRepository.save(mf);
 
             log.info("upload completed: mediaUuid={}, filepath={}",

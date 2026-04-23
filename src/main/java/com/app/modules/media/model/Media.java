@@ -31,7 +31,7 @@ public class Media extends BaseModel {
     private Boolean isPublic;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "media_type", nullable = false)
     private MediaContent mediaContent;
 
     @OneToMany(mappedBy = "media", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

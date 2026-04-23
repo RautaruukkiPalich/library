@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -107,21 +106,22 @@ public class MediaServiceImpl implements MediaService {
 
     @Override
     public void delete(@NonNull Media media) {
-        List<String> filePaths = media.getFiles().stream()
-                .map(MediaFile::getPath)
-                .toList();
+//        List<String> filePaths = media.getFiles().stream()
+//                .map(MediaFile::getPath)
+//                .toList();
 
+        // delete task?
         ts.deleteByMediaUuid(media.getUuid());
         mediaDeleterRepository.delete(media);
-
-        for (String path : filePaths) {
-            try {
-                fs.delete(path);
-                log.info("deleted file: {}", path);
-            } catch (Exception e) {
-                log.error("failed to delete file: {}, manual cleanup required", path, e);
-            }
-        }
+//
+//        for (String path : filePaths) {
+//            try {
+//                fs.delete(path);
+//                log.info("deleted file: {}", path);
+//            } catch (Exception e) {
+//                log.error("failed to delete file: {}, manual cleanup required", path, e);
+//            }
+//        }
 
     }
 

@@ -1,5 +1,7 @@
 package com.app.modules.media.impl;
 
+import com.app.core.config.AsyncConfig;
+import com.app.core.exception.NotFoundException;
 import com.app.modules.media.api.FileService;
 import com.app.modules.media.dto.FileMetadata;
 import com.app.modules.media.repository.FileDeleteRepository;
@@ -10,12 +12,15 @@ import com.app.modules.media.utils.FileOperations;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -81,9 +86,49 @@ public class FileServiceImpl implements FileService {
                 fileDeleteRepository.delete(relativePath);
                 log.info("file={} deleted", relativePath);
             } catch (Exception ex) {
-                log.error("failed to delete file={}", relativePath, ex);
+                log.error("failed to delete file={}, try delete manually", relativePath, ex);
             }
         }
+    }
+
+    @Async(AsyncConfig.FILE_DELETION)
+    @Override
+    public void deleteFilesAsync(@NonNull List<String> paths, @NonNull UUID mediaUuid) {
+        deleteFiles(paths, mediaUuid);
+    }
+
+    @Override
+    public void deleteFiles(@NonNull List<String> paths, @NonNull UUID mediaUuid) {
+        if (paths.isEmpty()) {
+            log.debug("no files to delete for media={}", mediaUuid);
+            return;
+        }
+
+        List<String> nonNullPaths = paths.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        long successCount = nonNullPaths
+                .stream()
+                .filter(path -> deleteFile(path, mediaUuid))
+                .count();
+
+        log.info("deleted {} of {} files for media={}", successCount, nonNullPaths.size(), mediaUuid);
+    }
+
+    private boolean deleteFile(@NonNull String path, @NonNull UUID mediaUuid) {
+        try {
+            log.info("try delete path={} media={}", path, mediaUuid);
+            fileDeleteRepository.delete(path);
+            log.info("file path={} deleted success", path);
+            return true;
+        } catch (NotFoundException e) {
+            log.error("failed to delete file path={} for media={}. file does not exist", path, mediaUuid);
+        } catch (IOException e) {
+            log.error("failed to delete file path={} for media={} cause={}; try delete manually", path, mediaUuid, e.getMessage());
+        }
+        return false;
     }
 
     @Override

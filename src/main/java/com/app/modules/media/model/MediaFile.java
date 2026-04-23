@@ -8,7 +8,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Getter
@@ -39,6 +43,10 @@ public class MediaFile extends BaseModel {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MediaSize mediaSize;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "metadata", columnDefinition = "jsonb")
+    private Map<String, Object> metadata = new HashMap<>();
 
     @Column(nullable = false)
     private Long fileSize;
@@ -111,5 +119,23 @@ public class MediaFile extends BaseModel {
                 .mediaSize(this.mediaSize)
                 .relativePath(this.path)
                 .build();
+    }
+
+    public void setWidth(Integer width) {
+        metadata.put("width", width);
+    }
+
+    public void setHeight(Integer height) {
+        metadata.put("height", height);
+    }
+
+    @Transient
+    public Integer getWidth() {
+        return (Integer) metadata.get("width");
+    }
+
+    @Transient
+    public Integer getHeight() {
+        return (Integer) metadata.get("height");
     }
 }
