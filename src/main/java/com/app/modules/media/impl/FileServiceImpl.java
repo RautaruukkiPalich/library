@@ -4,11 +4,14 @@ import com.app.core.config.AsyncConfig;
 import com.app.core.exception.NotFoundException;
 import com.app.modules.media.api.FileService;
 import com.app.modules.media.dto.FileMetadata;
+import com.app.modules.media.enums.MediaContent;
+import com.app.modules.media.metadata.Dimension;
 import com.app.modules.media.repository.FileDeleteRepository;
 import com.app.modules.media.repository.FileGetterRepository;
 import com.app.modules.media.repository.FilePersistRepository;
 import com.app.modules.media.source.MediaSource;
 import com.app.modules.media.utils.FileOperations;
+import com.app.modules.media.utils.ImageResolutionUtil;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -31,11 +34,6 @@ public class FileServiceImpl implements FileService {
     private final FileGetterRepository fileGetterRepository;
     private final FilePersistRepository filePersistRepository;
     private final FileDeleteRepository fileDeleteRepository;
-
-    @Override
-    public InputStream download(@NonNull String relativePath) {
-        return fileGetterRepository.getByRelativePath(relativePath);
-    }
 
     @Override
     public String upload(
@@ -134,5 +132,18 @@ public class FileServiceImpl implements FileService {
     @Override
     public Long fileSize(@NonNull String relativePath) {
         return fileGetterRepository.getSize(relativePath);
+    }
+
+    public Dimension fileDimension(@NonNull String relativePath,
+                                   @NonNull MediaContent type) {
+        InputStream source = fileGetterRepository.getByRelativePath(relativePath);
+        switch (type) {
+            case IMAGE -> {
+                return ImageResolutionUtil.getImageDimension(source);
+            }
+            case VIDEO -> {//TODO: video dimension};
+            }
+        }
+        return null;
     }
 }

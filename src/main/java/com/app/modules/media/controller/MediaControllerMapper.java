@@ -40,6 +40,7 @@ public class MediaControllerMapper {
                 .mediaUuid(task.mediaUUID())
                 .statusCheckUrl(STATUS_TASK_PATH + task.taskUUID())
                 .status(task.status().toString())
+                .failReason(task.failReason())
                 .build();
     }
 }

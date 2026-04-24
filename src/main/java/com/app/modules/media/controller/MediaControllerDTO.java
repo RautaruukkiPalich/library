@@ -61,6 +61,10 @@ public class MediaControllerDTO {
             @JsonProperty("status_check_url")
             @Schema(description = "url to check task status")
             private String statusCheckUrl;
+
+            @JsonProperty("fail_reason")
+            @Schema(description = "fail reason if exists")
+            private String failReason;
         }
 
         @Setter

@@ -9,7 +9,8 @@ import com.app.modules.media.dto.MediaFileDTO;
 import com.app.modules.media.dto.TaskStatusDTO;
 import com.app.modules.media.enums.MediaSize;
 import com.app.modules.media.enums.TaskStatus;
-import com.app.modules.media.properties.task.ImageConvertProperties;
+import com.app.modules.media.metadata.ImageMetadataImpl;
+import com.app.modules.media.metadata.MediaMetadata;
 import com.app.modules.media.source.MultipartFileMediaSource;
 import com.app.modules.media.usecase.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -186,8 +187,8 @@ public class MediaController {
             @PathVariable UUID mediaUuid
 //            @RequestBody MediaControllerDTO.Request.CreateTask body
     ) {
-        //TODO: edit hardcoded convert properties
-        ImageConvertProperties props = ImageConvertProperties.fromMediaSize(MediaSize.MEDIUM);
+        //TODO: edit hardcoded media metadata
+        MediaMetadata props = ImageMetadataImpl.create(MediaSize.MEDIUM);
 
         TaskStatusDTO taskStatus = postMediaTaskUseCase.execute(
                 new PostMediaTaskUseCase.Input(userId, mediaUuid, props));

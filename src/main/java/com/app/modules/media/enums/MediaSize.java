@@ -3,7 +3,7 @@ package com.app.modules.media.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @AllArgsConstructor
@@ -30,7 +30,7 @@ public enum MediaSize implements CodeBasedEnum {
         return CodeBasedEnum.fromCode(MediaSize.class, code, MediaSize.ORIGINAL);
     }
 
-    public static final List<MediaSize> sizesToConvert = List.of(
+    public static final Set<MediaSize> DEFAULT_MEDIA_SIZE = Set.of(
             ICON,
             THUMBNAIL,
             SMALL,

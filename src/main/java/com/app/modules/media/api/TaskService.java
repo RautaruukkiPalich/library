@@ -1,7 +1,10 @@
 package com.app.modules.media.api;
 
 import com.app.modules.media.dto.TaskStatusDTO;
+import com.app.modules.media.enums.MediaSize;
 import com.app.modules.media.enums.TaskStatus;
+import com.app.modules.media.metadata.MediaMetadata;
+import com.app.modules.media.model.Media;
 import lombok.NonNull;
 
 import java.util.List;
@@ -20,4 +23,13 @@ public interface TaskService {
     void delete(@NonNull UUID taskUUID);
 
     void deleteByMediaUuid(@NonNull UUID mediaUuid);
+
+    TaskStatusDTO createImageConvertTask(@NonNull Media media,
+                                         @NonNull MediaSize size);
+
+    TaskStatusDTO createConvertTask(@NonNull Media media,
+                                    @NonNull MediaMetadata metadata);
+
+    void prepareTaskStatus(@NonNull UUID taskUuid,
+                           @NonNull TaskStatus status);
 }

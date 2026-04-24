@@ -2,8 +2,11 @@ package com.app.modules.media.usecase;
 
 import com.app.core.usecase.BaseCommandUseCase;
 import com.app.modules.media.api.FileService;
+import com.app.modules.media.api.TaskService;
 import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.enums.MediaSize;
+import com.app.modules.media.metadata.MediaMetadata;
+import com.app.modules.media.metadata.MediaMetadataService;
 import com.app.modules.media.model.Media;
 import com.app.modules.media.model.MediaFile;
 import com.app.modules.media.repository.MediaFilePersistRepository;
@@ -21,6 +24,8 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.UUID;
 
+import static com.app.modules.media.enums.MediaSize.DEFAULT_MEDIA_SIZE;
+
 @Component
 @Slf4j
 @Validated
@@ -30,6 +35,8 @@ public class UploadMediaUseCase extends BaseCommandUseCase<UploadMediaUseCase.In
     private final MediaFilePersistRepository mediaFilePersistRepository;
     private final FileService fileService;
     private final MediaValidationService fileValidator;
+    private final MediaMetadataService mediaMetadataService;
+    private final TaskService taskService;
 
     @Override
     public UUID execute(@NonNull Input input) {
@@ -45,29 +52,31 @@ public class UploadMediaUseCase extends BaseCommandUseCase<UploadMediaUseCase.In
 
             String originalFilename = mediaSource.getOriginalFilename();
 
-            Media m = Media.create(userId, originalFilename, type);
-            mediaPersistRepository.save(m);
+            Media media = Media.create(userId, originalFilename, type);
+            mediaPersistRepository.save(media);
 
-            filePath = fileService.upload(mediaSource, m.getUuid());
+            filePath = fileService.upload(mediaSource, media.getUuid());
+            Long fileSize = fileService.fileSize(filePath);
 
             String filename = FileOperations.extractFilename(originalFilename);
-            String extension = FileOperations.extractExtension(originalFilename);
+            MediaMetadata md = mediaMetadataService.getMetadata(type, filePath);
 
-            MediaFile mf = MediaFile.create(
-                    filename,
-                    extension,
-                    contentType,
-                    MediaSize.ORIGINAL,
-                    m,
-                    mediaSource.getSize(),
-                    filePath);
-            mediaFilePersistRepository.save(mf);
+            if (type == MediaContent.IMAGE) {
+                for (MediaSize size : DEFAULT_MEDIA_SIZE) {
+                    taskService.createImageConvertTask(media, size);
+                }
+            }
+
+            MediaFile mediaFile = MediaFile.create(
+                    filename, media, fileSize, filePath, md);
+            mediaFilePersistRepository.save(mediaFile);
 
             log.info("upload completed: mediaUuid={}, filepath={}",
-                    m.getUuid(), filePath);
+                    media.getUuid(), filePath);
 
-            return m.getUuid();
-        } catch (Exception e) {
+            return media.getUuid();
+        } catch (
+                Exception e) {
             log.error("upload failed: {}", e.getMessage(), e);
             if (filePath != null && !filePath.isBlank()) {
                 fileService.delete(filePath);
@@ -81,4 +90,6 @@ public class UploadMediaUseCase extends BaseCommandUseCase<UploadMediaUseCase.In
             @NotNull MediaSource mediaSource
     ) {
     }
+
+
 }

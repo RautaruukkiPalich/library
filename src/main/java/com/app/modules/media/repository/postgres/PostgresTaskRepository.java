@@ -74,25 +74,15 @@ public class PostgresTaskRepository implements TaskGetterRepository, TaskPersist
     }
 
     @Override
-    public Optional<MediaTask> findByMediaUuid(@NonNull UUID mediaUuid) {
-        try {
-            return Optional.of(
-                    em.createQuery(
-                                    """
-                                            SELECT DISTINCT t FROM MediaTask t
-                                            WHERE t.mediaUuid = :media_uuid""", MediaTask.class)
-                            .setParameter("media_uuid", mediaUuid)
-                            .getSingleResult()
-            );
-        } catch (NoResultException e) {
-            return Optional.empty();
-        }
-    }
+    public List<MediaTask> findByMediaUuid(@NonNull UUID mediaUuid) {
+        return em.createQuery(
+                        """
+                                SELECT DISTINCT t FROM MediaTask t
+                                WHERE t.mediaUuid = :media_uuid""", MediaTask.class)
+                .setParameter("media_uuid", mediaUuid)
+                .getResultList();
 
-    @Override
-    public MediaTask getByMediaUuid(@NonNull UUID mediaUuid) throws MediaTaskNotFoundException {
-        return findByMediaUuid(mediaUuid).orElseThrow(
-                () -> new MediaTaskNotFoundException("task with media_uuid %s not found".formatted(mediaUuid)));
+
     }
 
     @Override
@@ -118,7 +108,7 @@ public class PostgresTaskRepository implements TaskGetterRepository, TaskPersist
     }
 
     //TODO: add pagination
-    //                                        LEFT JOIN FETCH t.media
+//                                        LEFT JOIN FETCH t.media
     List<MediaTask> findTasksWithMedia(@NonNull List<UUID> uuids) {
         return uuids.isEmpty() ?
                 List.of() :

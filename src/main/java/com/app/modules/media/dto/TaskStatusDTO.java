@@ -10,6 +10,7 @@ public record TaskStatusDTO(
         UUID taskUUID,
         UUID mediaUUID,
         Long userId,
-        TaskStatus status
+        TaskStatus status,
+        String failReason
 ) {
 }

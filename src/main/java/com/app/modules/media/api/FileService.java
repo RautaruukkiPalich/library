@@ -1,5 +1,7 @@
 package com.app.modules.media.api;
 
+import com.app.modules.media.enums.MediaContent;
+import com.app.modules.media.metadata.Dimension;
 import com.app.modules.media.source.MediaSource;
 import lombok.NonNull;
 
@@ -15,8 +17,6 @@ public interface FileService {
                   @NonNull UUID mediaUuid,
                   @NonNull String extension);
 
-    InputStream download(@NonNull String relativePath);
-
     void delete(@NonNull String relativePath);
 
     void deleteFilesAsync(@NonNull List<String> paths, @NonNull UUID mediaUuid);
@@ -24,4 +24,7 @@ public interface FileService {
     void deleteFiles(@NonNull List<String> paths, @NonNull UUID mediaUuid);
 
     Long fileSize(@NonNull String relativePath);
+
+    Dimension fileDimension(@NonNull String relativePath,
+                            @NonNull MediaContent type);
 }

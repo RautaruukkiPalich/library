@@ -1,9 +1,10 @@
 package com.app.modules.media.model;
 
 import com.app.core.model.BaseModel;
-import com.app.modules.media.dto.FileMetadata;
+import com.app.modules.media.converter.MediaMetadataClassConverter;
 import com.app.modules.media.enums.MediaSize;
 import com.app.modules.media.exceptions.MediaFileValidationException;
+import com.app.modules.media.metadata.MediaMetadata;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NonNull;
@@ -11,8 +12,6 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Getter
@@ -44,9 +43,10 @@ public class MediaFile extends BaseModel {
     @Column(nullable = false)
     private MediaSize mediaSize;
 
+    @Convert(converter = MediaMetadataClassConverter.class)
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "metadata", columnDefinition = "jsonb")
-    private Map<String, Object> metadata = new HashMap<>();
+    private MediaMetadata metadata = null;
 
     @Column(nullable = false)
     private Long fileSize;
@@ -59,7 +59,7 @@ public class MediaFile extends BaseModel {
     }
 
     public MediaFile(UUID uuid, String filename, String extension, String contentType,
-                     MediaSize mediaSize, @NonNull Media media, Long fileSize, String path) {
+                     MediaSize mediaSize, @NonNull Media media, Long fileSize, String path, MediaMetadata metadata) {
         super(MediaFileValidationException::new);
         this.uuid = uuid;
         this.filename = filename;
@@ -68,8 +68,29 @@ public class MediaFile extends BaseModel {
         this.mediaSize = mediaSize;
         this.fileSize = fileSize;
         this.path = path;
+        this.metadata = metadata == null ? null : metadata.toMediaFileMetadata();
 
         setMedia(media);
+    }
+
+    public static MediaFile create(
+            String filename,
+            @NonNull Media media,
+            Long fileSize,
+            String path,
+            MediaMetadata metadata
+    ) {
+        return new MediaFile(
+                UUID.randomUUID(),
+                filename,
+                metadata.getExtension(),
+                metadata.getContentType(),
+                metadata.getMediaSize(),
+                media,
+                fileSize,
+                path,
+                metadata.toMediaFileMetadata()
+        );
     }
 
     public static MediaFile create(
@@ -79,7 +100,8 @@ public class MediaFile extends BaseModel {
             MediaSize mediaSize,
             @NonNull Media media,
             Long fileSize,
-            String path
+            String path,
+            MediaMetadata metadata
     ) {
         return new MediaFile(
                 UUID.randomUUID(),
@@ -89,7 +111,8 @@ public class MediaFile extends BaseModel {
                 mediaSize,
                 media,
                 fileSize,
-                path
+                path,
+                metadata.toMediaFileMetadata()
         );
     }
 
@@ -110,32 +133,13 @@ public class MediaFile extends BaseModel {
         return mediaUuid;
     }
 
-    public FileMetadata getMetadata() {
-        return FileMetadata.builder()
-                .filename(this.filename)
-                .extension(this.extension)
-                .contentType(this.contentType)
-                .fileSize(this.fileSize)
-                .mediaSize(this.mediaSize)
-                .relativePath(this.path)
-                .build();
-    }
-
-    public void setWidth(Integer width) {
-        metadata.put("width", width);
-    }
-
-    public void setHeight(Integer height) {
-        metadata.put("height", height);
-    }
-
-    @Transient
-    public Integer getWidth() {
-        return (Integer) metadata.get("width");
-    }
-
-    @Transient
-    public Integer getHeight() {
-        return (Integer) metadata.get("height");
+    public boolean compare(@NonNull MediaMetadata md) {
+        if (md.getHeight() == null || md.getHeight() > this.metadata.getHeight()) {
+            return false;
+        }
+        if (md.getWidth() == null || md.getWidth() > this.metadata.getWidth()) {
+            return false;
+        }
+        return true;
     }
 }

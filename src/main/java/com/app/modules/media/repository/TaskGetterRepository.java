@@ -18,9 +18,7 @@ public interface TaskGetterRepository {
     List<MediaTask> findByStatus(@NonNull TaskStatus status,
                                  @NonNull Integer limit);
 
-    Optional<MediaTask> findByMediaUuid(@NonNull UUID uuid);
-
-    MediaTask getByMediaUuid(@NonNull UUID uuid) throws MediaTaskNotFoundException;
+    List<MediaTask> findByMediaUuid(@NonNull UUID uuid);
 
     List<MediaTask> findByUserId(@NonNull Long userId);
 

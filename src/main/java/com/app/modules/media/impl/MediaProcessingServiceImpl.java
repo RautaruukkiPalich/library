@@ -2,11 +2,14 @@ package com.app.modules.media.impl;
 
 import com.app.modules.media.api.FileService;
 import com.app.modules.media.api.MediaProcessingService;
-import com.app.modules.media.converter.ImageConverter;
+import com.app.modules.media.api.TaskService;
+import com.app.modules.media.converter.media.MediaConverterFactory;
+import com.app.modules.media.enums.TaskStatus;
+import com.app.modules.media.metadata.MediaMetadata;
+import com.app.modules.media.metadata.MediaMetadataService;
 import com.app.modules.media.model.Media;
 import com.app.modules.media.model.MediaFile;
 import com.app.modules.media.model.MediaTask;
-import com.app.modules.media.properties.task.MediaConvertProperties;
 import com.app.modules.media.repository.*;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -24,6 +27,7 @@ import java.util.UUID;
 public class MediaProcessingServiceImpl implements MediaProcessingService {
     private final TaskGetterRepository taskGetterRepository;
     private final TaskPersistRepository taskPersistRepository;
+    private final TaskService taskService;
 
     private final MediaGetterRepository mediaGetterRepository;
     private final MediaFilePersistRepository mediaFilePersistRepository;
@@ -31,52 +35,51 @@ public class MediaProcessingServiceImpl implements MediaProcessingService {
     private final FileGetterRepository fileGetterRepository;
 
     private final FileService fileService;
-    private final ImageConverter imageConverter;
+    private final MediaConverterFactory mediaConverterFactory;
+    private final MediaMetadataService mediaMetadataService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void processTask(@NonNull UUID taskUuid) {
+        taskService.prepareTaskStatus(taskUuid, TaskStatus.PROCESSING);
+
         MediaTask task = taskGetterRepository.getByUUID(taskUuid);
         String filePath = null;
 
         try {
             Media media = mediaGetterRepository.getByUuid(task.getMediaUuid());
             MediaFile original = media.getOriginal();
+            MediaMetadata md = task.getMediaMetadata();
 
-            MediaConvertProperties props = task.getConvertProperties();
-
-            log.debug("props load {}", props);
+            if (!original.compare(md)){
+                throw new RuntimeException("height or width of original file is smaller");
+            }
 
             InputStream source = fileGetterRepository.getByRelativePath(original.getPath());
-            InputStream res = imageConverter.convert(
-                    source,
-                    props);
+            InputStream res = mediaConverterFactory.convert(source, md);
 
             log.debug("file converted");
 
             filePath = fileService.upload(
                     res,
                     media.getUuid(),
-                    props.getExtension());
+                    md.getExtension());
 
             log.debug("file upload");
 
             Long fileSize = fileService.fileSize(filePath);
+            MediaMetadata metadata = mediaMetadataService.getMetadata(media.getMediaContent(), filePath);
 
             MediaFile mf = MediaFile.create(
                     original.getFilename(),
-                    props.getExtension(),
-                    props.getContentType(),
-                    props.getMediaSize(),
                     media,
                     fileSize,
-                    filePath
+                    filePath,
+                    md
             );
 
-            log.debug("media file {} created for media={}, props={}", mf.getUuid(), media.getUuid(), props.getMediaSize());
-
-            mf.setWidth(props.getWidth());
-            mf.setHeight(props.getHeight());
+            log.info("media file {} created for media={}, md={} {}x{}",
+                    mf.getUuid(), media.getUuid(), metadata.getMediaSize(), metadata.getWidth(), metadata.getHeight());
 
             mediaFilePersistRepository.save(mf);
 
