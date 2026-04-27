@@ -3,7 +3,7 @@ package com.app.modules.media.controller;
 import com.app.core.annotation.public_endpoint.PublicEndpoint;
 import com.app.core.aop.require_role.RequireRole;
 import com.app.core.security.rbac.Role;
-import com.app.modules.media.converter.media.ConversionParams;
+import com.app.modules.media.converter.ConversionParams;
 import com.app.modules.media.dto.DownloadMediaDTO;
 import com.app.modules.media.dto.MediaDTO;
 import com.app.modules.media.dto.MediaFileDTO;

@@ -1,7 +1,7 @@
 package com.app.modules.media.model;
 
 import com.app.core.model.BaseModel;
-import com.app.modules.media.converter.database.MetadataDatabaseConverter;
+import com.app.modules.media.metadata.MediaMetadataDatabaseConverter;
 import com.app.modules.media.enums.MediaSize;
 import com.app.modules.media.exceptions.MediaFileValidationException;
 import com.app.modules.media.metadata.MediaMetadata;
@@ -40,7 +40,7 @@ public class MediaFile extends BaseModel {
     @Column(nullable = false)
     private MediaSize mediaSize;
 
-    @Convert(converter = MetadataDatabaseConverter.class)
+    @Convert(converter = MediaMetadataDatabaseConverter.class)
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "metadata", columnDefinition = "jsonb")
     private MediaMetadata metadata = null;

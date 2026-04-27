@@ -1,4 +1,4 @@
-package com.app.modules.media.converter.media;
+package com.app.modules.media.converter;
 
 import com.app.modules.media.enums.MediaContent;
 

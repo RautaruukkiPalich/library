@@ -1,6 +1,6 @@
 package com.app.modules.media.metadata;
 
-import com.app.modules.media.converter.media.ConversionParams;
+import com.app.modules.media.converter.ConversionParams;
 import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.exceptions.MediaMetadataException;
 import com.app.modules.media.service.FileService;

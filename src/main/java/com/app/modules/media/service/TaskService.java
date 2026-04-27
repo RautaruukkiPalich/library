@@ -1,6 +1,6 @@
 package com.app.modules.media.service;
 
-import com.app.modules.media.converter.media.ConversionParams;
+import com.app.modules.media.converter.ConversionParams;
 import com.app.modules.media.enums.MediaSize;
 import com.app.modules.media.model.Media;
 import com.app.modules.media.model.MediaTask;

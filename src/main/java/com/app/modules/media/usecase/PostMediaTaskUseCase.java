@@ -1,7 +1,7 @@
 package com.app.modules.media.usecase;
 
 import com.app.core.usecase.BaseCommandUseCase;
-import com.app.modules.media.converter.media.ConversionParams;
+import com.app.modules.media.converter.ConversionParams;
 import com.app.modules.media.dto.TaskStatusDTO;
 import com.app.modules.media.mapper.TaskMapper;
 import com.app.modules.media.model.Media;

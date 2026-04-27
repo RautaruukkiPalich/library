@@ -1,7 +1,6 @@
-package com.app.modules.media.converter.media.image;
+package com.app.modules.media.converter;
 
-import com.app.modules.media.converter.media.ConversionParams;
-import com.app.modules.media.converter.media.MediaConverter;
+import com.app.modules.media.converter.image.ImageConverter;
 import com.app.modules.media.enums.MediaContent;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

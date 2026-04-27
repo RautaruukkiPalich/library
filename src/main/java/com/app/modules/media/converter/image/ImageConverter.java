@@ -1,6 +1,6 @@
-package com.app.modules.media.converter.media.image;
+package com.app.modules.media.converter.image;
 
-import com.app.modules.media.converter.media.ConversionParams;
+import com.app.modules.media.converter.ConversionParams;
 import lombok.NonNull;
 
 import java.io.IOException;

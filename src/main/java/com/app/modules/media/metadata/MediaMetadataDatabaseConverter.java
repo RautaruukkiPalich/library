@@ -1,6 +1,5 @@
-package com.app.modules.media.converter.database;
+package com.app.modules.media.metadata;
 
-import com.app.modules.media.metadata.MediaMetadata;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
@@ -11,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Converter(autoApply = true)
 @Slf4j
-public class MetadataDatabaseConverter implements AttributeConverter<MediaMetadata, String> {
+public class MediaMetadataDatabaseConverter implements AttributeConverter<MediaMetadata, String> {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .registerModule(new JavaTimeModule());
 

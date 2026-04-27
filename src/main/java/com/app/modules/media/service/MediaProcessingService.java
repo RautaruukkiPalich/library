@@ -1,7 +1,7 @@
 package com.app.modules.media.service;
 
-import com.app.modules.media.converter.media.ConversionParams;
-import com.app.modules.media.converter.media.MediaConverterFactory;
+import com.app.modules.media.converter.ConversionParams;
+import com.app.modules.media.converter.MediaConverterFactory;
 import com.app.modules.media.enums.TaskStatus;
 import com.app.modules.media.metadata.MediaMetadata;
 import com.app.modules.media.metadata.MediaMetadataService;
