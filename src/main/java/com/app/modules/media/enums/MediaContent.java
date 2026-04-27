@@ -19,11 +19,18 @@ public enum MediaContent implements CodeBasedEnum {
     }
 
     public static MediaContent fromContentType(@NonNull String contentType) throws IllegalArgumentException {
-        String normalizedContentType = contentType.toLowerCase().strip();
+        String preparedContentType = CodeBasedEnum.preparedCode(contentType);
 
-        if (normalizedContentType.startsWith("image/")) return IMAGE;
-        if (normalizedContentType.startsWith("video/")) return VIDEO;
+        if (preparedContentType.startsWith("image/")) return IMAGE;
+        if (preparedContentType.startsWith("video/")) return VIDEO;
         throw new IllegalArgumentException("unsupported content type: " + contentType);
+    }
+
+    public static MediaContent fromExtension(@NonNull String extension) {
+        String preparedExtension = CodeBasedEnum.preparedCode(extension);
+        if (IMAGE.getProps().extensions().contains(preparedExtension)) return IMAGE;
+        if (VIDEO.getProps().extensions().contains(preparedExtension)) return VIDEO;
+        throw new IllegalArgumentException("unsupported extension: " + preparedExtension);
     }
 
     @Override

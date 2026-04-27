@@ -111,8 +111,11 @@ public class MediaControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.sizes").isNotEmpty())
                 .andExpect(jsonPath("$.sizes[0].content_type").isNotEmpty())
                 .andExpect(jsonPath("$.sizes[0].media_size").isNotEmpty())
-                .andExpect(jsonPath("$.sizes[0].file_size").isNotEmpty())
-                .andExpect(jsonPath("$.sizes[0].download_url").isNotEmpty());
+                .andExpect(jsonPath("$.sizes[0].download_url").isNotEmpty())
+                .andExpect(jsonPath("$.sizes[0].metadata").isNotEmpty())
+                .andExpect(jsonPath("$.sizes[0].metadata.width").isNotEmpty())
+                .andExpect(jsonPath("$.sizes[0].metadata.height").isNotEmpty())
+                .andExpect(jsonPath("$.sizes[0].metadata.file_size").isNotEmpty());
 
         mockMvc.perform(delete("%s/%s".formatted(MEDIA_API_PATH, mediaUUID))
                         .header("Authorization", "Bearer %s".formatted(accessToken)))

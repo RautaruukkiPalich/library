@@ -1,9 +1,7 @@
-package com.app.modules.media.impl;
+package com.app.modules.media.service;
 
 import com.app.core.config.AsyncConfig;
 import com.app.core.exception.NotFoundException;
-import com.app.modules.media.api.FileService;
-import com.app.modules.media.dto.FileMetadata;
 import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.metadata.Dimension;
 import com.app.modules.media.repository.FileDeleteRepository;
@@ -30,12 +28,11 @@ import java.util.UUID;
 @AllArgsConstructor
 @Transactional
 @Slf4j
-public class FileServiceImpl implements FileService {
+public class FileService {
     private final FileGetterRepository fileGetterRepository;
     private final FilePersistRepository filePersistRepository;
     private final FileDeleteRepository fileDeleteRepository;
 
-    @Override
     public String upload(
             @NonNull MediaSource mediaSource,
             @NonNull UUID mediaUuid) {
@@ -48,7 +45,7 @@ public class FileServiceImpl implements FileService {
                     FileOperations.extractExtension(originalFilename)
             );
         } catch (IOException e) {
-            log.error("failed to get input stream file={} for media={}",
+            log.error("failed to get input stream file {} for media {}",
                     originalFilename, mediaUuid);
             throw new RuntimeException(
                     "failed to get input stream from file %s".formatted(originalFilename), e);
@@ -59,17 +56,14 @@ public class FileServiceImpl implements FileService {
                          @NonNull UUID mediaUuid,
                          @NonNull String extension) {
         try {
-            FileMetadata md = FileMetadata.builder()
-                    .extension(extension)
-                    .build();
             Path path = filePersistRepository.save(
                     stream,
                     mediaUuid,
-                    md);
-            log.debug("file saved for media={} saved to disk={}", mediaUuid, path);
+                    extension);
+            log.debug("file saved for media {} saved storage {}", mediaUuid, path);
             return path.toString();
         } catch (IOException e) {
-            log.error("failed to save file for media={}", mediaUuid);
+            log.error("failed to save file for media {} cause {}", mediaUuid, e.getMessage());
             throw new RuntimeException(
                     "failed to save file for media %s".formatted(
                             mediaUuid
@@ -77,28 +71,28 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    @Override
     public void delete(@NonNull String relativePath) {
-        if (!relativePath.isEmpty()) {
-            try {
-                fileDeleteRepository.delete(relativePath);
-                log.info("file={} deleted", relativePath);
-            } catch (Exception ex) {
-                log.error("failed to delete file={}, try delete manually", relativePath, ex);
-            }
+        if (relativePath.isEmpty()) {
+            log.info("empty file path");
         }
+
+        try {
+            fileDeleteRepository.delete(relativePath);
+            log.info("file {} deleted", relativePath);
+        } catch (Exception ex) {
+            log.error("failed to delete file {}, try delete manually", relativePath, ex);
+        }
+
     }
 
     @Async(AsyncConfig.FILE_DELETION)
-    @Override
     public void deleteFilesAsync(@NonNull List<String> paths, @NonNull UUID mediaUuid) {
         deleteFiles(paths, mediaUuid);
     }
 
-    @Override
     public void deleteFiles(@NonNull List<String> paths, @NonNull UUID mediaUuid) {
         if (paths.isEmpty()) {
-            log.debug("no files to delete for media={}", mediaUuid);
+            log.debug("no files to delete for media {}", mediaUuid);
             return;
         }
 
@@ -112,24 +106,23 @@ public class FileServiceImpl implements FileService {
                 .filter(path -> deleteFile(path, mediaUuid))
                 .count();
 
-        log.info("deleted {} of {} files for media={}", successCount, nonNullPaths.size(), mediaUuid);
+        log.info("deleted {} of {} files for media {}", successCount, nonNullPaths.size(), mediaUuid);
     }
 
     private boolean deleteFile(@NonNull String path, @NonNull UUID mediaUuid) {
         try {
-            log.info("try delete path={} media={}", path, mediaUuid);
+            log.info("try delete path {} media {}", path, mediaUuid);
             fileDeleteRepository.delete(path);
-            log.info("file path={} deleted success", path);
+            log.info("file path {} deleted success", path);
             return true;
         } catch (NotFoundException e) {
-            log.error("failed to delete file path={} for media={}. file does not exist", path, mediaUuid);
+            log.error("failed to delete file path {} for media {}. file does not exist", path, mediaUuid);
         } catch (IOException e) {
-            log.error("failed to delete file path={} for media={} cause={}; try delete manually", path, mediaUuid, e.getMessage());
+            log.error("failed to delete file path {} for media {} cause {}; try delete manually", path, mediaUuid, e.getMessage());
         }
         return false;
     }
 
-    @Override
     public Long fileSize(@NonNull String relativePath) {
         return fileGetterRepository.getSize(relativePath);
     }

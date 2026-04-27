@@ -1,9 +1,9 @@
 package com.app.modules.media.usecase;
 
 import com.app.core.usecase.BaseCommandUseCase;
+import com.app.modules.media.converter.media.ConversionParams;
 import com.app.modules.media.dto.TaskStatusDTO;
 import com.app.modules.media.mapper.TaskMapper;
-import com.app.modules.media.metadata.MediaMetadata;
 import com.app.modules.media.model.Media;
 import com.app.modules.media.model.MediaTask;
 import com.app.modules.media.repository.MediaGetterRepository;
@@ -32,7 +32,7 @@ public class PostMediaTaskUseCase extends BaseCommandUseCase<PostMediaTaskUseCas
         Media media = mediaGetterRepository.getByUuid(input.mediaUuid());
         checkPermissionService.checkCanEdit(media, input.userId());
 
-        MediaTask task = MediaTask.create(input.userId(), media.getUuid(), input.metadata());
+        MediaTask task = MediaTask.create(input.userId(), media.getUuid(), input.params());
         MediaTask savedTask = taskPersistRepository.save(task);
 
         return TaskMapper.convert(savedTask);
@@ -42,7 +42,7 @@ public class PostMediaTaskUseCase extends BaseCommandUseCase<PostMediaTaskUseCas
     public record Input(
             @NotNull Long userId,
             @NotNull UUID mediaUuid,
-            @NotNull MediaMetadata metadata
+            @NotNull ConversionParams params
     ) {
     }
 }

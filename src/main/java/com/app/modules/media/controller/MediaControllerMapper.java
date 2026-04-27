@@ -25,7 +25,7 @@ public class MediaControllerMapper {
                 .MediaSizeInfo
                 .builder()
                 .contentType(dto.contentType())
-                .fileSize(dto.fileSize())
+                .metadata(dto.metadata())
                 .size(dto.mediaSize())
                 .downloadUrl(DOWNLOAD_URL_TMPL.formatted(dto.mediaUuid(), dto.mediaSize()))
                 .build();

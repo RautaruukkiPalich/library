@@ -1,6 +1,7 @@
 package com.app.modules.media.controller;
 
 import com.app.modules.media.enums.MediaSize;
+import com.app.modules.media.metadata.MediaMetadata;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,16 +12,6 @@ import java.util.UUID;
 
 public class MediaControllerDTO {
     public static class Request {
-//        @Setter
-//        @Getter
-//        @Builder
-//        @NoArgsConstructor
-//        @AllArgsConstructor
-//        @JsonInclude(JsonInclude.Include.NON_NULL)
-//        @Schema(name = "new task", description = "create new task for media")
-//        public static class CreateTask {
-//        }
-
     }
 
     public static class Response {
@@ -84,17 +75,9 @@ public class MediaControllerDTO {
             @Schema(description = "media size", requiredMode = Schema.RequiredMode.REQUIRED)
             private MediaSize size;
 
-            @JsonProperty("width")
-            @Schema(description = "width in pixels")
-            private Integer width;
-
-            @JsonProperty("height")
-            @Schema(description = "height in pixels")
-            private Integer height;
-
-            @JsonProperty("file_size")
-            @Schema(description = "file size", requiredMode = Schema.RequiredMode.REQUIRED)
-            private Long fileSize;
+            @JsonProperty("metadata")
+            @Schema(description = "file metadata", requiredMode = Schema.RequiredMode.REQUIRED)
+            private MediaMetadata metadata;
 
             @JsonProperty("download_url")
             @Schema(description = "download url", requiredMode = Schema.RequiredMode.REQUIRED)

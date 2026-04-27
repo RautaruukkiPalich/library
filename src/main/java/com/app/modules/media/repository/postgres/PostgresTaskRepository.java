@@ -18,6 +18,8 @@ import lombok.NonNull;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +41,12 @@ public class PostgresTaskRepository implements TaskGetterRepository, TaskPersist
         } else {
             return em.merge(task);
         }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public MediaTask saveNested(@NonNull MediaTask task) {
+        return save(task);
     }
 
     @Override

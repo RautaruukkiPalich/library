@@ -1,11 +1,12 @@
 package com.app.modules.media.metadata;
 
-import com.app.modules.media.enums.MediaSize;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.annotation.Transient;
 
-import static com.app.modules.media.enums.MediaSize.DEFAULT_MEDIA_SIZE;
 import static com.app.modules.media.properties.MediaTypeProperties.IMAGE;
 
 @Getter
@@ -16,78 +17,33 @@ import static com.app.modules.media.properties.MediaTypeProperties.IMAGE;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ImageMetadataImpl implements ImageMetadata {
     private String extension = IMAGE.targetExtension();
-    private String contentType = IMAGE.targetContentType();
-    private MediaSize mediaSize = MediaSize.CUSTOM;
-    private Integer width = 1920;
-    private Integer height = 1080;
-    private Boolean keepAspectRatio = true;
-    private Boolean cropToSquare = false;
+    private Integer width;
+    private Integer height;
+    @JsonProperty("file_size")
+    private Long fileSize;
 
-    private static ImageMetadataImpl createDefaultByMediaSize(
-            @NonNull MediaSize mediaSize
+    public static ImageMetadataImpl create(
+            @NonNull String extension,
+            @NonNull Integer height,
+            @NonNull Integer width,
+            @NonNull Long fileSize
     ) {
         return new ImageMetadataImpl(
-                IMAGE.targetExtension(),
-                IMAGE.targetContentType(),
-                mediaSize,
-                mediaSize.getWidth(),
-                mediaSize.getHeight(),
-                mediaSize.isKeepAspectRatio(),
-                !mediaSize.isKeepAspectRatio()
+                extension, width, height, fileSize
         );
     }
 
-    public static ImageMetadataImpl create(
-            @NonNull MediaSize mediaSize) {
-        if (!DEFAULT_MEDIA_SIZE.contains(mediaSize)) {
-            log.error("non default media size. actual {}", mediaSize.getCode());
-            return new ImageMetadataImpl();
-        }
-        return createDefaultByMediaSize(mediaSize);
-    }
-
-    public static ImageMetadataImpl create(
-            @NonNull MediaSize mediaSize,
-            String extension,
-            Integer height,
-            Integer width,
-            Boolean keepAspectRatio
-    ) {
-        ImageMetadataImpl md = create(mediaSize);
-
-        if (DEFAULT_MEDIA_SIZE.contains(mediaSize)) {
-            return md;
-        }
-
-        if (extension != null && IMAGE.extensions().contains(extension)) {
-            md.extension = extension;
-            md.contentType = IMAGE.extensionToContentType().get(md.extension);
-        }
-
-        if (width != null && width >= 1 && width <= 1920) {
-            md.width = width;
-        }
-
-        if (height != null && height >= 1 && height <= 1080) {
-            md.height = height;
-        }
-
-        if (keepAspectRatio != null) {
-            md.keepAspectRatio = keepAspectRatio;
-        }
-
-        md.cropToSquare = !md.keepAspectRatio;
-
-        return md;
+    //TODO: fix null file size in database MediaFile
+    @Override
+    public Long getFileSize() {
+        if (fileSize == null) return 0L;
+        return fileSize;
     }
 
     @Override
-    public ImageMetadataImpl toMediaFileMetadata() {
-        ImageMetadataImpl md = new ImageMetadataImpl();
-        md.setContentType(this.getContentType());
-        md.setExtension(this.getExtension());
-        md.setHeight(this.getHeight());
-        md.setWidth(this.getWidth());
-        return md;
+    @Transient
+    @JsonIgnore
+    public String getSpecDesc() {
+        return "%s_%s".formatted(getWidth(), getHeight());
     }
 }

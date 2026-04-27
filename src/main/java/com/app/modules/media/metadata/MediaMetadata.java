@@ -1,8 +1,9 @@
 package com.app.modules.media.metadata;
 
-import com.app.modules.media.enums.MediaSize;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.springframework.data.annotation.Transient;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -15,17 +16,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public interface MediaMetadata {
     String getExtension();
 
-    String getContentType();
+    Long getFileSize();
 
-    MediaSize getMediaSize();
-
-    Integer getWidth();
-
-    Integer getHeight();
-
-    Boolean getKeepAspectRatio();
-
-    Boolean getCropToSquare();
-
-    MediaMetadata toMediaFileMetadata();
+    @JsonIgnore
+    @Transient
+    String getSpecDesc();
 }

@@ -1,5 +1,7 @@
 package com.app.modules.media.properties;
 
+import lombok.NonNull;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -12,6 +14,8 @@ public record MediaTypeProperties(
         String targetExtension,
         String targetContentType
 ) {
+    private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
+
     public static final MediaTypeProperties IMAGE = new MediaTypeProperties(
             1L,
             10 * 1024 * 1024L,
@@ -39,4 +43,10 @@ public record MediaTypeProperties(
             ),
             "mp4", "video/mp4"
     );
+    public String getContentType(@NonNull String extension){
+        return this.extensionToContentType.getOrDefault(
+                extension,
+                DEFAULT_CONTENT_TYPE
+        );
+    }
 }

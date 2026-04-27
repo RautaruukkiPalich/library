@@ -1,10 +1,9 @@
 package com.app.modules.media.model;
 
 import com.app.core.model.BaseModel;
-import com.app.modules.media.converter.MediaMetadataClassConverter;
+import com.app.modules.media.converter.media.ConversionParams;
 import com.app.modules.media.enums.TaskStatus;
 import com.app.modules.media.exceptions.MediaTaskValidationException;
-import com.app.modules.media.metadata.MediaMetadata;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,10 +27,9 @@ public class MediaTask extends BaseModel {
     @Column(name = "media_uuid", nullable = false)
     private UUID mediaUuid;
 
-    @Convert(converter = MediaMetadataClassConverter.class)
+    @Column(name = "conversion_params")
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "metadata", columnDefinition = "jsonb")
-    private MediaMetadata mediaMetadata = null;
+    private ConversionParams conversionParams;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -41,8 +39,8 @@ public class MediaTask extends BaseModel {
     private String failReason;
 
     @PrePersist
-    protected void checkConvertProperties() throws RuntimeException {
-        if (mediaMetadata == null) throw new RuntimeException("empty media metadata");
+    protected void checkConvertParams() throws RuntimeException {
+        if (conversionParams == null) throw new RuntimeException("empty convert params");
     }
 
     public MediaTask() {
@@ -52,12 +50,12 @@ public class MediaTask extends BaseModel {
     public MediaTask(UUID uuid,
                      Long userId,
                      UUID mediaUuid,
-                     MediaMetadata mediaMetadata,
+                     ConversionParams conversionParams,
                      TaskStatus taskStatus) {
         super(MediaTaskValidationException::new);
         this.uuid = uuid;
         this.userId = userId;
-        this.mediaMetadata = mediaMetadata;
+        this.conversionParams = conversionParams;
         this.mediaUuid = mediaUuid;
         this.status = taskStatus;
     }
@@ -65,13 +63,13 @@ public class MediaTask extends BaseModel {
     public static MediaTask create(
             Long userId,
             UUID mediaUuid,
-            MediaMetadata mediaMetadata
+            ConversionParams conversionParams
     ) {
         return new MediaTask(
                 UUID.randomUUID(),
                 userId,
                 mediaUuid,
-                mediaMetadata,
+                conversionParams,
                 TaskStatus.PENDING
         );
     }

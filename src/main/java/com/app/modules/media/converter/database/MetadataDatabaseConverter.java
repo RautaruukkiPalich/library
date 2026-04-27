@@ -1,4 +1,4 @@
-package com.app.modules.media.converter;
+package com.app.modules.media.converter.database;
 
 import com.app.modules.media.metadata.MediaMetadata;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Converter(autoApply = true)
 @Slf4j
-public class MediaMetadataClassConverter implements AttributeConverter<MediaMetadata, String> {
+public class MetadataDatabaseConverter implements AttributeConverter<MediaMetadata, String> {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .registerModule(new JavaTimeModule());
 

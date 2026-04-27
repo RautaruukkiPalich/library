@@ -3,14 +3,13 @@ package com.app.modules.media.controller;
 import com.app.core.annotation.public_endpoint.PublicEndpoint;
 import com.app.core.aop.require_role.RequireRole;
 import com.app.core.security.rbac.Role;
+import com.app.modules.media.converter.media.ConversionParams;
 import com.app.modules.media.dto.DownloadMediaDTO;
 import com.app.modules.media.dto.MediaDTO;
 import com.app.modules.media.dto.MediaFileDTO;
 import com.app.modules.media.dto.TaskStatusDTO;
 import com.app.modules.media.enums.MediaSize;
 import com.app.modules.media.enums.TaskStatus;
-import com.app.modules.media.metadata.ImageMetadataImpl;
-import com.app.modules.media.metadata.MediaMetadata;
 import com.app.modules.media.source.MultipartFileMediaSource;
 import com.app.modules.media.usecase.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -187,11 +186,11 @@ public class MediaController {
             @PathVariable UUID mediaUuid
 //            @RequestBody MediaControllerDTO.Request.CreateTask body
     ) {
-        //TODO: edit hardcoded media metadata
-        MediaMetadata props = ImageMetadataImpl.create(MediaSize.MEDIUM);
+        //TODO: edit hardcoded empty convert param
+        ConversionParams cp = ConversionParams.builder().build();
 
         TaskStatusDTO taskStatus = postMediaTaskUseCase.execute(
-                new PostMediaTaskUseCase.Input(userId, mediaUuid, props));
+                new PostMediaTaskUseCase.Input(userId, mediaUuid, cp));
 
         return ResponseEntity.accepted().body(MediaControllerMapper.toResponse(taskStatus));
     }
@@ -218,17 +217,18 @@ public class MediaController {
                 new DownloadMediaUseCase.Input(userId, mediaUuid, mediaSize));
 
         MediaFileDTO mf = dto.mediaFile();
+        String generatedFilename = mf.generateFilename();
 
         ContentDisposition contentDisposition = ContentDisposition
                 .builder(inline ? "inline" : "attachment")
-                .filename(mf.generateFilename())
-                .filename(mf.generateFilename(), StandardCharsets.UTF_8)
+                .filename(generatedFilename)
+                .filename(generatedFilename, StandardCharsets.UTF_8)
                 .build();
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(mf.contentType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
-                .contentLength(mf.fileSize())
+                .contentLength(mf.metadata().getFileSize())
                 .body(new InputStreamResource(dto.stream()));
     }
 }

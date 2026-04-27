@@ -1,6 +1,5 @@
 package com.app.modules.media.repository.storage;
 
-import com.app.modules.media.dto.FileMetadata;
 import com.app.modules.media.exceptions.FileNotFoundException;
 import com.app.modules.media.repository.FileDeleteRepository;
 import com.app.modules.media.repository.FileGetterRepository;
@@ -97,13 +96,13 @@ public class LocalStorageRepository implements FilePersistRepository, FileDelete
     @Override
     public Path save(@NonNull InputStream inputStream,
                      @NonNull UUID mediaUuid,
-                     @NonNull FileMetadata md
+                     String extension
     ) throws IOException {
         Path directoryPath = generatePathAndCreateDirectories(mediaUuid);
 
-        String filename = md.extension().isBlank() ?
+        String filename = extension.isBlank() ?
                 "%s".formatted(UUID.randomUUID()) :
-                "%s.%s".formatted(UUID.randomUUID(), md.extension());
+                "%s.%s".formatted(UUID.randomUUID(), extension);
 
         Path filePath = directoryPath.resolve(filename);
 

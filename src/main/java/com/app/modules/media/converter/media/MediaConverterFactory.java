@@ -1,6 +1,6 @@
 package com.app.modules.media.converter.media;
 
-import com.app.modules.media.metadata.MediaMetadata;
+import com.app.modules.media.enums.MediaContent;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,38 +17,36 @@ import java.util.Map;
 @Slf4j
 public class MediaConverterFactory {
 
-    private final List<MediaConverter<?>> converters;
-    private final Map<Class<?>, MediaConverter<?>> converterMap = new HashMap<>();
+    private final List<MediaConverter> converters;
+    private final Map<MediaContent, MediaConverter> converterMap = new HashMap<>();
 
     @PostConstruct
     public void init() {
-        for (MediaConverter<?> converter : converters) {
+        for (MediaConverter converter : converters) {
             converterMap.put(converter.getSupportedType(), converter);
-            log.info("registered converter for type: {}", converter.getSupportedType().getSimpleName());
+            log.info("registered converter for content: {}", converter.getSupportedType());
         }
 
         log.info("registered types: {}", converterMap.keySet());
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends MediaMetadata> InputStream convert(InputStream source, T metadata) throws IOException {
-        Class<?> actualType = metadata.getClass();
-        MediaConverter<T> converter = (MediaConverter<T>) converterMap.get(actualType);
+    public InputStream convert(InputStream source, ConversionParams cp) throws IOException {
+        MediaConverter converter = converterMap.get(cp.getTargetType());
 
         if (converter == null) {
-            log.error("no converter found for type: {}", actualType);
+            log.error("no converter found for type: {}", cp.getTargetType());
             log.error("available converters: {}", converterMap.keySet());
             throw new IllegalArgumentException(
                     String.format("no converter found for metadata type: %s",
-                            metadata.getClass().getSimpleName())
+                            cp.getTargetType())
             );
         }
 
-        log.debug("using converter for type: {}", metadata.getClass().getSimpleName());
-        return converter.convert(source, metadata);
+        log.debug("using converter for type: {}", cp.getTargetType());
+        return converter.convert(source, cp);
     }
 
-    public boolean supports(MediaMetadata metadata) {
-        return converterMap.containsKey(metadata.getClass());
+    public boolean supports(MediaContent content) {
+        return converterMap.containsKey(content);
     }
 }

@@ -2,12 +2,12 @@ package com.app.modules.media.usecase;
 
 import com.app.core.services.DeferredActionService;
 import com.app.core.usecase.BaseCommandUseCase;
-import com.app.modules.media.api.FileService;
-import com.app.modules.media.api.MediaService;
 import com.app.modules.media.model.Media;
 import com.app.modules.media.model.MediaFile;
 import com.app.modules.media.repository.MediaGetterRepository;
 import com.app.modules.media.service.CheckPermissionService;
+import com.app.modules.media.service.FileService;
+import com.app.modules.media.service.MediaService;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

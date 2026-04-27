@@ -1,6 +1,6 @@
-package com.app.modules.media.converter;
+package com.app.modules.media.converter.media.image;
 
-import com.app.modules.media.metadata.ImageMetadata;
+import com.app.modules.media.converter.media.ConversionParams;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import net.coobird.thumbnailator.Thumbnails;
@@ -16,12 +16,12 @@ import java.io.InputStream;
 public class ThumbnailsImageConverter implements ImageConverter {
     @Override
     public InputStream convert(@NonNull InputStream source,
-                               @NonNull ImageMetadata metadata) throws IOException {
+                               @NonNull ConversionParams cp) throws IOException {
         ByteArrayOutputStream dst = new ByteArrayOutputStream();
         Thumbnails.of(source)
-                .outputFormat(metadata.getExtension())
-                .size(metadata.getWidth(), metadata.getHeight())
-                .keepAspectRatio(metadata.getKeepAspectRatio())
+                .outputFormat(cp.getTargetExtension())
+                .size(cp.getWidth(), cp.getHeight())
+                .keepAspectRatio(cp.getKeepAspectRatio())
                 .toOutputStream(dst);
         return new ByteArrayInputStream(dst.toByteArray());
     }

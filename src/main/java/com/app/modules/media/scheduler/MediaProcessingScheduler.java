@@ -1,10 +1,10 @@
 package com.app.modules.media.scheduler;
 
 import com.app.core.config.AsyncConfig;
-import com.app.modules.media.api.MediaProcessingService;
 import com.app.modules.media.enums.TaskStatus;
 import com.app.modules.media.model.MediaTask;
 import com.app.modules.media.repository.TaskGetterRepository;
+import com.app.modules.media.service.MediaProcessingService;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
