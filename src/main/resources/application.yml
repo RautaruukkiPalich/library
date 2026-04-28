@@ -8,9 +8,9 @@ spring:
       max-request-size: 10MB
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:25432/library}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -21,11 +21,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-
-  jwt:
-    secret: ${JWT_SECRET:-your-super-secret-key-that-is-at-least-32-characters-long}
-    ttl: ${JWT_TTL:3600}
-    refresh-ttl: ${JWT_REFRESH_TTL:86400}
 
   app:
     security:
@@ -42,3 +37,9 @@ spring:
       persist-authorization: true
     show-actuator: false
     paths-to-match: /api/**
+
+
+jwt:
+  secret: ${JWT_SECRET:-your-super-secret-key-that-is-at-least-32-characters-long}
+  ttl: ${JWT_TTL:3600}
+  refresh-ttl: ${JWT_REFRESH_TTL:86400}

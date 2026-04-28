@@ -73,13 +73,4 @@ public class MediaTask extends BaseModel {
                 TaskStatus.PENDING
         );
     }
-
-    public void setStatusCompleted() {
-        this.setStatus(TaskStatus.COMPLETED);
-    }
-
-    public void setStatusFailed(String cause) {
-        this.setStatus(TaskStatus.FAILED);
-        this.setFailReason(cause);
-    }
 }

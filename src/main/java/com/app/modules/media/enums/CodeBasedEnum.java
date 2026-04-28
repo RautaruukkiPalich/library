@@ -19,7 +19,7 @@ public interface CodeBasedEnum {
                 .filter(e -> e.getPreparedCode().equals(prepared))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "no enum constant with code " + code));
+                        "illegal or null argument: " + code));
     }
 
     static <T extends Enum<T> & CodeBasedEnum> T fromCode(Class<T> enumClass, String code, T defaultValue) {

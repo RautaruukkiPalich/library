@@ -28,6 +28,7 @@ import java.util.UUID;
 public class MediaProcessingService {
     private final TaskGetterRepository taskGetterRepository;
     private final TaskPersistRepository taskPersistRepository;
+    private final TaskService taskService;
 
     private final MediaGetterRepository mediaGetterRepository;
 
@@ -46,20 +47,21 @@ public class MediaProcessingService {
 
         log.info("run process task {}", task.getUuid());
 
-        if (task.getStatus() != TaskStatus.PENDING) {
-            log.error("task {} status is {} not PENDING", task.getUuid(), task.getStatus());
+        if (!task.getStatus().isPending()) {
+            log.info("task {} status is {} not PENDING", task.getUuid(), task.getStatus());
             return;
         }
 
-        task.setStatus(TaskStatus.PROCESSING);
+        taskService.setStatus(task, TaskStatus.PROCESSING);
+
         MediaTask savedTask = taskPersistRepository.saveNested(task);
 
         try {
             executeProcess(savedTask);
-            savedTask.setStatusCompleted();
+            taskService.setCompleteStatus(savedTask);
+            taskPersistRepository.save(savedTask);
         } catch (Exception e) {
-            savedTask.setStatusFailed(e.getMessage());
-        } finally {
+            taskService.setFailedStatus(savedTask, e.getMessage());
             taskPersistRepository.save(savedTask);
         }
     }
@@ -67,33 +69,33 @@ public class MediaProcessingService {
     private void executeProcess(@NonNull MediaTask task) throws IOException {
         String filePath = null;
 
-        try {
-            Media media = mediaGetterRepository.getByUuid(task.getMediaUuid());
-            MediaFile original = media.getOriginal();
-            ConversionParams cp = task.getConversionParams();
+        Media media = mediaGetterRepository.getByUuid(task.getMediaUuid());
+        MediaFile original = media.getOriginal();
+        ConversionParams cp = task.getConversionParams();
 
-            if (!mediaMetadataService.canConvert(original.getMetadata(), cp)) {
-                log.error("can not convert media {} to {}", media.getUuid(), cp);
-                throw new RuntimeException("can not convert media");
+        if (!mediaMetadataService.canConvert(original.getMetadata(), cp)) {
+            log.error("can not convert media {} to {}", media.getUuid(), cp);
+            throw new RuntimeException("can not convert media");
+        }
+
+        if (!mediaConverterFactory.supports(cp.getTargetType())) {
+            log.error("converters does not supports {} type", cp.getTargetType());
+            throw new RuntimeException("no converter for current type");
+        }
+
+        try (InputStream source = fileGetterRepository.getByRelativePath(original.getPath())) {
+            try (InputStream res = mediaConverterFactory.convert(source, cp)) {
+                filePath = fileService.upload(res, media.getUuid(), cp.getTargetExtension());
+
+                MediaMetadata metadata = mediaMetadataService.getMetadata(filePath);
+
+                MediaFile mf = mediaService.createMediaFile(
+                        original.getFilename(), cp.getTargetSize(), media, filePath, metadata);
+
+                log.info("media file {} created for media {}", mf.getUuid(), media.getUuid());
+
+                log.info("task {} executed success", task.getUuid());
             }
-
-            if (!mediaConverterFactory.supports(cp.getTargetType())) {
-                log.error("converters does not supports {} type", cp.getTargetType());
-                throw new RuntimeException("no converter for current type");
-            }
-
-            InputStream source = fileGetterRepository.getByRelativePath(original.getPath());
-            InputStream res = mediaConverterFactory.convert(source, cp);
-
-            filePath = fileService.upload(res, media.getUuid(), cp.getTargetExtension());
-
-            MediaMetadata metadata = mediaMetadataService.getMetadata(filePath);
-
-            MediaFile mf = mediaService.createMediaFile(
-                    original.getFilename(), cp.getTargetSize(), media, filePath, metadata);
-
-            log.info("media file {} created for media {}", mf.getUuid(), media.getUuid());
-            log.info("task {} executed success", task.getUuid());
         } catch (Exception e) {
             log.error("failed execute process task {} cause {}", task.getUuid(), e.getMessage());
             cleanUpFile(task.getUuid(), filePath);

@@ -3,6 +3,7 @@ package com.app.modules.media.converter;
 import com.app.modules.media.enums.MediaContent;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +31,9 @@ public class MediaConverterFactory {
         log.info("registered types: {}", converterMap.keySet());
     }
 
-    public InputStream convert(InputStream source, ConversionParams cp) throws IOException {
+    public InputStream convert(@NonNull InputStream source,
+                               @NonNull ConversionParams cp
+    ) throws IOException {
         MediaConverter converter = converterMap.get(cp.getTargetType());
 
         if (converter == null) {

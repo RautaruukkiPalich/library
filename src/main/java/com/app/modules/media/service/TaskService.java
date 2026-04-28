@@ -2,6 +2,8 @@ package com.app.modules.media.service;
 
 import com.app.modules.media.converter.ConversionParams;
 import com.app.modules.media.enums.MediaSize;
+import com.app.modules.media.enums.TaskStatus;
+import com.app.modules.media.exceptions.TaskTransitionException;
 import com.app.modules.media.model.Media;
 import com.app.modules.media.model.MediaTask;
 import com.app.modules.media.repository.TaskDeleterRepository;
@@ -42,6 +44,36 @@ public class TaskService {
         taskGetterRepository.findByMediaUuid(mediaUuid).forEach(taskDeleterRepository::delete);
     }
 
+    public void setCompleteStatus(@NonNull MediaTask task
+    ) throws TaskTransitionException {
+        setStatus(task, TaskStatus.COMPLETED);
+    }
+
+    public void setFailedStatus(@NonNull MediaTask task,
+                                @NonNull String desc
+    ) throws TaskTransitionException {
+        setStatus(task, TaskStatus.FAILED);
+        task.setFailReason(desc);
+    }
+
+    public void setPendingStatus(@NonNull MediaTask task
+    ) throws TaskTransitionException {
+        setStatus(task, TaskStatus.PENDING);
+    }
+
+    public void setStatus(@NonNull MediaTask task,
+                          @NonNull TaskStatus target
+    ) throws TaskTransitionException {
+        TaskStatus current = task.getStatus();
+
+        if (current.canTransitionTo(target)) {
+            task.setStatus(target);
+            return;
+        }
+
+        log.error("can not cast task {} status {} to {}", task.getUuid(), current, target);
+        throw TaskTransitionException.invalidStatus(current, target);
+    }
 
     public void createBaseConverts(@NonNull Media media) {
         if (Objects.requireNonNull(media.getMediaContent()) == IMAGE) {
