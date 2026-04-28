@@ -34,21 +34,42 @@ public class DownloadMediaUseCase extends BaseQueryUseCase<DownloadMediaUseCase.
         Media media = mediaGetterRepository.getByUuid(input.mediaUuid());
         checkPermissionService.checkCanView(media, input.userId());
 
-        MediaFile mf = media.getWithMediaSize(input.size());
-        if (mf == null) {
-            log.warn("file not found: media={} size={}", media.getUuid(), input.size());
-            throw MediaFileNotFoundException.size(input.size());
-        }
+        MediaFile mediaFile = findMediaFile(media, input);
 
-        InputStream stream = fileGetterRepository.getByRelativePath(mf.getPath());
+        InputStream stream = fileGetterRepository.getByRelativePath(mediaFile.getPath());
 
-        return new DownloadMediaDTO(stream, MediaMapper.convert(mf));
+        return new DownloadMediaDTO(stream, MediaMapper.convert(mediaFile));
     }
 
     public record Input(
             @NotNull Long userId,
             @NotNull UUID mediaUuid,
-            @NotNull MediaSize size
+            MediaSize size,
+            UUID fileUuid
     ) {
+        public Input{
+            if (size == null && fileUuid == null) {
+                throw new IllegalArgumentException("either size or file_uuid is required");
+            }
+            if (size != null && fileUuid != null) {
+                throw new IllegalArgumentException("only one of 'size' or 'file_uuid' can be provided");
+            }
+        }
+    }
+
+    private MediaFile findMediaFile(Media media, Input input){
+        if (input.size() != null) {
+            return media.getWithMediaSize(input.size())
+                    .orElseThrow(() -> MediaFileNotFoundException.size(input.size()));
+        }
+
+        if (input.fileUuid() != null) {
+            return media.getFiles().stream()
+                    .filter(f -> f.getUuid().equals(input.fileUuid()))
+                    .findFirst()
+                    .orElseThrow(() -> MediaFileNotFoundException.uuid(input.fileUuid()));
+        }
+
+        throw new IllegalArgumentException("Either size or fileUuid must be provided");
     }
 }

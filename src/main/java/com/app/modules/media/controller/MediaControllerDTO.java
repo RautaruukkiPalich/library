@@ -4,7 +4,13 @@ import com.app.modules.media.enums.MediaSize;
 import com.app.modules.media.metadata.MediaMetadata;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.List;
@@ -12,6 +18,75 @@ import java.util.UUID;
 
 public class MediaControllerDTO {
     public static class Request {
+        @JsonTypeInfo(
+                use = JsonTypeInfo.Id.NAME,
+                include = JsonTypeInfo.As.PROPERTY,
+                property = "type",
+                visible = true
+        )
+        @JsonSubTypes({
+                @JsonSubTypes.Type(value = ImageConversionRequest.class, name = "image"),
+        })
+        @Schema(
+                description = "Base conversion request",
+                discriminatorProperty = "type",
+                discriminatorMapping = {
+                        @DiscriminatorMapping(value = "image", schema = ImageConversionRequest.class)
+                }
+        )
+        @Setter
+        @Getter
+        @NoArgsConstructor
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        public abstract static class ConversionRequest {
+
+            @Schema(description = "type of media",
+                    example = "image", requiredMode = Schema.RequiredMode.REQUIRED)
+            private String type;
+
+            @NotNull
+            @JsonProperty("extension")
+            @Schema(description = "target file extension",
+                    example = "webp", defaultValue = "webp",
+                    requiredMode = Schema.RequiredMode.REQUIRED)
+            private String targetExtension;
+
+            @JsonProperty("quality")
+            @Min(1)
+            @Max(100)
+            @Schema(description = "conversion quality (1 - 100) default 100",
+                    example = "42", defaultValue = "100")
+            private Integer quality;
+        }
+
+        @Data
+        @Setter
+        @Getter
+        @NoArgsConstructor
+        @EqualsAndHashCode(callSuper = true)
+        @Schema(description = "image conversion request", allOf = ConversionRequest.class)
+        public static class ImageConversionRequest extends ConversionRequest {
+
+            @NotNull
+            @Min(1)
+            @Max(10000)
+            @Schema(description = "image width in pixels",
+                    minimum = "1", maximum = "10000", requiredMode = Schema.RequiredMode.REQUIRED)
+            private Integer width;
+
+            @NotNull
+            @Min(1)
+            @Max(10000)
+            @Schema(description = "image height in pixels",
+                    minimum = "1", maximum = "10000", requiredMode = Schema.RequiredMode.REQUIRED)
+            private Integer height;
+
+            @Schema(description = "keep original aspect ratio", defaultValue = "true")
+            private Boolean keepAspectRatio = true;
+
+            @Schema(description = "crop to square", defaultValue = "false")
+            private Boolean cropToSquare = false;
+        }
     }
 
     public static class Response {

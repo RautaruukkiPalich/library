@@ -1,8 +1,10 @@
 package com.app.modules.media.controller;
 
+import com.app.modules.media.converter.ConversionParams;
 import com.app.modules.media.dto.MediaDTO;
 import com.app.modules.media.dto.MediaFileDTO;
 import com.app.modules.media.dto.TaskStatusDTO;
+import com.app.modules.media.enums.MediaContent;
 import lombok.NonNull;
 
 public class MediaControllerMapper {
@@ -42,5 +44,24 @@ public class MediaControllerMapper {
                 .status(task.status().toString())
                 .failReason(task.failReason())
                 .build();
+    }
+
+    public static ConversionParams convert(@NonNull MediaControllerDTO.Request.ConversionRequest req) {
+        MediaContent type = MediaContent.fromCode(req.getType());
+
+        ConversionParams.ConversionParamsBuilder builder = ConversionParams.builder()
+                .targetType(type)
+                .targetExtension(req.getTargetExtension())
+                .quality(req.getQuality() != null ? req.getQuality() : 100);
+
+        if (req instanceof MediaControllerDTO.Request.ImageConversionRequest imageReq) {
+            builder = builder
+                    .width(imageReq.getWidth())
+                    .height(imageReq.getHeight())
+                    .keepAspectRatio(imageReq.getKeepAspectRatio())
+                    .cropToSquare(imageReq.getCropToSquare());
+        }
+
+        return builder.build();
     }
 }

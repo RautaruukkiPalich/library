@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
@@ -88,7 +89,7 @@ public class MediaController {
             @RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize,
             @RequestParam(value = "status", required = false) String status
     ) {
-        TaskStatus taskStatus = TaskStatus.fromValue(status);
+        TaskStatus taskStatus = TaskStatus.fromValue(status).orElse(null);
         List<TaskStatusDTO> tasks = getUserTasksUseCase.execute(
                 new GetUserTasksUseCase.Input(
                         userId,
@@ -111,7 +112,7 @@ public class MediaController {
             @AuthenticationPrincipal Long userId,
             @RequestParam(value = "status", required = false) String status
     ) {
-        TaskStatus taskStatus = TaskStatus.fromValue(status);
+        TaskStatus taskStatus = TaskStatus.fromValue(status).orElse(null);
         Long count = getUserTasksCountUseCase.execute(
                 new GetUserTasksCountUseCase.Input(userId, taskStatus));
 
@@ -172,8 +173,7 @@ public class MediaController {
     }
 
 
-    //TODO: edit to "/{mediaUuid}/convert" + body "{sizes: [THUMBNAIL, ICON, ..., CUSTOM], (if CUSTOM)  metadata{"width":..}}"
-    @PostMapping("/{mediaUuid}/task")
+    @PostMapping("/{mediaUuid}/convert")
     @RequireRole(Role.USER)
     @Operation(summary = "create task")
     @ApiResponse(responseCode = "202", description = "accepted",
@@ -183,11 +183,10 @@ public class MediaController {
     @ApiResponse(responseCode = "404", description = "not found")
     public ResponseEntity<MediaControllerDTO.Response.TaskStatus> newTask(
             @AuthenticationPrincipal Long userId,
-            @PathVariable UUID mediaUuid
-//            @RequestBody MediaControllerDTO.Request.CreateTask body
+            @PathVariable UUID mediaUuid,
+            @Valid @RequestBody MediaControllerDTO.Request.ConversionRequest body
     ) {
-        //TODO: edit hardcoded empty convert param
-        ConversionParams cp = ConversionParams.builder().build();
+        ConversionParams cp = MediaControllerMapper.convert(body);
 
         TaskStatusDTO taskStatus = postMediaTaskUseCase.execute(
                 new PostMediaTaskUseCase.Input(userId, mediaUuid, cp));
@@ -208,13 +207,12 @@ public class MediaController {
     public ResponseEntity<Resource> downloadFile(
             @AuthenticationPrincipal Long userId,
             @PathVariable UUID mediaUuid,
-            @RequestParam("size") String size,
+            @RequestParam(value = "size", required = false) MediaSize size,
+            @RequestParam(value = "file_uuid", required = false) UUID fileUuid,
             @RequestParam(value = "inline", defaultValue = "false") boolean inline
     ) {
-        MediaSize mediaSize = MediaSize.fromCodeOrDefault(size);
-
         DownloadMediaDTO dto = downloadMediaUseCase.execute(
-                new DownloadMediaUseCase.Input(userId, mediaUuid, mediaSize));
+                new DownloadMediaUseCase.Input(userId, mediaUuid, size, fileUuid));
 
         MediaFileDTO mf = dto.mediaFile();
         String generatedFilename = mf.generateFilename();

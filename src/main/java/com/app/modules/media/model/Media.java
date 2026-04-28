@@ -10,6 +10,7 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Getter
@@ -46,11 +47,10 @@ public class Media extends BaseModel {
     }
 
     @Transient
-    public MediaFile getWithMediaSize(MediaSize mediaSize) {
+    public Optional<MediaFile> getWithMediaSize(MediaSize mediaSize) {
         return files.stream()
                 .filter(f -> f.getMediaSize() == mediaSize)
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
     public Media() {
