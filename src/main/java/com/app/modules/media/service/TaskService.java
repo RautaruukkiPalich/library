@@ -1,6 +1,7 @@
 package com.app.modules.media.service;
 
 import com.app.modules.media.converter.ConversionParams;
+import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.enums.MediaSize;
 import com.app.modules.media.enums.TaskStatus;
 import com.app.modules.media.exceptions.TaskTransitionException;
@@ -15,11 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
-
-import static com.app.modules.media.enums.MediaContent.IMAGE;
-import static com.app.modules.media.enums.MediaSize.DEFAULT_MEDIA_SIZE;
 
 @Service
 @Transactional
@@ -29,6 +27,8 @@ public class TaskService {
     private final TaskGetterRepository taskGetterRepository;
     private final TaskPersistRepository taskPersistRepository;
     private final TaskDeleterRepository taskDeleterRepository;
+
+    private final MediaSizeService mediaSizeService;
 
     public MediaTask create(@NonNull Media media,
                             @NonNull ConversionParams conversionParams) {
@@ -76,24 +76,28 @@ public class TaskService {
     }
 
     public void createBaseConverts(@NonNull Media media) {
-        if (Objects.requireNonNull(media.getMediaContent()) == IMAGE) {
-            createBaseImageConverts(media);
+        MediaContent content = media.getMediaContent();
+        Set<MediaSize> defaultConvertSizes = mediaSizeService.getDefaultConvertSizes(content);
+        if (defaultConvertSizes.isEmpty()) {
+            log.warn("no default sizes configured for {}", content);
+            return;
         }
-    }
 
-    private void createBaseImageConverts(@NonNull Media media) {
-        for (MediaSize size : DEFAULT_MEDIA_SIZE) {
-            ConversionParams cp = ConversionParams.builder()
-                    .targetType(IMAGE)
-                    .targetExtension(IMAGE.getProps().targetExtension())
-                    .targetSize(size)
-                    .width(size.getWidth())
-                    .height(size.getHeight())
-                    .keepAspectRatio(size.isKeepAspectRatio())
-                    .cropToSquare(size.isCropToSquare())
-                    .build();
+        log.info("creating conversion tasks {}:{} for media {}",
+                content, defaultConvertSizes.size(), media.getUuid());
+
+        defaultConvertSizes.forEach(size -> {
+            var config = mediaSizeService.getSizeConfig(content, size);
+            if (config == null) {
+                log.error("size config not found for {}:{}", content, size);
+                return;
+            }
+
+            ConversionParams cp = ConversionParams.fromConfig(
+                    content, size, content.getProps().targetExtension(), config);
+
             MediaTask t = MediaTask.create(media.getUserId(), media.getUuid(), cp);
             taskPersistRepository.save(t);
-        }
+        });
     }
 }

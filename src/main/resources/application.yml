@@ -22,10 +22,6 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
-  app:
-    security:
-      enabled: true
-
   springdoc:
     api-docs:
       path: /api-docs
@@ -38,8 +34,36 @@ spring:
     show-actuator: false
     paths-to-match: /api/**
 
+app:
+  security:
+    enabled: true
 
 jwt:
   secret: ${JWT_SECRET:-your-super-secret-key-that-is-at-least-32-characters-long}
   ttl: ${JWT_TTL:3600}
   refresh-ttl: ${JWT_REFRESH_TTL:86400}
+
+media:
+  types:
+    IMAGE:
+      sizes:
+        ORIGINAL: { }
+        LARGE:
+          width: 1920
+          height: 1080
+        MEDIUM:
+          width: 800
+          height: 600
+        SMALL:
+          width: 400
+          height: 300
+        THUMBNAIL:
+          width: 150
+          height: 150
+          crop-to-square: true
+          keep-aspect-ratio: false
+        ICON:
+          width: 50
+          height: 50
+          crop-to-square: true
+          keep-aspect-ratio: false
