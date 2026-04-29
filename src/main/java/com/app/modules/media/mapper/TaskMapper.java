@@ -11,6 +11,8 @@ public class TaskMapper {
                 .userId(task.getUserId())
                 .status(task.getStatus())
                 .failReason(task.getFailReason())
+                .createdAt(task.getCreatedAt())
+                .updatedAt(task.getUpdatedAt())
                 .build();
     }
 }

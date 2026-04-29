@@ -2,6 +2,7 @@ package com.app.modules.media.usecase;
 
 import com.app.core.usecase.BaseQueryUseCase;
 import com.app.modules.media.dto.TaskStatusDTO;
+import com.app.modules.media.enums.SortOrder;
 import com.app.modules.media.enums.TaskStatus;
 import com.app.modules.media.mapper.TaskMapper;
 import com.app.modules.media.model.MediaTask;
@@ -35,8 +36,8 @@ public class GetUserTasksUseCase extends BaseQueryUseCase<GetUserTasksUseCase.In
         List<MediaTask> tasks = taskGetterRepository.find(
                 input.userId(),
                 pageable,
-                input.status()
-        );
+                input.order(),
+                input.status());
         return tasks.stream().map(TaskMapper::convert).toList();
     }
 
@@ -44,7 +45,13 @@ public class GetUserTasksUseCase extends BaseQueryUseCase<GetUserTasksUseCase.In
             @NotNull Long userId,
             @NotNull @Min(0) Integer page,
             @NotNull @Min(1) @Max(20) Integer pageSize,
-            TaskStatus status
+            TaskStatus status,
+            SortOrder order
     ) {
+        public Input {
+            if (order == null) {
+                order = SortOrder.ASC;
+            }
+        }
     }
 }

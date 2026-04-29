@@ -1,13 +1,12 @@
 package com.app.modules.media.enums;
 
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MediaSizeConverter implements Converter<String, MediaSize> {
+public class MediaContentConverter implements Converter<String, MediaContent> {
     @Override
-    public MediaSize convert(String source) {
-        return MediaSize.fromName(source);
+    public MediaContent convert(String source) {
+        return MediaContent.fromName(source);
     }
 }

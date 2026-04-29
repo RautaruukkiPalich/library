@@ -21,14 +21,14 @@ public class CheckPermissionService {
     }
 
     public void checkCanView(@NonNull Media media,
-                              @NonNull Long userId) throws ForbiddenException {
+                             @NonNull Long userId) throws ForbiddenException {
         if (!media.getIsPublic() && !media.getUserId().equals(userId)) {
             logAndThrow(media, userId, "view");
         }
     }
 
     public void checkCanEdit(@NonNull Media media,
-                              @NonNull Long userId) throws ForbiddenException {
+                             @NonNull Long userId) throws ForbiddenException {
         if (!media.getUserId().equals(userId)) {
             logAndThrow(media, userId, "edit");
         }

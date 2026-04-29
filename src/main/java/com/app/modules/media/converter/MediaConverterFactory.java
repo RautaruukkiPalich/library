@@ -45,11 +45,11 @@ public class MediaConverterFactory {
             );
         }
 
-        log.debug("using converter for type: {}", cp.getTargetType());
+        log.debug("using converter {} for media with type: {}", converter.getClass().getSimpleName(), cp.getTargetType());
         return converter.convert(source, cp);
     }
 
-    public boolean supports(MediaContent content) {
+    public boolean supports(@NonNull MediaContent content) {
         return converterMap.containsKey(content);
     }
 }

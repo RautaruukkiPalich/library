@@ -13,6 +13,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -131,6 +132,14 @@ public class MediaControllerDTO {
             @JsonProperty("fail_reason")
             @Schema(description = "fail reason if exists")
             private String failReason;
+
+            @JsonProperty("created_at")
+            @Schema(description = "created at datetime", requiredMode = Schema.RequiredMode.REQUIRED)
+            private OffsetDateTime createdAt;
+
+            @JsonProperty("updated_at")
+            @Schema(description = "updated at datetime", requiredMode = Schema.RequiredMode.REQUIRED)
+            private OffsetDateTime updatedAt;
         }
 
         @Setter
@@ -156,7 +165,7 @@ public class MediaControllerDTO {
 
             @JsonProperty("download_url")
             @Schema(description = "download url", requiredMode = Schema.RequiredMode.REQUIRED)
-            private String downloadUrl;
+            private List<String> downloadUrl;
         }
 
         @Setter
@@ -186,7 +195,7 @@ public class MediaControllerDTO {
 
             @JsonProperty("total_count")
             @Schema(description = "total count items")
-            private Integer totalCount = 0;
+            private Integer totalCount;
         }
     }
 }

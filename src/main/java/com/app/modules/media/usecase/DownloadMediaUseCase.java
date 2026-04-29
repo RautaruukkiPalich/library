@@ -47,17 +47,20 @@ public class DownloadMediaUseCase extends BaseQueryUseCase<DownloadMediaUseCase.
             MediaSize size,
             UUID fileUuid
     ) {
-        public Input{
+        public Input {
             if (size == null && fileUuid == null) {
-                throw new IllegalArgumentException("either size or file_uuid is required");
+                throw new IllegalArgumentException("either size or fileUuid is required");
             }
             if (size != null && fileUuid != null) {
-                throw new IllegalArgumentException("only one of 'size' or 'file_uuid' can be provided");
+                throw new IllegalArgumentException("only one of 'size' or 'fileUuid' can be provided");
+            }
+            if (size != null && size.equals(MediaSize.CUSTOM)) {
+                throw new IllegalArgumentException("use fileUuid instead of size=CUSTOM");
             }
         }
     }
 
-    private MediaFile findMediaFile(Media media, Input input){
+    private MediaFile findMediaFile(Media media, Input input) {
         if (input.size() != null) {
             return media.getWithMediaSize(input.size())
                     .orElseThrow(() -> MediaFileNotFoundException.size(input.size()));
@@ -70,6 +73,6 @@ public class DownloadMediaUseCase extends BaseQueryUseCase<DownloadMediaUseCase.
                     .orElseThrow(() -> MediaFileNotFoundException.uuid(input.fileUuid()));
         }
 
-        throw new IllegalArgumentException("Either size or fileUuid must be provided");
+        throw new IllegalArgumentException("either size or fileUuid must be provided");
     }
 }

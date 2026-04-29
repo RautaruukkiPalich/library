@@ -1,5 +1,6 @@
 package com.app.modules.media.repository;
 
+import com.app.modules.media.enums.SortOrder;
 import com.app.modules.media.enums.TaskStatus;
 import com.app.modules.media.exceptions.MediaTaskNotFoundException;
 import com.app.modules.media.model.MediaTask;
@@ -24,6 +25,7 @@ public interface TaskGetterRepository {
 
     List<MediaTask> find(@NonNull Long userId,
                          @NonNull Pageable pageable,
+                         @NonNull SortOrder order,
                          TaskStatus status);
 
     Long count(@NonNull Long userId,

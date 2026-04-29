@@ -1,29 +1,26 @@
 package com.app.modules.media.enums;
 
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.app.core.enums.BaseEnum;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum MediaSize {
-    ORIGINAL("original"),
-    LARGE("large"),
-    MEDIUM("medium"),
-    SMALL("small"),
-    THUMBNAIL("thumbnail"),
-    ICON("icon"),
-    CUSTOM("custom");
+public enum MediaSize implements BaseEnum {
+    ORIGINAL, LARGE, MEDIUM, SMALL, THUMBNAIL, ICON, CUSTOM;
 
-    private final String code;
+    @JsonCreator
+    public static MediaSize fromName(String name) {
+        return BaseEnum.fromName(MediaSize.class, name);
+    }
 
-    @JsonValue
-    public String getCode() {
-        return code;
+    public static MediaSize fromNameOrThrow(String name) {
+        return BaseEnum.fromNameOrThrow(MediaSize.class, name);
     }
 
     @Override
     public String toString() {
-        return code.toLowerCase();
+        return BaseEnum.normalize(this.name());
     }
 }

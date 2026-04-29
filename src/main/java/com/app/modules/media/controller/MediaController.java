@@ -1,7 +1,9 @@
 package com.app.modules.media.controller;
 
+import com.app.core.annotation.api_response.ApiStandardErrorResponse;
 import com.app.core.annotation.public_endpoint.PublicEndpoint;
 import com.app.core.aop.require_role.RequireRole;
+import com.app.core.response.ErrorResponse;
 import com.app.core.security.rbac.Role;
 import com.app.modules.media.converter.ConversionParams;
 import com.app.modules.media.dto.DownloadMediaDTO;
@@ -9,6 +11,7 @@ import com.app.modules.media.dto.MediaDTO;
 import com.app.modules.media.dto.MediaFileDTO;
 import com.app.modules.media.dto.TaskStatusDTO;
 import com.app.modules.media.enums.MediaSize;
+import com.app.modules.media.enums.SortOrder;
 import com.app.modules.media.enums.TaskStatus;
 import com.app.modules.media.source.MultipartFileMediaSource;
 import com.app.modules.media.usecase.*;
@@ -58,10 +61,9 @@ public class MediaController {
     @RequireRole(value = Role.USER)
     @ApiResponse(responseCode = "202", description = "accepted",
             content = @Content(schema = @Schema(implementation = MediaControllerDTO.Response.MediaUUID.class)))
-    @ApiResponse(responseCode = "401", description = "unauthorized")
-    @ApiResponse(responseCode = "403", description = "forbidden")
-    @ApiResponse(responseCode = "404", description = "not found")
-    @ApiResponse(responseCode = "415", description = "unsupported media type")
+    @ApiResponse(responseCode = "415", description = "unsupported media type",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiStandardErrorResponse
     public ResponseEntity<MediaControllerDTO.Response.MediaUUID> uploadMedia(
             @AuthenticationPrincipal Long userId,
             @RequestPart("file") MultipartFile file
@@ -80,22 +82,17 @@ public class MediaController {
     @Operation(summary = "all user tasks info")
     @ApiResponse(responseCode = "200", description = "success",
             content = @Content(schema = @Schema(implementation = MediaControllerDTO.Response.TaskStatus.class)))
-    @ApiResponse(responseCode = "401", description = "unauthorized")
-    @ApiResponse(responseCode = "403", description = "forbidden")
-    @ApiResponse(responseCode = "404", description = "not found")
+    @ApiStandardErrorResponse
     public ResponseEntity<List<MediaControllerDTO.Response.TaskStatus>> listTaskInfo(
             @AuthenticationPrincipal Long userId,
             @RequestParam(value = "page", defaultValue = "0") Integer page,
             @RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize,
-            @RequestParam(value = "status", required = false) String status
+            @RequestParam(value = "status", required = false) TaskStatus status,
+            @RequestParam(value = "order", required = false) SortOrder order
     ) {
-        TaskStatus taskStatus = TaskStatus.fromValue(status).orElse(null);
         List<TaskStatusDTO> tasks = getUserTasksUseCase.execute(
                 new GetUserTasksUseCase.Input(
-                        userId,
-                        page,
-                        pageSize,
-                        taskStatus));
+                        userId, page, pageSize, status, order));
 
         return ResponseEntity.ok().body(tasks.stream().map(MediaControllerMapper::toResponse).toList());
     }
@@ -105,16 +102,13 @@ public class MediaController {
     @Operation(summary = "all user tasks info")
     @ApiResponse(responseCode = "200", description = "success",
             content = @Content(schema = @Schema(implementation = Long.class)))
-    @ApiResponse(responseCode = "401", description = "unauthorized")
-    @ApiResponse(responseCode = "403", description = "forbidden")
-    @ApiResponse(responseCode = "404", description = "not found")
+    @ApiStandardErrorResponse
     public ResponseEntity<Long> taskCount(
             @AuthenticationPrincipal Long userId,
-            @RequestParam(value = "status", required = false) String status
+            @RequestParam(value = "status", required = false) TaskStatus status
     ) {
-        TaskStatus taskStatus = TaskStatus.fromValue(status).orElse(null);
         Long count = getUserTasksCountUseCase.execute(
-                new GetUserTasksCountUseCase.Input(userId, taskStatus));
+                new GetUserTasksCountUseCase.Input(userId, status));
 
         return ResponseEntity.ok().body(count);
     }
@@ -124,9 +118,7 @@ public class MediaController {
     @Operation(summary = "upload task info")
     @ApiResponse(responseCode = "200", description = "success",
             content = @Content(schema = @Schema(implementation = MediaControllerDTO.Response.TaskStatus.class)))
-    @ApiResponse(responseCode = "401", description = "unauthorized")
-    @ApiResponse(responseCode = "403", description = "forbidden")
-    @ApiResponse(responseCode = "404", description = "not found")
+    @ApiStandardErrorResponse
     public ResponseEntity<MediaControllerDTO.Response.TaskStatus> taskInfo(
             @AuthenticationPrincipal Long userId,
             @PathVariable("taskUuid") UUID taskUuid
@@ -142,9 +134,7 @@ public class MediaController {
     @Operation(summary = "list files with sizes by media uuid")
     @ApiResponse(responseCode = "200", description = "success",
             content = @Content(schema = @Schema(implementation = MediaControllerDTO.Response.MediaItem.class)))
-    @ApiResponse(responseCode = "401", description = "unauthorized")
-    @ApiResponse(responseCode = "403", description = "forbidden")
-    @ApiResponse(responseCode = "404", description = "not found")
+    @ApiStandardErrorResponse
     public ResponseEntity<MediaControllerDTO.Response.MediaItem> mediaInfo(
             @AuthenticationPrincipal Long userId,
             @PathVariable UUID mediaUuid
@@ -159,9 +149,7 @@ public class MediaController {
     @RequireRole(Role.USER)
     @Operation(summary = "delete media file")
     @ApiResponse(responseCode = "204", description = "success")
-    @ApiResponse(responseCode = "401", description = "unauthorized")
-    @ApiResponse(responseCode = "403", description = "forbidden")
-    @ApiResponse(responseCode = "404", description = "not found")
+    @ApiStandardErrorResponse
     public ResponseEntity<Void> deleteMedia(
             @AuthenticationPrincipal Long userId,
             @PathVariable UUID mediaUuid
@@ -178,9 +166,7 @@ public class MediaController {
     @Operation(summary = "create task")
     @ApiResponse(responseCode = "202", description = "accepted",
             content = @Content(schema = @Schema(implementation = MediaControllerDTO.Response.TaskStatus.class)))
-    @ApiResponse(responseCode = "401", description = "unauthorized")
-    @ApiResponse(responseCode = "403", description = "forbidden")
-    @ApiResponse(responseCode = "404", description = "not found")
+    @ApiStandardErrorResponse
     public ResponseEntity<MediaControllerDTO.Response.TaskStatus> newTask(
             @AuthenticationPrincipal Long userId,
             @PathVariable UUID mediaUuid,
@@ -201,9 +187,7 @@ public class MediaController {
     @ApiResponse(responseCode = "200", description = "success",
             content = @Content(mediaType = "application/octet-stream",
                     schema = @Schema(type = "string", format = "binary")))
-    @ApiResponse(responseCode = "401", description = "unauthorized")
-    @ApiResponse(responseCode = "403", description = "forbidden")
-    @ApiResponse(responseCode = "404", description = "not found")
+    @ApiStandardErrorResponse
     public ResponseEntity<Resource> downloadFile(
             @AuthenticationPrincipal Long userId,
             @PathVariable UUID mediaUuid,

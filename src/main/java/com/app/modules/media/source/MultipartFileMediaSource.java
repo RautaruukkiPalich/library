@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 @RequiredArgsConstructor
-public class MultipartFileMediaSource implements MediaSource{
+public class MultipartFileMediaSource implements MediaSource {
     private final MultipartFile file;
 
     @Override

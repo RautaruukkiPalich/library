@@ -43,7 +43,8 @@ public record MediaTypeProperties(
             ),
             "mp4", "video/mp4"
     );
-    public String getContentType(@NonNull String extension){
+
+    public String getContentType(@NonNull String extension) {
         return this.extensionToContentType.getOrDefault(
                 extension,
                 DEFAULT_CONTENT_TYPE

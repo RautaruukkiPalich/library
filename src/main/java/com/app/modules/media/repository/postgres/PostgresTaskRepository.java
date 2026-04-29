@@ -1,5 +1,6 @@
 package com.app.modules.media.repository.postgres;
 
+import com.app.modules.media.enums.SortOrder;
 import com.app.modules.media.enums.TaskStatus;
 import com.app.modules.media.exceptions.MediaTaskNotFoundException;
 import com.app.modules.media.model.MediaTask;
@@ -29,6 +30,10 @@ import java.util.UUID;
 @Repository
 @AllArgsConstructor
 public class PostgresTaskRepository implements TaskGetterRepository, TaskPersistRepository, TaskDeleterRepository {
+
+    private final static String ORDER_COLUMN = "createdAt";
+    private final static String DESC = "desc";
+
 
     @PersistenceContext
     private EntityManager em;
@@ -142,7 +147,10 @@ public class PostgresTaskRepository implements TaskGetterRepository, TaskPersist
 
 
     @Override
-    public List<MediaTask> find(@NonNull Long userId, @NonNull Pageable pageable, TaskStatus status) {
+    public List<MediaTask> find(@NonNull Long userId,
+                                @NonNull Pageable pageable,
+                                @NonNull SortOrder order,
+                                TaskStatus status) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<MediaTask> cq = cb.createQuery(MediaTask.class);
         Root<MediaTask> root = cq.from(MediaTask.class);
@@ -155,7 +163,11 @@ public class PostgresTaskRepository implements TaskGetterRepository, TaskPersist
         }
 
         cq.where(predicates.toArray(new Predicate[0]));
-        cq.orderBy(cb.asc(root.get("createdAt")));
+
+
+        cq.orderBy(order.isDesc() ?
+                cb.desc(root.get(ORDER_COLUMN)) :
+                cb.asc(root.get(ORDER_COLUMN)));
 
         return em.createQuery(cq)
                 .setFirstResult((int) pageable.getOffset())

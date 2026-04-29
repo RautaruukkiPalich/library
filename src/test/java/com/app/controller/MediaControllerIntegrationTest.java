@@ -3,6 +3,7 @@ package com.app.controller;
 import com.app.BaseIntegrationTest;
 import com.app.modules.media.controller.MediaControllerDTO;
 import com.app.utils.RegisterLoginHelper;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,10 +19,17 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Predicate;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -49,6 +57,10 @@ public class MediaControllerIntegrationTest extends BaseIntegrationTest {
     private final static String USER_PASSWORD = "QWErty123";
 
     private final static String MEDIA_API_PATH = "/api/media";
+
+    private final int EXPECTED_TOTAL_SIZES = 6;
+    private final int CONVERSION_TIMEOUT_SECONDS = 30;
+    private final int POLLING_INTERVAL_SECONDS = 2;
 
     @AfterEach
     void afterEach() {
@@ -83,12 +95,58 @@ public class MediaControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testUploadFile() throws Exception {
+        assertTimeoutPreemptively(Duration.ofSeconds(10), () -> {
+            UUID mediaUuid = uploadFile();
 
+            var mediaItem = getMediaItem(mediaUuid);
+
+            assertThat(mediaItem).isNotNull();
+
+            deleteMedia(mediaUuid);
+        });
+    }
+
+    @Test
+    void testDownloadFiles() throws Exception {
+        assertTimeoutPreemptively(Duration.ofSeconds(10), () -> {
+            UUID mediaUuid = uploadFile();
+            var mediaItem = getMediaItem(mediaUuid);
+            var urls = mediaItem.getSizes().stream()
+                    .flatMap(s -> s.getDownloadUrl().stream())
+                    .toList();
+
+            assertThat(urls).hasSizeGreaterThanOrEqualTo(2);
+
+            urls.forEach(this::downloadFile);
+
+            deleteMedia(mediaUuid);
+        });
+    }
+
+    @Test
+    void testDownloadConverts() throws Exception {
+        assertTimeoutPreemptively(Duration.ofSeconds(45), () -> {
+            UUID mediaUuid = uploadFile();
+
+            var urls = waitForConversionComplete(mediaUuid,
+                    (item) -> item.getTotalCount() != null && item.getTotalCount() == EXPECTED_TOTAL_SIZES,
+                    POLLING_INTERVAL_SECONDS,
+                    CONVERSION_TIMEOUT_SECONDS);
+
+            urls.forEach(this::downloadFile);
+
+            deleteMedia(mediaUuid);
+        });
+    }
+
+    @SneakyThrows
+    private UUID uploadFile() {
+        byte[] content = Files.readAllBytes(Path.of("src/test/resources/controllers/files/white_rectangle.png"));
         MockMultipartFile testFile = new MockMultipartFile(
                 "file",
-                "test-avatar.jpg",
-                MediaType.IMAGE_JPEG_VALUE,
-                "test image content".getBytes()
+                "test.png",
+                MediaType.IMAGE_PNG_VALUE,
+                content
         );
 
         String uploadBody = mockMvc.perform(
@@ -100,9 +158,12 @@ public class MediaControllerIntegrationTest extends BaseIntegrationTest {
                 .andReturn()
                 .getResponse().getContentAsString();
 
-        var mediaUUID = unmarshall(uploadBody, MediaControllerDTO.Response.MediaUUID.class).getMediaUuid();
+        return unmarshall(uploadBody, MediaControllerDTO.Response.MediaUUID.class).getMediaUuid();
+    }
 
-        mockMvc.perform(get(MEDIA_API_PATH + "/%s".formatted(mediaUUID))
+    @SneakyThrows
+    private MediaControllerDTO.Response.MediaItem getMediaItem(UUID mediaUuid) {
+        var mediaItemResp = mockMvc.perform(get(MEDIA_API_PATH + "/%s".formatted(mediaUuid))
                         .header("Authorization", "Bearer %s".formatted(accessToken)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.media_uuid").isNotEmpty())
@@ -115,10 +176,55 @@ public class MediaControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.sizes[0].metadata").isNotEmpty())
                 .andExpect(jsonPath("$.sizes[0].metadata.width").isNotEmpty())
                 .andExpect(jsonPath("$.sizes[0].metadata.height").isNotEmpty())
-                .andExpect(jsonPath("$.sizes[0].metadata.file_size").isNotEmpty());
+                .andExpect(jsonPath("$.sizes[0].metadata.file_size").isNotEmpty())
+                .andReturn().getResponse().getContentAsString();
 
-        mockMvc.perform(delete("%s/%s".formatted(MEDIA_API_PATH, mediaUUID))
+        return unmarshall(mediaItemResp, MediaControllerDTO.Response.MediaItem.class);
+    }
+
+    @SneakyThrows
+    private void deleteMedia(UUID mediaUuid) {
+        mockMvc.perform(delete("%s/%s".formatted(MEDIA_API_PATH, mediaUuid))
                         .header("Authorization", "Bearer %s".formatted(accessToken)))
                 .andExpect(status().isNoContent());
+        Thread.sleep(1000);
+    }
+
+    @SneakyThrows
+    private void downloadFile(String url) {
+        mockMvc.perform(get(url)
+                        .header("Authorization", "Bearer %s".formatted(accessToken)))
+                .andExpect(status().isOk())
+                .andExpect(header().exists("Content-Type"))
+                .andExpect(header().exists("Content-Disposition"));
+    }
+
+    private List<String> waitForConversionComplete(
+            UUID mediaUuid,
+            Predicate<MediaControllerDTO.Response.MediaItem> predicate,
+            int pollingInterval,
+            int timeoutSeconds) {
+        long startTime = System.currentTimeMillis();
+
+        while (true) {
+            MediaControllerDTO.Response.MediaItem item = getMediaItem(mediaUuid);
+            if (predicate.test(item)) {
+                return item.getSizes().stream()
+                        .flatMap(sizeInfo -> sizeInfo.getDownloadUrl().stream())
+                        .toList();
+            }
+
+            if (System.currentTimeMillis() - startTime >= timeoutSeconds * 1000L) {
+                throw new RuntimeException("Conversion timeout for media: " + mediaUuid);
+            }
+
+            try {
+                Thread.sleep(pollingInterval * 1000L);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("waiting interrupted", e);
+            }
+
+        }
     }
 }

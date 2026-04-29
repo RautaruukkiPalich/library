@@ -1,10 +1,10 @@
 package com.app.modules.media.model;
 
 import com.app.core.model.BaseModel;
-import com.app.modules.media.metadata.MediaMetadataDatabaseConverter;
 import com.app.modules.media.enums.MediaSize;
 import com.app.modules.media.exceptions.MediaFileValidationException;
 import com.app.modules.media.metadata.MediaMetadata;
+import com.app.modules.media.metadata.MediaMetadataDatabaseConverter;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NonNull;
@@ -100,7 +100,7 @@ public class MediaFile extends BaseModel {
     }
 
     public UUID getMediaUuid() {
-        if (media != null){
+        if (media != null) {
             return media.getUuid();
         }
         return mediaUuid;

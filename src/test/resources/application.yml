@@ -49,7 +49,6 @@ media:
   types:
     image:
       sizes:
-        original: { }
         large:
           width: 1920
           height: 1080
@@ -63,8 +62,9 @@ media:
           width: 150
           height: 150
           crop-to-square: true
+          keep-aspect-ratio: false
         icon:
           width: 50
           height: 50
           crop-to-square: true
-          keep-aspect-ratio: true
+          keep-aspect-ratio: false

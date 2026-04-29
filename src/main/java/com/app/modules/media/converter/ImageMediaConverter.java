@@ -1,6 +1,6 @@
 package com.app.modules.media.converter;
 
-import com.app.modules.media.converter.image.ImageConverter;
+import com.app.modules.media.converter.impl.ThumbnailsImageConverter;
 import com.app.modules.media.enums.MediaContent;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -10,11 +10,11 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.InputStream;
 
-@AllArgsConstructor
 @Slf4j
 @Component
+@AllArgsConstructor
 public class ImageMediaConverter implements MediaConverter {
-    private final ImageConverter converter;
+    private final ThumbnailsImageConverter converter;
 
     @Override
     public InputStream convert(@NonNull InputStream source,

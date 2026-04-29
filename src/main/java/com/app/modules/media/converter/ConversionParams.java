@@ -26,11 +26,11 @@ public class ConversionParams {
     private Boolean cropToSquare;
 
     public boolean isImage() {
-        return targetType == MediaContent.IMAGE;
+        return targetType.equals(MediaContent.IMAGE);
     }
 
     public boolean isVideo() {
-        return targetType == MediaContent.VIDEO;
+        return targetType.equals(MediaContent.VIDEO);
     }
 
     public boolean shouldKeepAspectRatio() {
