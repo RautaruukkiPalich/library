@@ -1,9 +1,7 @@
-package com.app.modules.media.repository.storage;
+package com.app.modules.media.repository.impl;
 
 import com.app.modules.media.exceptions.FileNotFoundException;
-import com.app.modules.media.repository.FileDeleteRepository;
-import com.app.modules.media.repository.FileGetterRepository;
-import com.app.modules.media.repository.FilePersistRepository;
+import com.app.modules.media.repository.FileRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -17,44 +15,45 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 @Slf4j
-public class LocalStorageRepository implements FilePersistRepository, FileDeleteRepository, FileGetterRepository {
+public class LocalStorageRepositoryImpl implements FileRepository {
     private final Path rootLocation;
-
-    public LocalStorageRepository(
-            @Value("${storage.local.path:local_media_storage}") String localStoragePath
-    ) {
-        this.rootLocation = Paths.get(localStoragePath);
-    }
 
     @PostConstruct
     public void init() {
         try {
             if (!Files.exists(rootLocation)) {
                 Files.createDirectories(rootLocation);
-                log.info("created storage directory: {}", rootLocation.toAbsolutePath());
+                log.info("storage directory: {}", rootLocation.toAbsolutePath());
             }
         } catch (IOException e) {
             throw new RuntimeException("could not initialize storage location", e);
         }
     }
 
+    public LocalStorageRepositoryImpl(
+            @Value("${storage.local.path:local_media_storage}") String localStoragePath
+    ) {
+        this.rootLocation = Paths.get(localStoragePath).toAbsolutePath().normalize();
+    }
+
+
+
     @Override
     public void delete(@NonNull String path) throws FileNotFoundException, IOException {
         Path filePath = rootLocation.resolve(path).normalize();
 
         if (!Files.exists(filePath) || !Files.isReadable(filePath)) {
-            throw new FileNotFoundException("file=%s not found or not readable".formatted(filePath));
+            throw FileNotFoundException.path(path);
         }
 
         Files.delete(filePath);
     }
 
     @Override
-    public Optional<InputStream> findByRelativePath(@NonNull String path) {
+    public Optional<InputStream> find(@NonNull String path) {
         try {
             Path filePath = rootLocation.resolve(path).normalize();
 
@@ -76,12 +75,7 @@ public class LocalStorageRepository implements FilePersistRepository, FileDelete
     }
 
     @Override
-    public InputStream getByRelativePath(@NonNull String path) throws FileNotFoundException {
-        return findByRelativePath(path).orElseThrow(() -> new FileNotFoundException("file not found by path: %s".formatted(path)));
-    }
-
-    @Override
-    public Long getSize(String path) {
+    public Long fileSize(@NonNull String path) {
         try {
             Path filePath = rootLocation.resolve(path).normalize();
             if (Files.exists(filePath)) {
@@ -95,14 +89,10 @@ public class LocalStorageRepository implements FilePersistRepository, FileDelete
 
     @Override
     public Path save(@NonNull InputStream inputStream,
-                     @NonNull UUID mediaUuid,
-                     String extension
+                     @NonNull String pathPrefix,
+                     @NonNull String filename
     ) throws IOException {
-        Path directoryPath = generatePathAndCreateDirectories(mediaUuid);
-
-        String filename = extension.isBlank() ?
-                "%s".formatted(UUID.randomUUID()) :
-                "%s.%s".formatted(UUID.randomUUID(), extension);
+        Path directoryPath = generatePathAndCreateDirectories(pathPrefix);
 
         Path filePath = directoryPath.resolve(filename);
 
@@ -115,20 +105,23 @@ public class LocalStorageRepository implements FilePersistRepository, FileDelete
         return path;
     }
 
-    private Path generatePathAndCreateDirectories(UUID mediaUuid) throws IOException {
-        Path path = generatePathByUUID(rootLocation, mediaUuid);
+    private Path generatePathAndCreateDirectories(@NonNull String pathPrefix) throws IOException {
+        if (pathPrefix.length() < 4) {
+            throw new IllegalArgumentException("path prefix cannot be shorter 4 characters, present %s: '%s'"
+                    .formatted(pathPrefix.length(), pathPrefix));
+        }
+        Path path = generatePath(rootLocation, pathPrefix);
         Files.createDirectories(path);
         return path;
     }
 
-    private Path generatePathByUUID(Path root, UUID mediaUuid) {
-        String uuid = mediaUuid.toString();
-        String firstLevel = uuid.substring(0, 2);
-        String secondLevel = uuid.substring(2, 4);
+    private Path generatePath(Path root, String pathPrefix) {
+        String firstLevel = pathPrefix.substring(0, 2);
+        String secondLevel = pathPrefix.substring(2, 4);
 
         return root
                 .resolve(firstLevel)
                 .resolve(secondLevel)
-                .resolve(uuid);
+                .resolve(pathPrefix);
     }
 }

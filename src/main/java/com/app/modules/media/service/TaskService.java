@@ -3,19 +3,23 @@ package com.app.modules.media.service;
 import com.app.modules.media.converter.ConversionParams;
 import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.enums.MediaSize;
+import com.app.modules.media.enums.SortOrder;
 import com.app.modules.media.enums.TaskStatus;
+import com.app.modules.media.exceptions.MediaTaskNotFoundException;
 import com.app.modules.media.exceptions.TaskTransitionException;
 import com.app.modules.media.model.Media;
 import com.app.modules.media.model.MediaTask;
-import com.app.modules.media.repository.TaskDeleterRepository;
-import com.app.modules.media.repository.TaskGetterRepository;
-import com.app.modules.media.repository.TaskPersistRepository;
+import com.app.modules.media.repository.TaskRepository;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -24,24 +28,45 @@ import java.util.UUID;
 @Slf4j
 @AllArgsConstructor
 public class TaskService {
-    private final TaskGetterRepository taskGetterRepository;
-    private final TaskPersistRepository taskPersistRepository;
-    private final TaskDeleterRepository taskDeleterRepository;
-
+    private final TaskRepository taskRepository;
     private final MediaSizeService mediaSizeService;
 
-    public MediaTask create(@NonNull Media media,
-                            @NonNull ConversionParams conversionParams) {
+    public MediaTask createTask(@NonNull Media media,
+                                @NonNull ConversionParams conversionParams) {
         MediaTask task = MediaTask.create(
                 media.getUserId(), media.getUuid(), conversionParams);
-        var savedTask = taskPersistRepository.save(task);
+        var savedTask = taskRepository.save(task);
         log.info("created convert task={} for media={}; extension={}",
                 savedTask.getUuid(), media.getUuid(), conversionParams.getTargetExtension());
         return savedTask;
     }
 
+    public MediaTask getTask(@NonNull UUID uuid) {
+        return taskRepository.findById(uuid).orElseThrow(() -> MediaTaskNotFoundException.uuid(uuid));
+    }
+
+    public Long countTasks(@NonNull Long userId,
+                           TaskStatus status) {
+        return taskRepository.count(userId, status);
+    }
+
+    public List<MediaTask> findUserTasks(@NonNull Long userId,
+                                         @NonNull Integer page,
+                                         @NonNull Integer pageSize,
+                                         @NonNull SortOrder sortOrder,
+                                         TaskStatus status) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+        return taskRepository.find(userId, pageable, sortOrder, status);
+    }
+
+    public List<MediaTask> findTasks(@NonNull Integer limit,
+                                     TaskStatus status) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return taskRepository.find(null, pageable, null, status);
+    }
+
     public void deleteByMediaUuid(@NonNull UUID mediaUuid) {
-        taskGetterRepository.findByMediaUuid(mediaUuid).forEach(taskDeleterRepository::delete);
+        taskRepository.findAllByMediaUuid(mediaUuid).forEach(taskRepository::delete);
     }
 
     public void setCompleteStatus(@NonNull MediaTask task
@@ -68,6 +93,7 @@ public class TaskService {
 
         if (current.canTransitionTo(target)) {
             task.setStatus(target);
+            save(task);
             return;
         }
 
@@ -96,8 +122,16 @@ public class TaskService {
             ConversionParams cp = ConversionParams.fromConfig(
                     content, size, content.getProps().targetExtension(), config);
 
-            MediaTask t = MediaTask.create(media.getUserId(), media.getUuid(), cp);
-            taskPersistRepository.save(t);
+            createTask(media, cp);
         });
+    }
+
+    public MediaTask save(@NonNull MediaTask task) {
+        return taskRepository.save(task);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public MediaTask saveNested(@NonNull MediaTask task) {
+        return save(task);
     }
 }

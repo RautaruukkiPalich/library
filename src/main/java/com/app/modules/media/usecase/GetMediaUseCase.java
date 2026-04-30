@@ -4,8 +4,8 @@ import com.app.core.usecase.BaseQueryUseCase;
 import com.app.modules.media.dto.MediaDTO;
 import com.app.modules.media.mapper.MediaMapper;
 import com.app.modules.media.model.Media;
-import com.app.modules.media.repository.MediaGetterRepository;
 import com.app.modules.media.service.CheckPermissionService;
+import com.app.modules.media.service.MediaService;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,12 +20,12 @@ import java.util.UUID;
 @Validated
 @AllArgsConstructor
 public class GetMediaUseCase extends BaseQueryUseCase<GetMediaUseCase.Input, MediaDTO> {
-    private final MediaGetterRepository mediaGetterRepository;
+    private final MediaService mediaService;
     private final CheckPermissionService checkPermissionService;
 
     @Override
     public MediaDTO execute(@NonNull Input input) {
-        Media media = mediaGetterRepository.getByUuid(input.mediaUuid());
+        Media media = mediaService.getMedia(input.mediaUuid());
         checkPermissionService.checkCanView(media, input.userId());
 
         return MediaMapper.convert(media);

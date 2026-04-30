@@ -6,4 +6,8 @@ public class FileNotFoundException extends NotFoundException {
     public FileNotFoundException(String message) {
         super(message);
     }
+
+    public static FileNotFoundException path(String path) {
+        return new FileNotFoundException("file not found by path %s".formatted(path));
+    }
 }

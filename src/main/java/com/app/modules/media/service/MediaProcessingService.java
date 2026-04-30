@@ -8,10 +8,6 @@ import com.app.modules.media.metadata.MediaMetadataService;
 import com.app.modules.media.model.Media;
 import com.app.modules.media.model.MediaFile;
 import com.app.modules.media.model.MediaTask;
-import com.app.modules.media.repository.FileGetterRepository;
-import com.app.modules.media.repository.MediaGetterRepository;
-import com.app.modules.media.repository.TaskGetterRepository;
-import com.app.modules.media.repository.TaskPersistRepository;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -26,24 +22,17 @@ import java.util.UUID;
 @AllArgsConstructor
 @Slf4j
 public class MediaProcessingService {
-    private final TaskGetterRepository taskGetterRepository;
-    private final TaskPersistRepository taskPersistRepository;
     private final TaskService taskService;
-
-    private final MediaGetterRepository mediaGetterRepository;
-
-    private final FileGetterRepository fileGetterRepository;
-
     private final MediaService mediaService;
-
     private final FileService fileService;
+
     private final MediaConverterFactory mediaConverterFactory;
     private final MediaMetadataService mediaMetadataService;
 
     @Transactional
     public void processTask(@NonNull UUID taskUuid) {
 
-        MediaTask task = taskGetterRepository.getByUUID(taskUuid);
+        MediaTask task = taskService.getTask(taskUuid);
 
         log.info("run process task {}", task.getUuid());
 
@@ -52,24 +41,21 @@ public class MediaProcessingService {
             return;
         }
 
-        taskService.setStatus(task, TaskStatus.PROCESSING);
-
-        MediaTask savedTask = taskPersistRepository.saveNested(task);
+        task.setStatus(TaskStatus.PROCESSING);
+        MediaTask savedTask = taskService.saveNested(task);
 
         try {
             executeProcess(savedTask);
             taskService.setCompleteStatus(savedTask);
-            taskPersistRepository.save(savedTask);
         } catch (Exception e) {
             taskService.setFailedStatus(savedTask, e.getMessage());
-            taskPersistRepository.save(savedTask);
         }
     }
 
     private void executeProcess(@NonNull MediaTask task) throws IOException {
         String filePath = null;
 
-        Media media = mediaGetterRepository.getByUuid(task.getMediaUuid());
+        Media media = mediaService.getMedia(task.getMediaUuid());
         MediaFile original = media.getOriginal();
         ConversionParams cp = task.getConversionParams();
 
@@ -83,7 +69,7 @@ public class MediaProcessingService {
             throw new RuntimeException("no converter for current type");
         }
 
-        try (InputStream source = fileGetterRepository.getByRelativePath(original.getPath())) {
+        try (InputStream source = fileService.getByPath(original.getPath())) {
             try (InputStream res = mediaConverterFactory.convert(source, cp)) {
                 filePath = fileService.upload(res, media.getUuid(), cp.getTargetExtension());
 

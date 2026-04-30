@@ -6,7 +6,7 @@ import com.app.modules.media.enums.SortOrder;
 import com.app.modules.media.enums.TaskStatus;
 import com.app.modules.media.mapper.TaskMapper;
 import com.app.modules.media.model.MediaTask;
-import com.app.modules.media.repository.TaskGetterRepository;
+import com.app.modules.media.service.TaskService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -14,8 +14,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
@@ -26,16 +24,14 @@ import java.util.List;
 @Validated
 @AllArgsConstructor
 public class GetUserTasksUseCase extends BaseQueryUseCase<GetUserTasksUseCase.Input, List<TaskStatusDTO>> {
-    private final TaskGetterRepository taskGetterRepository;
-
+    private final TaskService taskService;
 
     @Override
     public List<TaskStatusDTO> execute(@Valid @NonNull Input input) {
-        Pageable pageable = PageRequest.of(input.page(), input.pageSize());
-
-        List<MediaTask> tasks = taskGetterRepository.find(
+        List<MediaTask> tasks = taskService.findUserTasks(
                 input.userId(),
-                pageable,
+                input.page(),
+                input.pageSize(),
                 input.order(),
                 input.status());
         return tasks.stream().map(TaskMapper::convert).toList();

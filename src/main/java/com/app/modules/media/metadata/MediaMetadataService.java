@@ -33,10 +33,7 @@ public class MediaMetadataService {
     private MediaMetadata getImageMetadata(@NonNull String filePath) {
         String extension = FileOperations.extractExtension(filePath);
         Dimension dimension = fileService.fileDimension(filePath, MediaContent.IMAGE);
-        if (dimension == null || dimension.width() == null || dimension.height() == null) {
-            log.error("failed to get dimensions for file: {}", filePath);
-            throw new MediaMetadataException("cannot read image dimensions");
-        }
+        checkDimensions(dimension, filePath);
 
         Long fileSize = fileService.fileSize(filePath);
 
@@ -61,10 +58,7 @@ public class MediaMetadataService {
     private MediaMetadata getVideoMetadata(@NonNull String filePath) {
         String extension = FileOperations.extractExtension(filePath);
         Dimension dimension = fileService.fileDimension(filePath, MediaContent.VIDEO);
-        if (dimension == null || dimension.width() == null || dimension.height() == null) {
-            log.error("failed to get dimensions for file: {}", filePath);
-            throw new MediaMetadataException("cannot read video dimensions");
-        }
+        checkDimensions(dimension, filePath);
 
         String contentType = MediaContent.VIDEO
                 .getProps()
@@ -95,5 +89,12 @@ public class MediaMetadataService {
 
             case VIDEO -> false;
         };
+    }
+
+    private void checkDimensions(Dimension dimension, String filePath) throws MediaMetadataException {
+        if (dimension == null || dimension.width() == null || dimension.height() == null) {
+            log.error("invalid file dimensions {}", filePath);
+            throw new MediaMetadataException("invalid file %s dimensions".formatted(filePath));
+        }
     }
 }

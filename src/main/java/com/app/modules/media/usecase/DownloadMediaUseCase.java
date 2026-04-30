@@ -7,9 +7,9 @@ import com.app.modules.media.exceptions.MediaFileNotFoundException;
 import com.app.modules.media.mapper.MediaMapper;
 import com.app.modules.media.model.Media;
 import com.app.modules.media.model.MediaFile;
-import com.app.modules.media.repository.FileGetterRepository;
-import com.app.modules.media.repository.MediaGetterRepository;
 import com.app.modules.media.service.CheckPermissionService;
+import com.app.modules.media.service.FileService;
+import com.app.modules.media.service.MediaService;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,18 +25,18 @@ import java.util.UUID;
 @Validated
 @AllArgsConstructor
 public class DownloadMediaUseCase extends BaseQueryUseCase<DownloadMediaUseCase.Input, DownloadMediaDTO> {
-    private final MediaGetterRepository mediaGetterRepository;
-    private final FileGetterRepository fileGetterRepository;
+    private final FileService fileService;
+    private final MediaService mediaService;
     private final CheckPermissionService checkPermissionService;
 
     @Override
     public DownloadMediaDTO execute(@NonNull Input input) {
-        Media media = mediaGetterRepository.getByUuid(input.mediaUuid());
+        Media media = mediaService.getMedia(input.mediaUuid());
         checkPermissionService.checkCanView(media, input.userId());
 
         MediaFile mediaFile = findMediaFile(media, input);
 
-        InputStream stream = fileGetterRepository.getByRelativePath(mediaFile.getPath());
+        InputStream stream = fileService.getByPath(mediaFile.getPath());
 
         return new DownloadMediaDTO(stream, MediaMapper.convert(mediaFile));
     }

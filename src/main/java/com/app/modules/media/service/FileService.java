@@ -3,10 +3,11 @@ package com.app.modules.media.service;
 import com.app.core.config.AsyncConfig;
 import com.app.core.exception.NotFoundException;
 import com.app.modules.media.enums.MediaContent;
+import com.app.modules.media.exceptions.FileNotFoundException;
+import com.app.modules.media.exceptions.FileUploadException;
+import com.app.modules.media.exceptions.FileValidationException;
 import com.app.modules.media.metadata.Dimension;
-import com.app.modules.media.repository.FileDeleteRepository;
-import com.app.modules.media.repository.FileGetterRepository;
-import com.app.modules.media.repository.FilePersistRepository;
+import com.app.modules.media.repository.FileRepository;
 import com.app.modules.media.source.MediaSource;
 import com.app.modules.media.utils.FileOperations;
 import com.app.modules.media.utils.ImageResolutionUtil;
@@ -19,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -29,55 +29,52 @@ import java.util.UUID;
 @Transactional
 @Slf4j
 public class FileService {
-    private final FileGetterRepository fileGetterRepository;
-    private final FilePersistRepository filePersistRepository;
-    private final FileDeleteRepository fileDeleteRepository;
+    private final FileRepository fileRepository;
 
-    public String upload(
-            @NonNull MediaSource mediaSource,
-            @NonNull UUID mediaUuid) {
+    public String upload(@NonNull MediaSource mediaSource,
+                         @NonNull UUID mediaUuid) throws IOException {
         var originalFilename = mediaSource.getOriginalFilename();
+        if (originalFilename == null) {
+            throw new FileValidationException("filename", "empty or null");
+        }
 
-        try {
-            return upload(
-                    mediaSource.getInputStream(),
-                    mediaUuid,
-                    FileOperations.extractExtension(originalFilename)
-            );
-        } catch (IOException e) {
-            log.error("failed to get input stream file {} for media {}",
-                    originalFilename, mediaUuid);
-            throw new RuntimeException(
-                    "failed to get input stream from file %s".formatted(originalFilename), e);
+        String extension = FileOperations.extractExtension(originalFilename);
+
+        try (InputStream source = mediaSource.getInputStream()) {
+            return upload(source, mediaUuid, extension);
         }
     }
 
-    public String upload(@NonNull InputStream stream,
+    public String upload(@NonNull InputStream source,
                          @NonNull UUID mediaUuid,
-                         @NonNull String extension) {
+                         String extension) {
+
+        String generatedFileUuid = UUID.randomUUID().toString();
+        String generatedFilename = extension.isBlank() ?
+                generatedFileUuid :
+                generatedFileUuid + "." + extension;
+
         try {
-            Path path = filePersistRepository.save(
-                    stream,
-                    mediaUuid,
-                    extension);
-            log.debug("file saved for media {} saved storage {}", mediaUuid, path);
-            return path.toString();
-        } catch (IOException e) {
-            log.error("failed to save file for media {} cause {}", mediaUuid, e.getMessage());
-            throw new RuntimeException(
-                    "failed to save file for media %s".formatted(
-                            mediaUuid
-                    ), e);
+            return fileRepository.save(source, mediaUuid.toString(), generatedFilename).toString();
+        } catch (IOException | IllegalArgumentException e) {
+            log.error("failed to upload file for media {}: {}", mediaUuid, e.getMessage(), e);
+            throw new FileUploadException("failed to upload file: " + e.getMessage(), e);
         }
     }
 
-    public void delete(@NonNull String relativePath) {
-        if (relativePath.isEmpty()) {
+    public InputStream getByPath(@NonNull String path) throws FileNotFoundException {
+        return fileRepository.find(path).orElseThrow(
+                () -> FileNotFoundException.path(path));
+    }
+
+    public void delete(String relativePath) {
+        if (relativePath == null || relativePath.isEmpty()) {
             log.info("empty file path");
+            return;
         }
 
         try {
-            fileDeleteRepository.delete(relativePath);
+            fileRepository.delete(relativePath);
             log.info("file {} deleted", relativePath);
         } catch (Exception ex) {
             log.error("failed to delete file {}, try delete manually", relativePath, ex);
@@ -111,9 +108,9 @@ public class FileService {
 
     private boolean deleteFile(@NonNull String path, @NonNull UUID mediaUuid) {
         try {
-            log.info("try delete path {} media {}", path, mediaUuid);
-            fileDeleteRepository.delete(path);
-            log.info("file path {} deleted success", path);
+            log.info("try delete file path {} for media {}", path, mediaUuid);
+            fileRepository.delete(path);
+            log.info("file path {} for media {} deleted success", path, mediaUuid);
             return true;
         } catch (NotFoundException e) {
             log.error("failed to delete file path {} for media {}. file does not exist", path, mediaUuid);
@@ -124,12 +121,14 @@ public class FileService {
     }
 
     public Long fileSize(@NonNull String relativePath) {
-        return fileGetterRepository.getSize(relativePath);
+        return fileRepository.fileSize(relativePath);
     }
 
     public Dimension fileDimension(@NonNull String relativePath,
                                    @NonNull MediaContent type) {
-        InputStream source = fileGetterRepository.getByRelativePath(relativePath);
+        InputStream source = fileRepository.find(relativePath).orElseThrow(
+                () -> FileNotFoundException.path(relativePath));
+
         switch (type) {
             case IMAGE -> {
                 return ImageResolutionUtil.getImageDimension(source);

@@ -16,6 +16,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,30 +31,35 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UploadMediaUseCase extends BaseCommandUseCase<UploadMediaUseCase.Input, UUID> {
     private final FileService fileService;
-    private final MediaMetadataService mediaMetadataService;
     private final MediaService mediaService;
-    private final MediaValidationService fileValidator;
     private final TaskService taskService;
+    private final MediaMetadataService mediaMetadataService;
+    private final MediaValidationService fileValidator;
+
 
     @Override
+    //warn
+    @SneakyThrows
     public UUID execute(@NonNull Input input) {
-        String filePath = null;
         MediaSource mediaSource = input.mediaSource();
-        Long userId = input.userId();
+
+        String contentType = mediaSource.getSanitizedContentType();
+        MediaContent type = MediaContent.fromContentType(contentType);
+
+        fileValidator.validate(mediaSource, type);
+
+        String originalFilename = mediaSource.getOriginalFilename();
+        String filename = FileOperations.extractFilename(originalFilename);
+
+        String filePath = null;
 
         try {
-            String contentType = mediaSource.getSanitizedContentType();
-            MediaContent type = MediaContent.fromContentType(contentType);
+            Media media = mediaService.createMedia(
+                    input.userId(), originalFilename, type);
 
-            fileValidator.validate(mediaSource, type);
+            filePath = fileService.upload(
+                    mediaSource, media.getUuid());
 
-            String originalFilename = mediaSource.getOriginalFilename();
-
-            Media media = mediaService.createMedia(userId, originalFilename, type);
-
-            filePath = fileService.upload(mediaSource, media.getUuid());
-
-            String filename = FileOperations.extractFilename(originalFilename);
             MediaMetadata md = mediaMetadataService.getMetadata(filePath);
 
             mediaService.createMediaFile(
@@ -65,12 +71,9 @@ public class UploadMediaUseCase extends BaseCommandUseCase<UploadMediaUseCase.In
                     media.getUuid(), filePath);
 
             return media.getUuid();
-        } catch (
-                Exception e) {
+        } catch (Exception e) {
             log.error("upload failed: {}", e.getMessage(), e);
-            if (filePath != null && !filePath.isBlank()) {
-                fileService.delete(filePath);
-            }
+            fileService.delete(filePath);
             throw e;
         }
     }

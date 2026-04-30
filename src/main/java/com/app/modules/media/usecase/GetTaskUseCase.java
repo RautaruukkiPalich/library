@@ -4,8 +4,8 @@ import com.app.core.usecase.BaseQueryUseCase;
 import com.app.modules.media.dto.TaskStatusDTO;
 import com.app.modules.media.mapper.TaskMapper;
 import com.app.modules.media.model.MediaTask;
-import com.app.modules.media.repository.TaskGetterRepository;
 import com.app.modules.media.service.CheckPermissionService;
+import com.app.modules.media.service.TaskService;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,13 +20,13 @@ import java.util.UUID;
 @Validated
 @AllArgsConstructor
 public class GetTaskUseCase extends BaseQueryUseCase<GetTaskUseCase.Input, TaskStatusDTO> {
-    private final TaskGetterRepository taskGetterRepository;
+    private final TaskService taskService;
     private final CheckPermissionService checkPermissionService;
 
 
     @Override
     public TaskStatusDTO execute(@NonNull Input input) {
-        MediaTask task = taskGetterRepository.getByUUID(input.taskUuid());
+        MediaTask task = taskService.getTask(input.taskUuid());
         checkPermissionService.checkTaskPermission(task, input.userId());
         return TaskMapper.convert(task);
     }

@@ -4,7 +4,6 @@ import com.app.core.services.DeferredActionService;
 import com.app.core.usecase.BaseCommandUseCase;
 import com.app.modules.media.model.Media;
 import com.app.modules.media.model.MediaFile;
-import com.app.modules.media.repository.MediaGetterRepository;
 import com.app.modules.media.service.CheckPermissionService;
 import com.app.modules.media.service.FileService;
 import com.app.modules.media.service.MediaService;
@@ -25,14 +24,14 @@ import java.util.UUID;
 public class DeleteMediaUseCase extends BaseCommandUseCase<DeleteMediaUseCase.Input, Void> {
     private final MediaService mediaService;
     private final FileService fileService;
+
     private final CheckPermissionService checkPermissionService;
-    private final MediaGetterRepository mediaGetterRepository;
     private final DeferredActionService deferredActionService;
 
 
     @Override
     public Void execute(@NonNull Input input) {
-        Media media = mediaGetterRepository.getByUuid(input.mediaUuid());
+        Media media = mediaService.getMedia(input.mediaUuid());
         checkPermissionService.checkCanEdit(media, input.userId());
         List<String> paths = media.getFiles().stream().map(MediaFile::getPath).toList();
 
