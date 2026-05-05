@@ -7,11 +7,13 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -19,7 +21,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @ConfigurationProperties(prefix = "media.types")
-public class MediaSizeProperties {
+public class DefaultMediaProperties {
     private Map<MediaContent, MediaConfig> types = new EnumMap<>(MediaContent.class);
 
     @PostConstruct
@@ -49,7 +51,7 @@ public class MediaSizeProperties {
 
     @Data
     public static class MediaConfig {
-        private Map<MediaSize, SizeConfig> sizes = new HashMap<>();
+        private Map<MediaSize, SizeConfig> sizes = new EnumMap<>(MediaSize.class);
     }
 
     @Data
@@ -88,22 +90,40 @@ public class MediaSizeProperties {
         }
     }
 
-    protected void logConfig() {
+    private void logConfig() {
         types.forEach((contentType, config) -> {
             log.info("ContentType: {}", contentType);
             log.info("  Sizes: {}", config.getSizes().keySet());
 
             config.getSizes().forEach((size, sizeConfig) -> {
-                log.info("    {}: {}x{}, quality={}, cropToSquare={}, keepAspectRatio={}",
-                        size,
-                        sizeConfig.getWidth(),
-                        sizeConfig.getHeight(),
-                        sizeConfig.getQuality(),
-                        sizeConfig.isCropToSquare(),
-                        sizeConfig.isKeepAspectRatio()
-                );
+                StringBuilder logMessage = new StringBuilder();
+                logMessage.append(String.format("    %s: ", size));
+
+                List<String> params = getListParams(sizeConfig);
+
+                logMessage.append(String.join(", ", params));
+                
+                log.info(logMessage.toString());
             });
         });
+    }
+
+    private static @NonNull List<String> getListParams(@NonNull SizeConfig sizeConfig) {
+        List<String> params = new ArrayList<>();
+
+        params.add(String.format("quality=%s", sizeConfig.getQuality()));
+
+        if (sizeConfig.getWidth() != 0 && sizeConfig.getHeight() != 0){
+            params.add(String.format("dimension=%sx%s", sizeConfig.getWidth(), sizeConfig.getHeight()));
+        }
+
+        if (sizeConfig.isCropToSquare()){
+            params.add(String.format("cropToSquare=%s", true));
+        }
+        if (sizeConfig.isKeepAspectRatio()){
+            params.add(String.format("keepAspectRatio=%s", true));
+        }
+        return params;
     }
 }
 

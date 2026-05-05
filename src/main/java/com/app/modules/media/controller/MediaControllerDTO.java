@@ -41,7 +41,7 @@ public class MediaControllerDTO {
         @JsonInclude(JsonInclude.Include.NON_NULL)
         public abstract static class ConversionRequest {
 
-            @Schema(description = "type of media",
+            @Schema(description = "type of media", defaultValue = "image",
                     example = "image", requiredMode = Schema.RequiredMode.REQUIRED)
             private String type;
 
@@ -82,9 +82,11 @@ public class MediaControllerDTO {
                     minimum = "1", maximum = "10000", requiredMode = Schema.RequiredMode.REQUIRED)
             private Integer height;
 
+            @JsonProperty("keep_aspect_ratio")
             @Schema(description = "keep original aspect ratio", defaultValue = "true")
             private Boolean keepAspectRatio = true;
 
+            @JsonProperty("crop_to_square")
             @Schema(description = "crop to square", defaultValue = "false")
             private Boolean cropToSquare = false;
         }

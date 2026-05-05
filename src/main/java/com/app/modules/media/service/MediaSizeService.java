@@ -2,7 +2,7 @@ package com.app.modules.media.service;
 
 import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.enums.MediaSize;
-import com.app.modules.media.properties.MediaSizeProperties;
+import com.app.modules.media.properties.DefaultMediaProperties;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,9 +13,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class MediaSizeService {
-    private final MediaSizeProperties properties;
+    private final DefaultMediaProperties properties;
 
-    public MediaSizeProperties.SizeConfig getSizeConfig(
+    public DefaultMediaProperties.SizeConfig getSizeConfig(
             @NonNull MediaContent content,
             @NonNull MediaSize size) {
         var typeConfig = properties.getTypes().get(content);

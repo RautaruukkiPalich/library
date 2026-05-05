@@ -18,10 +18,10 @@ All endpoints (except `@PublicEndpoint`) require Bearer token authentication:
 **Protected endpoints (require authentication):**
 
 - `POST /api/media/upload`
+- `DELETE /api/media/{mediaUuid}`
+- `POST /api/media/{mediaUuid}/convert`
 - `GET /api/media/tasks`
 - `GET /api/media/tasks/{taskUuid}`
-- `DELETE /api/media/{mediaUuid}`
-- `POST /api/media/{mediaUuid}/task`
 
 ## Supported Media Types
 
@@ -191,7 +191,7 @@ All endpoints (except `@PublicEndpoint`) require Bearer token authentication:
 
 ----
 
-### POST /api/media/{mediaUuid}/task
+### POST /api/media/{mediaUuid}/convert
 
 **Request:**
 
@@ -201,7 +201,22 @@ All endpoints (except `@PublicEndpoint`) require Bearer token authentication:
 |-----------|------|----------|------------------|
 | mediaUuid | UUID | true     | Media identifier |
 
-- Request Body: None
+- Request Body
+
+| Field     | Type    | Required | Default | Description                                   |
+|:----------|:--------|:---------|:--------|:----------------------------------------------|
+| type      | string  | true     | image   | type of media to convert (image , video etc.) |
+| extension | string  | true     | webp    | target extension                              |
+| quality   | integer | false    | 100     | target quality (1 to 100)                     |
+
+- Body additional for 'image' type
+
+| Field             | Type    | Required | Default | Description                             |
+|:------------------|:--------|:---------|:--------|:----------------------------------------|
+| width             | integer | true     | -       | target width (1 to 10000)               |
+| height            | integer | true     | -       | target height (1 to 10000)              |
+| keep_aspect_ratio | boolean | false    | true    | save aspect ratio                       |
+| crop_to_square    | boolean | false    | false   | crop to quare instead save aspect ratio |
 
 **Response:** `202 ACCEPTED`
 
@@ -234,14 +249,15 @@ All endpoints (except `@PublicEndpoint`) require Bearer token authentication:
 |-----------|------|----------|------------------|
 | mediaUuid | UUID | true     | Media identifier |
 
-- Query parameters
+- Query parameters (optional)
 
-| Parameter | 	Type    | 	Required | Default  | 	Description                                                |
-|-----------|----------|-----------|----------|-------------------------------------------------------------|
-| size      | 	String  | 	false    | ORIGINAL | 	File size: ORIGINAL, SMALL, MEDIUM, LARGE, ICON, THUMBNAIL |
-| inline    | 	boolean | 	false    | false    | 	true for inline display, false for attachment              |
+| Parameter | 	Type    | 	Required | Default | 	Description                                                                                     |
+|-----------|----------|-----------|---------|--------------------------------------------------------------------------------------------------|
+| size      | 	string  | 	false    | -       | 	file size: ORIGINAL, SMALL, MEDIUM, LARGE, ICON, THUMBNAIL. use either of 'size' or 'file_uuid' |
+| file_uuid | uuid     | false     | -       | file uuid. use either of 'size' or 'file_uuid'                                                   |
+| inline    | 	boolean | 	false    | false   | 	true for inline display, false for attachment                                                   |
 
-**Response:** `200 OK`
+- **Response:** `200 OK`
 
 ```text
 Content-Type: image/jpeg
@@ -277,18 +293,21 @@ curl -X POST /api/media/upload \
 }
 ```
 
-2. Create processing task
+2. Create convert task
 
 ```bash
-curl -X POST /api/media/550e8400-.../task \
+curl -X POST /api/media/550e8400-.../convert \
     -H "Authorization: Bearer <token>"
 ```
 
 ```json
-{"task_uuid": "660e8400-...", "status": "PENDING"}
+{
+  "task_uuid": "660e8400-...",
+  "status": "PENDING"
+}
 ```
 
-3. Check task status
+3. Check convert task status
 
 ```bash
 curl -X GET /api/media/tasks/660e8400-... \

@@ -2,7 +2,7 @@ package com.app.modules.media.converter;
 
 import com.app.modules.media.enums.MediaContent;
 import com.app.modules.media.enums.MediaSize;
-import com.app.modules.media.properties.MediaSizeProperties;
+import com.app.modules.media.properties.DefaultMediaProperties;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
@@ -44,7 +44,7 @@ public class ConversionParams {
     public static ConversionParams fromConfig(@NonNull MediaContent type,
                                               @NonNull MediaSize size,
                                               @NonNull String targetExtension,
-                                              @NonNull MediaSizeProperties.SizeConfig config) {
+                                              @NonNull DefaultMediaProperties.SizeConfig config) {
         return ConversionParams.builder()
                 .targetType(type)
                 .targetSize(size)
