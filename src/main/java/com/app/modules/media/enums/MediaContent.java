@@ -1,87 +1,52 @@
 package com.app.modules.media.enums;
 
-import com.app.modules.media.utils.FileValidator;
+import com.app.core.enums.BaseEnum;
+import com.app.modules.media.properties.MediaTypeProperties;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Map;
-import java.util.Set;
 
 @Getter
-public enum MediaContent implements CodeBasedEnum {
-    IMAGE(
-            "image",
-            1L,
-            10 * 1024 * 1024L,
-            Map.of(
-                    "jpeg", "image/jpeg",
-                    "jpg", "image/jpeg",
-                    "png", "image/png",
-                    "gif", "image/gif",
-                    "webp", "image/webp"),
-            "webp", "image/webp"
-    ) {
-        @Override
-        public void validate(@NonNull MultipartFile file) {
-            FileValidator.baseValidation(file);
-            FileValidator.validateImageFile(file, this);
-        }
-    },
-    VIDEO(
-            "video",
-            1L,
-            20 * 1024 * 1024L,
-            Map.of(
-                    "mp4", "video/mp4",
-                    "avi", "video/x-msvideo",
-                    "mov", "video/quicktime",
-                    "mkv", "video/x-matroska"
-            ),
-            "mp4", "video/mp4"
-    ) {
-        @Override
-        public void validate(@NonNull MultipartFile file) {
-            FileValidator.baseValidation(file);
-        }
-    };
+@AllArgsConstructor
+public enum MediaContent implements BaseEnum {
+    IMAGE(MediaTypeProperties.IMAGE),
+    VIDEO(MediaTypeProperties.VIDEO);
 
-    private final String code;
-    private final Long minSize;
-    private final Long maxSize;
-    private final Map<String, String> extensionMap;
-    private final Set<String> extensions;
-    private final Set<String> contentTypes;
-    private final String targetExt;
-    private final String targetContentType;
+    private final MediaTypeProperties props;
 
-    MediaContent(String code, Long minSize, Long maxSize, Map<String, String> extensionMap,
-                 String targetConvertExtension, String targetConvertContentType) {
-        this.code = code;
-        this.minSize = minSize;
-        this.maxSize = maxSize;
-        this.extensionMap = extensionMap;
-        this.extensions = Set.copyOf(extensionMap.keySet());
-        this.contentTypes = Set.copyOf(extensionMap.values());
-        this.targetExt = targetConvertExtension;
-        this.targetContentType = targetConvertContentType;
+    @JsonCreator
+    public static MediaContent fromName(String name) {
+        return BaseEnum.fromName(MediaContent.class, name);
     }
 
-    public static MediaContent fromCode(String code) throws IllegalArgumentException {
-        return CodeBasedEnum.fromCode(MediaContent.class, code);
-    }
-
-    public static MediaContent fromContentType(String contentType) throws IllegalArgumentException {
-        if (contentType == null) return null;
-        if (contentType.startsWith("image/")) return IMAGE;
-        if (contentType.startsWith("video/")) return VIDEO;
-        throw new IllegalArgumentException("unsupported content type: " + contentType);
+    public static MediaContent fromNameOrThrow(String name) {
+        return BaseEnum.fromNameOrThrow(MediaContent.class, name);
     }
 
     @Override
     public String toString() {
-        return getPreparedCode();
+        return BaseEnum.normalize(this.name());
     }
 
-    public abstract void validate(@NonNull MultipartFile file);
+    public static MediaContent fromContentType(@NonNull String contentType) throws IllegalArgumentException {
+        String preparedContentType = lowerCaseTrimString(contentType);
+
+        if (preparedContentType.startsWith("image/")) return IMAGE;
+        if (preparedContentType.startsWith("video/")) return VIDEO;
+        throw new IllegalArgumentException("unsupported content type: " + contentType);
+    }
+
+    public static MediaContent fromExtension(@NonNull String extension) {
+        String preparedExtension = lowerCaseTrimString(extension);
+        if (IMAGE.getProps().extensions().contains(preparedExtension)) return IMAGE;
+        if (VIDEO.getProps().extensions().contains(preparedExtension)) return VIDEO;
+        throw new IllegalArgumentException("unsupported extension: " + preparedExtension);
+    }
+
+    private static String lowerCaseTrimString(String s) {
+        return s == null ? "" : s.toLowerCase().trim();
+    }
+
+
 }

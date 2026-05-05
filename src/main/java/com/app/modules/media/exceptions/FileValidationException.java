@@ -7,11 +7,11 @@ import java.util.Map;
 public class FileValidationException extends ValidationException {
 
     public FileValidationException(String field, String message) {
-        super("validation error", field, message);
+        super("file validation error", field, message);
     }
 
     public FileValidationException(Map<String, String> errorsMap) {
-        super("validation error", errorsMap);
+        super("file validation error", errorsMap);
     }
 }
 

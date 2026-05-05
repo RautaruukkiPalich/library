@@ -1,12 +1,14 @@
 package com.app.modules.media.model;
 
 import com.app.core.model.BaseModel;
+import com.app.modules.media.converter.ConversionParams;
 import com.app.modules.media.enums.TaskStatus;
 import com.app.modules.media.exceptions.MediaTaskValidationException;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 
@@ -25,26 +27,50 @@ public class MediaTask extends BaseModel {
     @Column(name = "media_uuid", nullable = false)
     private UUID mediaUuid;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "media_uuid", referencedColumnName = "uuid",
-            insertable = false, updatable = false)
-    private Media media;
+    @Column(name = "conversion_params")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private ConversionParams conversionParams;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TaskStatus status;
 
+    @Column(name = "fail_reason")
+    private String failReason;
+
+    @PrePersist
+    protected void checkConvertParams() throws RuntimeException {
+        if (conversionParams == null) throw new RuntimeException("empty convert params");
+    }
+
     public MediaTask() {
         super(MediaTaskValidationException::new);
     }
 
-    public void setMedia(@NonNull Media media) {
-        this.mediaUuid = media.getUuid();
-        this.media = media;
+    public MediaTask(UUID uuid,
+                     Long userId,
+                     UUID mediaUuid,
+                     ConversionParams conversionParams,
+                     TaskStatus taskStatus) {
+        super(MediaTaskValidationException::new);
+        this.uuid = uuid;
+        this.userId = userId;
+        this.conversionParams = conversionParams;
+        this.mediaUuid = mediaUuid;
+        this.status = taskStatus;
     }
 
-    public void setMediaUuid(UUID uuid) {
-        this.mediaUuid = uuid;
-        this.media = null;
+    public static MediaTask create(
+            Long userId,
+            UUID mediaUuid,
+            ConversionParams conversionParams
+    ) {
+        return new MediaTask(
+                UUID.randomUUID(),
+                userId,
+                mediaUuid,
+                conversionParams,
+                TaskStatus.PENDING
+        );
     }
 }

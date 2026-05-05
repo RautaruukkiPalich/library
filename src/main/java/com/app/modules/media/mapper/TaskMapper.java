@@ -10,6 +10,9 @@ public class TaskMapper {
                 .mediaUUID(task.getMediaUuid())
                 .userId(task.getUserId())
                 .status(task.getStatus())
+                .failReason(task.getFailReason())
+                .createdAt(task.getCreatedAt())
+                .updatedAt(task.getUpdatedAt())
                 .build();
     }
 }

@@ -1,9 +1,10 @@
 package com.app.modules.media.scheduler;
 
-import com.app.modules.media.api.MediaProcessingService;
+import com.app.core.config.AsyncConfig;
 import com.app.modules.media.enums.TaskStatus;
 import com.app.modules.media.model.MediaTask;
-import com.app.modules.media.repository.TaskGetterRepository;
+import com.app.modules.media.service.MediaProcessingService;
+import com.app.modules.media.service.TaskService;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -18,25 +19,37 @@ import java.util.UUID;
 @Slf4j
 @AllArgsConstructor
 public class MediaProcessingScheduler {
-    private final TaskGetterRepository taskGetterRepository;
+    private final TaskService taskService;
     private final MediaProcessingService processingService;
+
+    private static final int PENDING_TASKS_LIMIT = 5;
 
     @Scheduled(fixedDelay = 5000, initialDelay = 10000)
     protected void convertMediaFiles() {
         loadPendingTasks();
     }
 
-    private void loadPendingTasks() {
-        List<MediaTask> tasks = taskGetterRepository.findByStatus(TaskStatus.PENDING, 5);
+    protected void loadPendingTasks() {
+        log.debug("try find pending tasks");
 
-        for (MediaTask task : tasks) {
-            runProcessTaskAsync(task.getUuid());
-            log.debug("start process task={}", task.getUuid());
+        List<MediaTask> tasks = taskService.findTasks(
+                PENDING_TASKS_LIMIT, TaskStatus.PENDING);
+        if (tasks.isEmpty()) {
+            log.debug("no pending tasks found");
+            return;
         }
+
+        log.info("found {} pending tasks", tasks.size());
+
+        tasks.forEach(
+                task -> {
+                    runProcessTaskAsync(task.getUuid());
+                    log.debug("start process task={}", task.getUuid());
+                });
     }
 
-    @Async
-    public void runProcessTaskAsync(@NonNull UUID uuid) {
+    @Async(AsyncConfig.TASK)
+    protected void runProcessTaskAsync(@NonNull UUID uuid) {
         processingService.processTask(uuid);
     }
 }

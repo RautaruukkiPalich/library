@@ -1,0 +1,70 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto=create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+  test:
+    database:
+      replace=none
+  main:
+    allow-bean-definition-overriding: true
+
+storage:
+  local:
+    path: test_local_media_storage
+
+#logging:
+#  level:
+#    root: OFF
+#    com.app: OFF
+#    org.springframework: ERROR
+
+logging:
+  level:
+    root: INFO
+    com.app: INFO
+    org.springframework: INFO
+#    org.springframework.boot.context.properties.bind: DEBUG
+#    org.springframework.boot.context.properties: TRACE
+
+jwt:
+  secret: ${JWT_SECRET:-your-super-secret-key-that-is-at-least-32-characters-long}
+  ttl: ${JWT_TTL:3600}
+  refresh-ttl: ${JWT_REFRESH_TTL:86400}
+
+app:
+  security:
+    enabled: false
+  aop:
+    roles:
+      enabled: false
+
+
+media:
+  types:
+    image:
+      sizes:
+        large:
+          width: 1920
+          height: 1080
+        medium:
+          width: 800
+          height: 600
+        small:
+          width: 400
+          height: 300
+        thumbnail:
+          width: 150
+          height: 150
+          crop-to-square: true
+          keep-aspect-ratio: false
+        icon:
+          width: 50
+          height: 50
+          crop-to-square: true
+          keep-aspect-ratio: false

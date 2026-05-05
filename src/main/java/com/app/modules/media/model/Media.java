@@ -10,6 +10,7 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Getter
@@ -31,7 +32,7 @@ public class Media extends BaseModel {
     private Boolean isPublic;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "media_type", nullable = false)
     private MediaContent mediaContent;
 
     @OneToMany(mappedBy = "media", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -46,37 +47,36 @@ public class Media extends BaseModel {
     }
 
     @Transient
-    public MediaFile getThumbnail() {
-        return files.stream()
-                .filter(f -> f.getMediaSize() == MediaSize.THUMBNAIL)
-                .findFirst()
-                .orElse(null);
-    }
-
-    @Transient
-    public MediaFile getWithMediaSize(MediaSize mediaSize) {
+    public Optional<MediaFile> getWithMediaSize(MediaSize mediaSize) {
         return files.stream()
                 .filter(f -> f.getMediaSize() == mediaSize)
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
     public Media() {
         super(MediaTaskValidationException::new);
     }
 
-    public Media(
-            UUID uuid,
+    public static Media create(
+            Long userId,
+            String originalFilename,
+            MediaContent content
+    ) {
+        return create(userId, originalFilename, false, content);
+    }
+
+    public static Media create(
             Long userId,
             String originalFilename,
             Boolean isPublic,
-            MediaContent mediaType
+            MediaContent content
     ) {
-        super(MediaTaskValidationException::new);
-        this.uuid = uuid;
-        this.userId = userId;
-        this.originalFilename = originalFilename;
-        this.isPublic = isPublic;
-        this.mediaContent = mediaType;
+        Media media = new Media();
+        media.setUuid(UUID.randomUUID());
+        media.setUserId(userId);
+        media.setOriginalFilename(originalFilename);
+        media.setIsPublic(isPublic);
+        media.setMediaContent(content);
+        return media;
     }
 }

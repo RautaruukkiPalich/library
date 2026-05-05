@@ -1,8 +1,10 @@
 package com.app.modules.media.exceptions;
 
+import com.app.core.exception.NotFoundException;
+
 import java.util.UUID;
 
-public class MediaNotFoundException extends RuntimeException {
+public class MediaNotFoundException extends NotFoundException {
     public MediaNotFoundException(String message) {
         super(message);
     }

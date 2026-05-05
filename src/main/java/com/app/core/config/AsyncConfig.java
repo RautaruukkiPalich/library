@@ -9,7 +9,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 @Configuration
 public class AsyncConfig {
-    @Bean(name = "taskExecutor")
+    public static final String TASK = "taskExecutor";
+    public static final String FILE_DELETION = "fileDeletionExecutor";
+
+
+    @Bean(name = TASK)
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
@@ -22,6 +26,17 @@ public class AsyncConfig {
 
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
 
+        executor.initialize();
+        return executor;
+    }
+
+    @Bean(name = FILE_DELETION)
+    public Executor fileDeletionExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(1);
+        executor.setMaxPoolSize(3);
+        executor.setQueueCapacity(50);
+        executor.setThreadNamePrefix("file-deletion-");
         executor.initialize();
         return executor;
     }
